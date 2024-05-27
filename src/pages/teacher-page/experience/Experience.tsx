@@ -58,7 +58,7 @@ const columns = [
   },
   {
     title: "Ismi",
-    dataIndex: "name",
+    dataIndex: "experience",
     key: "name",
   },
   {

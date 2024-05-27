@@ -145,10 +145,10 @@ function App() {
           }
         >
           <Route path="/teacher-home" element={<TeacherHomePage />} />
-          <Route path="/experience" element={<TeacherExperience />} />
-          <Route path="/skilss" element={<TeacherSkilss />} />
-          <Route path="/my-group" element={<TeacherEducation />} />
-          <Route path="/my-group/:groupId" element={<TeacherExperience />} />
+          <Route path="/teacher-experience" element={<TeacherExperience />} />
+          <Route path="/teacher-schedule" element={<TeacherSkilss />} />
+          <Route path="/my-groups" element={<TeacherEducation />} />
+          <Route path="/my-groups/:groupId" element={<TeacherExperience />} />
           <Route path="/payments" element={<TeacherPortfolios />} />
           <Route path="/account" element={<TeacherAccount />} />
         </Route>

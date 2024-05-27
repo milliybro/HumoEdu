@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { request } from "../../request";
 import { useCallback, useEffect, useState } from "react";
 import TeacherHeader from "../../components/header/TeacherHeader";
+import TeacherSidebar from "../../components/side-bar/Sidebar-teacher";
 const TeacherLayout = () => {
   const { userId } = useAuth();
   const [isClient, setClient] = useState(null);
@@ -42,7 +43,7 @@ const TeacherLayout = () => {
   return (
     <div className="user__layout">
       <div style={{ display: "flex" }}>
-        <Sidebar />
+        <TeacherSidebar />
         <TeacherHeader />
       </div>
       <main className="user__layout__contents">

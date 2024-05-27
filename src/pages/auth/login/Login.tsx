@@ -6,7 +6,7 @@ import hide from "../../../assets/hide.png";
 import show from "../../../assets/show.png";
 import "./login.scss";
 import Loading from "../../../components/authLoading/Loading";
-import image from "../../../assets/login-image.png";
+import image from "../../../assets/humo oquv markazi.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -177,9 +177,9 @@ const Login = () => {
               Humo Edu tizimiga <br />{" "}
               <span className="poppins-regular">Hush kelibsiz</span>
             </h1>
-            <p className="poppins-medium">Tizimga kiring</p>
-            <div>
-              <img src={image} alt="" />
+            {/* <p className="poppins-medium">Tizimga kiring</p> */}
+            <div >
+              <img className="animated-image" style={{ filter: 'invert(100%)' }} src={image} alt="" />
             </div>
           </div>
         </div>

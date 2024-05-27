@@ -15,17 +15,17 @@ import settings from "../../assets/settings.png";
 import logoutIcon from "../../assets/logout.png";
 import { Button, Modal } from "antd";
 
-const Sidebar = () => {
+const TeacherSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { logout } = useAuth();
 
   const navigationLinks = [
-    { path: "/home", label: "Home", icon: dashboard },
-    { path: "/skilss", label: "Dars jadvali", icon: schedule },
-    { path: "/my-group", label: "Guruhlarim", icon: groups },
-    { path: "/payments", label: "To'lovlar", icon: payment },
+    { path: "/teacher-home", label: "Home", icon: dashboard },
+    { path: "/teacher-schedule", label: "Dars jadvali", icon: schedule },
+    { path: "/my-groups", label: "Guruhlarim", icon: groups },
+    // { path: "/payments", label: "To'lovlar", icon: payment },
   ];
 
   // const handleLogout = () => {
@@ -111,4 +111,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default TeacherSidebar;

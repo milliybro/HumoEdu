@@ -18,7 +18,7 @@ const TeacherEducation = () => {
       const res = await request.get(`group/groups/`);
       console.log(res.data, "data");
 
-      const data = res.data;
+      const data = res.data.results;
       setEducationData(data);
     } catch (err) {
       toast.error("Error getting education");

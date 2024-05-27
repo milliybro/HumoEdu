@@ -48,7 +48,7 @@ const EduCard = ({
           </div>
           <div className="card-btn">
             <Button>
-            <Link to={`/my-group/${id}`} type="primary">
+            <Link to={`/my-groups/${id}`} type="primary">
             Guruhni ko'rish
           </Link>
           </Button>

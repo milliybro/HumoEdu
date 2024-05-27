@@ -43,7 +43,7 @@ const TeacherHomePage = () => {
   const getProfile = async () => {
     try {
       // setLoading(true);
-      const res = await request.get(`/account/staff-profile/${userId}/`);
+      const res = await request.get(`/account/staff-profiles/?user=${userId}`);
       setUserData(res.data);
 
       setImg(res.data.photo);

@@ -47,13 +47,12 @@ const TeacherHeader = () => {
     photo: "",
   });
 
-
   const unresponseMessages = useCallback(async () => {
     try {
       const res = await request(
-        `/account/staff-profile/${userId}/`
+        `/account/staff-profiles/?user=${userId}`
       );
-      setUserInfo(res.data)      
+      setUserInfo(res.data.results[0])      
       const { pagination } = res.data;
       setUnansweredMessages(pagination.total)      
     } catch (err) {
@@ -76,7 +75,7 @@ const TeacherHeader = () => {
 
   const getData = async () => {
     try {
-      const res = await request.get(`/account/student-profile/${USERID}/`);
+      const res = await request.get(`/account/student-profiles/?user=${userId}`);
       setUserData(res.data);
     } catch (err) {
       // toast.error("Failed to get user data");

@@ -17,7 +17,7 @@ const TeacherSkilss = () => {
     try {
       setLoading(true);
       const res = await request.get(
-        `group/lessonchedules/`
+        `group/lessonschedules/`
       );
       setSkill(res.data);
     } catch (err) {
@@ -71,7 +71,7 @@ const TeacherSkilss = () => {
 
   const groupedSkills: { [key: string]: SkillsType[] } = {};
   skill.forEach((res) => {
-    res.deys.forEach((day) => {
+    res?.days.forEach((day) => {
       if (!groupedSkills[day]) {
         groupedSkills[day] = [];
       }
@@ -133,12 +133,12 @@ const TeacherSkilss = () => {
                               bordered={true}
                               style={{ marginBottom: 16, width: "50%" }}
                             >
-                              <h3>Fan: {res.group.science.name}</h3> {/* Check if sciences is not null */}
+                              <h3>Fan: {res.group.name}</h3> {/* Check if sciences is not null */}
                               <p>
                                 {res.start_time.slice(0, 5)} -{" "}
                                 {res.end_time.slice(0, 5)}
                               </p>
-                              <h4>Xona: {res.room.name}</h4>
+                              <h4>Xona: {res?.room_name}</h4>
                               <h4>Ustoz: {res.group.staff[0].last_name} {res.group.staff[0].first_name} </h4>
                             </Card>
                           ))}
