@@ -1,0 +1,89 @@
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+.loadingAuth {
+  background-color: #ffc700 !important;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  .loading-image {
+    position: absolute;
+    right: 200px;
+    top: 50px;
+    animation-name: image;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    img {
+      width: 230%;
+    }
+  }
+  .loading-text {
+    position: absolute;
+    color: #000;
+    top: 50%;
+    left: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    font-weight: 600;
+    span {
+      font-size: 70px;
+    }
+    .first {
+      // position: absolute;
+      // width: 150%;
+      right: 20px;
+      top: 50px;
+      opacity: 0;
+      left: 0;
+      margin-bottom: 20px !important;
+      animation-name: firstM;
+      animation-duration: 5s;
+      animation-iteration-count: infinite;
+    }
+    .second{
+      position: absolute;
+      width: 150%;
+      right: 0px;
+      top: 50px;
+      left: 0;
+      opacity: 0;
+      animation-name: firstM;
+      animation-duration: 5s;
+      animation-iteration-count: infinite;
+    }
+  }
+}
+@keyframes firstM {
+  0% {
+   opacity: 0;
+  }
+  50% {
+   left: 50%;
+   opacity: 1;
+  }
+  60% {
+   left: 50%;
+   opacity: 1;
+  }
+  100% {
+   opacity: 0;
+  }
+}
+
+@keyframes image {
+  0% {
+    right: 200px;
+    top: 50px;
+  }
+  50% {
+    right: 75%;
+    top: 50px;
+  }
+  100% {
+    right: 200px;
+    top: 50px;
+  }
+}

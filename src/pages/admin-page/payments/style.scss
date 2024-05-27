@@ -1,0 +1,27 @@
+.dataPickerForm{
+   position: relative;
+   top: 0;
+   z-index: 100;
+   input {
+      padding-left: 40px !important;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    label {
+      margin-top: -10px;
+      margin-bottom: 18px !important;
+    }
+    @media (max-width: 1380px) {
+      width: 500px;
+    }
+    @media (max-width: 630px) {
+      width: 350px;
+    }
+    @media (max-width: 430px) {
+      width: 250px !important;
+    }
+}
+
+.ant-modal{
+   width: 600px !important;
+}

@@ -1,0 +1,26 @@
+.rmdp-container {
+   position: relative;
+   top: 0;
+   // left: -20px;
+   z-index: 100;
+   width: 100%;
+   .rmdp-input {
+     margin-bottom: -8px;
+     padding-left: 40px !important;
+     height: 50px;
+     width: 100%;
+   }
+ 
+   svg {
+     width: 30px;
+     height: 30px;
+     color: rgba(0, 0, 0, 0.4);
+     top: 25px !important;
+     left: 2.5px;
+   }
+ }
+ 
+ .rmdp-week {
+   margin: 2px;
+ }
+ 

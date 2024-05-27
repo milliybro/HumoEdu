@@ -1,0 +1,95 @@
+
+
+.locked {
+  color: #fff !important;
+}
+
+.dashboard-account-badge {
+  padding: 2px 5px;
+  // background-color: #26465350; 
+  border-radius: 4px;
+  border: 1px solid #2a9d8f;
+}
+
+.dashboard-logo {
+  color: #fff;
+  padding: 24px;
+  font-size: 20px;
+  width: 200px;
+}
+
+.dashboard-main {
+  margin: 0 !important;
+  overflow: auto !important;
+  height: calc(100vh - 80px) !important;
+}
+
+.dashboard-header {
+  // border-left: 1px solid #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #264653 !important;
+
+}
+
+.notification {
+  margin-right: 20px;
+  border-radius: 6px;
+  display: flex;
+  svg {
+    border: 1px solid #2a9d8f;
+    background-color: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.5s ease;
+    height: 30px;
+    width: 40px;
+  }
+}
+
+.ant-menu-item-selected {
+  border: 2px solid #264653;
+}
+
+.dashboard-header svg {
+  fill: #fff;
+}
+.dashboard-sider {
+  height: 100vh !important;
+  color: #000 !important;
+  background-color: #264653 !important;  
+}
+
+.menu {
+  background-color: #264653 !important;
+  a {
+    font-family: "Poppins";
+  }
+}
+
+.ant-menu-item-selected {
+  background-color: #2a9d8f !important;
+}
+
+.LogOut{
+  background-color: transparent;
+  color: #fcfcfc;
+  margin-right: 50px;
+  width: 120px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border: none;
+  gap: 5px;
+  font-size: 16px !important;
+  transition: 0.5s;
+  cursor: pointer;
+  img{
+    width: 25px;
+  }
+  &:hover{
+    color: #fafafa !important;
+    background-color: transparent !important;
+  }
+}

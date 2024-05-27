@@ -1,0 +1,37 @@
+@mixin media($size) {
+  @media only screen and (max-width: $size) {
+    @content;
+  }
+}
+.main {
+  .card {
+    width: 100%;
+    position: relative;
+    border-radius: 10px;
+    background-color: #925fe250;
+    padding: 20px;
+    color: #925fe2;
+    h3,
+    h4 {
+      font-weight: 500;
+      padding-bottom: 5px;
+      span {
+        font-weight: 600;
+      }
+    }
+    @include media(500px) {
+      width: 100%;
+    }
+    .card-btn {
+      display: flex;
+      justify-content: end;
+      button {
+        background-color: #925fe2;
+        border: none;
+        border-radius: 24px;
+        color: #fff;
+        margin-top: 20px;
+      }
+    }
+  }
+}
