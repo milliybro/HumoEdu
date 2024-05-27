@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import hide from "../../../assets/hide.png";
 import show from "../../../assets/show.png";
 import "./login.scss";
-import Loading from "../../../components/authLoading/Loading";
 import image from "../../../assets/humo oquv markazi.png";
 
 const Login = () => {
@@ -55,77 +54,7 @@ const Login = () => {
               <p className="poppins-medium">
                 Kirish uchun ma'lumotlarni kiriting
               </p>
-              {/* <Form
-                name="login-form"
-                layout="vertical"
-                className="login-form"
-                onSubmit={handleLogin}
-                autoComplete="off"
-                requiredMark="optional"
-              >
-                <Form.Item
-                  label={
-                    <span className="font-medium text-sm text-[#62738C]">
-                      Username
-                    </span>
-                  }
-                  name="username"
-                  className="mb-10"
-                  rules={[
-                    {
-                      required: true,
-                      type: "string",
-                      min: 1,
-                      whitespace: true,
-                      message: "Belgilar soni 3tadan kam",
-                    },
-                  ]}
-                >
-                  <Input
-                      onChange={handleChange}
-
-                    // placeholder="Username"
-                    className="h-12 rounded-xl input-form"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label={
-                    <span className="font-medium text-sm text-[#62738C]">
-                      Parol
-                    </span>
-                  }
-                  name="password"
-                  className="mb-10"
-                  rules={[
-                    {
-                      required: true,
-                      type: "string",
-                      min: 1,
-                      whitespace: true,
-                      message: "Belgilar soni 6 tadan kam",
-                    },
-                  ]}
-                >
-                  <Input.Password
-                      onChange={handleChange}
-
-                    // placeholder="Parol"
-                    className="h-12 rounded-xl input-form"
-                  />
-                </Form.Item>
-
-                <Form.Item className="mb-0">
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="login-button"
-                    // loading={isLoading}
-                  >
-                    Kirish
-                  </Button>
-                </Form.Item>
-              </Form> */}
+              
               <form className="login-form" onSubmit={handleLogin}>
                 <div className="login-form-1">
                   <label htmlFor="input-username">Username</label>
