@@ -6,6 +6,7 @@ import CountUp from "react-countup";
 import moment from "moment";
 import { request } from "../../../request";
 import "./style.scss";
+import getData from "../../../states/data";
 
 const DashboardPage = () => {
   const [regis, setRegis] = useState([]);
@@ -133,7 +134,7 @@ const DashboardPage = () => {
         request.get("dashboard/science/"),
         request.get("dashboard/science-students/"),
       ]);
-
+      getData;
       setRegis(regRes.data || []);
       setStaff(staffRes.data || []);
       setStudent(studentRes.data || []);

@@ -19,7 +19,7 @@ const Skilss = () => {
       const res = await request.get(
         `group/lessonschedules/`
       );
-      setSkill(res.data.results);
+      setSkill(res.data);
     } catch (err) {
       toast.error("Error");
     } finally {
@@ -64,13 +64,13 @@ const Skilss = () => {
   }, [getSkill]);
 
   useEffect(() => {
-    if (skill.length > 0) { // Check if skill is not empty
-      getScience(skill[0].group.science.name); // Pass the groupId to getScience
+    if (skill?.length > 0) { // Check if skill is not empty
+      getScience(skill[0]?.group?.science?.name); // Pass the groupId to getScience
     }
   }, [skill, getScience]);
 
   const groupedSkills: { [key: string]: SkillsType[] } = {};
-  skill.forEach((res) => {
+  skill?.forEach((res) => {
     res.days.forEach((day) => {
       if (!groupedSkills[day]) {
         groupedSkills[day] = [];
@@ -133,13 +133,13 @@ const Skilss = () => {
                               bordered={true}
                               style={{ marginBottom: 16, width: "50%" }}
                             >
-                              <h3>Fan: {res.group.science.name}</h3> {/* Check if sciences is not null */}
+                              <h3>Fan: {res?.group?.name}</h3> {/* Check if sciences is not null */}
                               <p>
-                                {res.start_time.slice(0, 5)} -{" "}
-                                {res.end_time.slice(0, 5)}
+                                {res?.start_time?.slice(0, 5)} -{" "}
+                                {res?.end_time?.slice(0, 5)}
                               </p>
-                              <h4>Xona: {res.room.name}</h4>
-                              <h4>Ustoz: {res.group.staff[0].last_name} {res.group.staff[0].first_name} </h4>
+                              <h4>Xona: {res?.room_name} / {res?.room}</h4>
+                              <h4>Ustoz: {res?.group.staff[0].last_name} {res.group.staff[0].first_name} </h4>
                             </Card>
                           ))}
                       </div>

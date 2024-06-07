@@ -21,7 +21,7 @@ export const useAuth = create<AuthTypes>((set, get) => ({
   login: async (data, navigate) => {
     try {
       const res = await request.post("account/login/", data);
-
+      
       function isTokenExpired(accessToken: string) {
         const arrayToken = accessToken.split(".");
         const tokenPayload = JSON.parse(atob(arrayToken[1]));

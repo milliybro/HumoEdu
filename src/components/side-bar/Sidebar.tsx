@@ -5,7 +5,7 @@ import { request } from "../../request";
 import ConfirmationModal from "../confirmation/ConfirmationModal";
 import { useAuth } from "../../states/auth";
 import { toast } from "react-toastify";
-import exampleLogo from "../../assets/examleLogo.png";
+import exampleLogo from "../../assets/humo oquv markazi.png";
 
 import dashboard from "../../assets/dashboard.png";
 import payment from "../../assets/payment.png";

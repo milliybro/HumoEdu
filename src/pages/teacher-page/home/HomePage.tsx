@@ -117,30 +117,8 @@ const TeacherHomePage = () => {
     <Fragment>
       <header id="header" className={`${top ? "header-top" : null}`}>
         <div className="container">
-          <div className="nav__wrapper">
-            <div className="first__nav">
-              <h1 className="hero_name" onClick={toggleNavbar}>
-                <Link to={"#"}>Xush kelibsiz, {userData?.first_name}!</Link>
-              </h1>
-              <h4>
-                Talabalar portalida doimo ma'liumotlaringizni bilib turing
-              </h4>
-            </div>
-            <div className="second__nav">
-              <div>
-                <img
-                  className="centreStudentLeft"
-                  src={centreStudentLeft}
-                  alt=""
-                />
-                <img className="centreStudent" src={centreStudent} alt="" />
-                <img
-                  className="centreStudentRight"
-                  src={centreStudentRight}
-                  alt=""
-                />
-              </div>
-            </div>
+          <div className="myGroups">
+            xcxc
           </div>
         </div>
       </header>

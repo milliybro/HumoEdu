@@ -5,10 +5,9 @@ import { request } from "../../request";
 import ConfirmationModal from "../confirmation/ConfirmationModal";
 import { useAuth } from "../../states/auth";
 import { toast } from "react-toastify";
-import exampleLogo from "../../assets/examleLogo.png";
+import exampleLogo from "../../assets/humo oquv markazi.png";
 
 import dashboard from "../../assets/dashboard.png";
-import payment from "../../assets/payment.png";
 import groups from "../../assets/groups.png";
 import schedule from "../../assets/schedule.png";
 import settings from "../../assets/settings.png";
@@ -25,16 +24,8 @@ const TeacherSidebar = () => {
     { path: "/teacher-home", label: "Home", icon: dashboard },
     { path: "/teacher-schedule", label: "Dars jadvali", icon: schedule },
     { path: "/my-groups", label: "Guruhlarim", icon: groups },
-    // { path: "/payments", label: "To'lovlar", icon: payment },
   ];
 
-  // const handleLogout = () => {
-  //   try {
-  //     setIsModalOpen(true);
-  //   } catch (err) {
-  //     toast.error("Could not log out");
-  //   }
-  // };
   const handleConfirmLogout = () => {
     try {
       setIsModalOpen(false);
@@ -71,7 +62,7 @@ const TeacherSidebar = () => {
                 <Link to={link.path} className="sider-link">
                   <div>
                     <img src={link.icon} alt="" />
-                    <span>{link.label}</span>
+                    <span className="istok-web-bold">{link.label}</span>
                   </div>
                 </Link>
               </li>

@@ -9,14 +9,12 @@
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  width: 233px;
-  height: 90vh;
-  background: linear-gradient(#925fe1, #925fe2, #925fe2);
-  color: #999;
-  padding: 20px;
+  width: 340px;
+  height: 100vh;
+  background: #fffafa;
+  padding: 10px;
   transition: transform 0.3s ease;
   position: relative;
-  margin: 32px;
   border-radius: 24px;
   &::-webkit-scrollbar {
     display: none;
@@ -25,35 +23,27 @@
     width: 100px;
   }
   .sidebar__logo {
+    width: 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-
     .logo_wrapper {
+      width: 100%;
       display: flex;
       color: #fff;
       font-family: "Poppins", sans-serif;
-      gap: 10px;
-      padding: 10px;
+      padding: 5px;
       border-radius: 24px;
-      background: linear-gradient(#925fe2, #7042c0) !important;
       h1 {
         @include media(500px) {
           display: none;
         }
       }
       img {
-        width: 100px;
-        height: 100px;
+        width: 100%;
         border-radius: 50%;
         background-color: transparent !important;
       }
-    }
-    p {
-      color: #999;
-      font-weight: bold;
-      font-family: "Poppins", sans-serif;
     }
   }
   &.open {
@@ -61,7 +51,7 @@
   }
   .sidebar_links {
     display: flex;
-    margin-top: 25px;
+    // margin-top: 50px;
     li {
       display: flex;
       align-items: center;
@@ -69,7 +59,7 @@
       transition: 0.1s ease-out;
       img {
         width: 30px;
-        filter: grayscale(90%) !important;
+        filter: grayscale(0%) !important;
         @include media(500px) {
           width: 35px;
         }
@@ -100,7 +90,7 @@
       }
     }
     .active {
-      background: rgba(219, 219, 219, 0.2);
+      background: linear-gradient(#adbbde, #b6bcca);
       color: #fff !important;
       // border: 2px solid #925FE2 !important;
     }
@@ -135,6 +125,14 @@
     align-items: center;
     text-align: center;
     gap: 10px;
+    span {
+      color: #2b59ce;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    img {
+      filter: invert(100%) contrast(150%) brightness(120%);
+    }
   }
 }
 .siderbar-layout {
@@ -146,7 +144,6 @@
     font-size: 16px;
     margin-left: -15px;
     &:hover {
-      
       background: #925fe1 !important;
       color: #fff !important;
     }

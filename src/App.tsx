@@ -83,7 +83,7 @@ function App() {
 
         <Route path="/" element={isAuthenticated && role === "student" ? <UserLayout /> : <Navigate to="/login" />}>
           <Route path="/home" element={<HomePage />} />
-          <Route path="/experience" element={<Experience />} />
+          {/* <Route path="/experience" element={<Experience />} /> */}
           <Route path="/skilss" element={<Skilss />} />
           <Route path="/my-group" element={<Education />} />
           <Route path="/my-group/:groupId" element={<Experience />} />
