@@ -24,9 +24,7 @@ const TeacherHomePage = () => {
   //   const experiences = useExperiencesStore((state) => state.experiences);
   //   const education = useEducationStore((state) => state.education);
   const fetchEducation = useEducationStore((state) => state.fetchEducation);
-  const fetchExperiences = useExperiencesStore(
-    (state) => state.fetchExperiences
-  );
+  const fetchExperiences = useExperiencesStore((state) => state.fetchExperiences);
   //   console.log(fetchSkills);
 
   const toggleNavbar = () => setTop(!top);
@@ -101,31 +99,113 @@ const TeacherHomePage = () => {
   useEffect(() => {
     const today = new Date();
     const dayOfWeek = today.getDay();
-    const weekdays = [
-      "Yakshanba",
-      "Dushanba",
-      "Seshanba",
-      "Chorshanba",
-      "Payshanba",
-      "Juma",
-      "Shanba",
-    ];
+    const weekdays = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
     setWeekday(weekdays[dayOfWeek]);
   }, []);
 
-  return (
-    <Fragment>
-      <header id="header" className={`${top ? "header-top" : null}`}>
-        <div className="container">
-          <div className="myGroups">
-            xcxc
+  const Announcement = ({ message }) => (
+    <div className="announcement">
+      <p>{message}</p>
+      <button>Join</button>
+    </div>
+  );
+
+  const LeaderBoard = () => {
+    const leaders = [
+      { name: "Shyam Nithin", score: 60 },
+      { name: "Nivin Kumar", score: 58 },
+      { name: "Nivetha Dinesh", score: 50 },
+      { name: "Rudhra Shankar", score: 49 },
+    ];
+
+    return (
+      <div className="leader-board">
+        <h2>Leader board</h2>
+        {leaders.map((leader, index) => (
+          <div key={index} className="leader">
+            <span>{leader.name}</span>
+            <span>{leader.score}</span>
           </div>
+        ))}
+      </div>
+    );
+  };
+
+  const CompletionProgress = () => {
+    const progress = [
+      { subject: "Organic Chemistry", chapter: "Chapter 1", percentage: 70 },
+      { subject: "States of matter", chapter: "Chapter 2", percentage: 50 },
+      { subject: "Solutions", chapter: "Chapter 3", percentage: 30 },
+      { subject: "Chemical changes", chapter: "Chapter 4", percentage: 80 },
+    ];
+
+    return (
+      <div className="completion-progress">
+        <h2>Completion progress</h2>
+        {progress.map((item, index) => (
+          <div key={index} className="progress-item">
+            <span>
+              {item.subject} ({item.chapter})
+            </span>
+            <progress value={item.percentage} max="100"></progress>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const Assignments = () => {
+    const assignments = [
+      { subject: "Chemistry", task: "Chapter 5", page: 10, time: "11:00 AM", status: "Pending" },
+      { subject: "Physics", task: "Chapter 4", page: 18, time: "11:40 AM", status: "Pending" },
+      { subject: "Biology", task: "Chapter 2", page: 12, time: "10:00 AM", status: "Completed" },
+    ];
+
+    return (
+      <div className="assignments">
+        <h2>Assignments</h2>
+        {assignments.map((assignment, index) => (
+          <div key={index} className={`assignment ${assignment.status.toLowerCase()}`}>
+            <span>
+              {assignment.subject} ({assignment.task})
+            </span>
+            <span>Page {assignment.page}</span>
+            <span>{assignment.time}</span>
+            <span>{assignment.status}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="home-main container">
+      <div className="App">
+        <Announcement message="Hello swetha, your live session is about to start!" />
+        <div className="dashboard">
+          <LeaderBoard />
+          <CompletionProgress />
+          <Assignments />
         </div>
-      </header>
-      <div
-        className="mobile_menue_modal"
-        style={{ display: `${menuControl ? "" : "none"}` }}
-      >
+      </div>
+      <div className="schedule-table container">
+        <h2>June 2024</h2>
+        <div>
+          <button>dushanba 10</button>
+          <button>dushanba 10</button>
+          <button>dushanba 10</button>
+          <button>dushanba 10</button>
+        </div>
+        <h2>schedule   see all</h2>
+        <div>
+          <p>1 | matematika 18:00-20:00</p>
+          <p>1 | matematika 18:00-20:00</p>
+          <p>1 | matematika 18:00-20:00</p>
+          <p>1 | matematika 18:00-20:00</p>
+
+        </div>
+      </div>
+      <div className="mobile_menue_modal" style={{ display: `${menuControl ? "" : "none"}` }}>
         <button onClick={toggleMenu} className="close_btn">
           <img src={close_icon} alt="" />
         </button>
@@ -152,7 +232,7 @@ const TeacherHomePage = () => {
       <section id="about" className="about">
         <div className="schedule-home"></div>
       </section>
-    </Fragment>
+    </div>
   );
 };
 

@@ -42,7 +42,7 @@ const AdminStudents = () => {
   const { branchId } = useParams();
   const [form] = useForm();
   const navigate = useNavigate();
-  const [branch, setBranch] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [editId, setEditId] = useState(null);
   const [originalData, setOriginalData] = useState({});
   const [selectedBranch, setSelectedBranch] = useState(null);
@@ -50,21 +50,17 @@ const AdminStudents = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
-    getData(selectedBranch); // Fetch data based on the selected branch
+    const fetchData = async () => {
+      await getData(selectedBranch);
+      await getBranches();
+    };
+    fetchData();
   }, [getData, selectedBranch]);
-
-  useEffect(() => {
-    getData();
-  }, [getData]);
-
-  useEffect(() => {
-    getBranches();
-  }, []);
 
   const getBranches = useCallback(async () => {
     try {
       const { data } = await request.get("branch/branches/");
-      setBranch(data.results);
+      setBranches(data.results);
     } catch (err) {
       console.error(err);
     }
@@ -116,30 +112,30 @@ const AdminStudents = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h5 style={{ color: "green" }}>Faol</h5> : <h5 style={{ color: "red" }}>Faol emas</h5>),
+      render: (status) =>
+        status ? (
+          <h5 style={{ color: "green" }}>Faol</h5>
+        ) : (
+          <h5 style={{ color: "red" }}>Faol emas</h5>
+        ),
     },
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
+      render: (id) => (
         <Space size="middle">
           <Button
             style={{ backgroundColor: "green" }}
             onClick={() => {
               showModal(form);
-              setEditId(record.id);
-              editStudent(record.id);
-              
+              setEditId(id);
+              editStudent(id);
             }}
             type="primary"
           >
             Edit
           </Button>
-          <Button
-            onClick={() => deleteStudent(record.id)}
-            type="primary"
-            danger
-          >
+          <Button onClick={() => deleteStudent(id)} type="primary" danger>
             Delete
           </Button>
         </Space>
@@ -151,6 +147,8 @@ const AdminStudents = () => {
     async (id) => {
       try {
         const { data } = await request.get(`account/student-profile/${id}/`);
+        console.log(data, "dataa");
+        
         const formattedData = {
           id: data.id,
           last_name: data.last_name,
@@ -166,7 +164,7 @@ const AdminStudents = () => {
           status: data.status,
         };
         setEditId(formattedData.id);
-        setOriginalData(formattedData);
+        setOriginalData(data);
         form.setFieldsValue(formattedData);
       } catch (err) {
         console.error(err);
@@ -174,6 +172,7 @@ const AdminStudents = () => {
     },
     [form]
   );
+console.log(originalData, "originalData");
 
   const handleChangeBranch = (value) => {
     setSelectedBranch(value);
@@ -182,11 +181,11 @@ const AdminStudents = () => {
   const handleForm = async (formData) => {
     try {
       const values = await form.validateFields();
-      const payload = patchChanges(originalData, removeNullish(formData));
       if (editId) {
+        const payload = patchChanges(originalData, removeNullish(formData));
         await request.patch(`account/student-profile-update/${editId}/`, payload);
       } else {
-        await request.post("/account/student-profile-create/", formData);
+        await request.post("/account/student-profile-create/", values);
       }
       setEditId(null);
       handleCancel();
@@ -220,16 +219,6 @@ const AdminStudents = () => {
 
   return (
     <Fragment>
-      <section id="search">
-        <div className="container">
-          <div className="search-container"></div>
-        </div>
-      </section>
-      <section id="search">
-        <div className="container">
-          <div className="search-container"></div>
-        </div>
-      </section>
       <Table
         loading={loading}
         className="table"
@@ -274,8 +263,8 @@ const AdminStudents = () => {
                 <Select.Option key="" value="">
                   Filliallar
                 </Select.Option>
-                {Array.isArray(branch) &&
-                  branch.map((value) => (
+                {Array.isArray(branches) &&
+                  branches.map((value) => (
                     <Select.Option key={value.id} value={value.id}>
                       {value.name}
                     </Select.Option>
@@ -300,7 +289,7 @@ const AdminStudents = () => {
       ) : null}
       <Modal
         visible={isModalOpen}
-        title="Title"
+        title={editId ? "Edit Student" : "Create Student"}
         onCancel={handleCancel}
         footer={null}
       >
@@ -408,7 +397,7 @@ const AdminStudents = () => {
             ]}
           >
             <Select style={{ width: "100%" }}>
-              {branch.map((value) => (
+              {branches.map((value) => (
                 <Select.Option key={value.id} value={value.id}>
                   {value.name}
                 </Select.Option>

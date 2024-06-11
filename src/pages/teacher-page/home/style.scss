@@ -1,4 +1,111 @@
-.myGroups{
-  background-color: #FFFAFA;
-  border-radius: 20px;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.home-main{
+  display: grid;
+  grid-template-columns: 65% 35%;
+  grid-gap: 20px;
+}
+
+.App {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.announcement {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e0f7fa;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #00796b;
+}
+
+.announcement p {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.announcement button {
+  background-color: #00796b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+}
+
+.leader-board, .completion-progress, .assignments {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+}
+
+.leader-board h2, .completion-progress h2, .assignments h2 {
+  margin-top: 0;
+  color: #00796b;
+}
+
+.leader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.leader span {
+  font-size: 1.1em;
+}
+
+.progress-item {
+  margin-bottom: 10px;
+}
+
+.progress-item span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.assignment {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.assignment.pending {
+  background-color: #ffe0b2;
+}
+
+.assignment.completed {
+  background-color: #c8e6c9;
+}
+
+.assignment span {
+  font-size: 1.1em;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.schedule-table{
+  background-color: #ffffff;
+  padding: 20px;
 }

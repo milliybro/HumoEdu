@@ -108,7 +108,12 @@ const AdminGroups = () => {
     },
     {
       title: "O'qituvchi",
-      render: (record) => record.staff[0]?.first_name + " " + record.staff[0]?.last_name,
+      render: (record) => record.teacher?.first_name + " " + record.teacher?.last_name,
+      key: "teacher",
+    },
+    {
+      title: "Yordamchi o'qituvchi",
+      render: (record) => record.sub_teacher?.first_name + " " + record.sub_teacher?.last_name,
       key: "teacher",
     },
     {
@@ -170,7 +175,7 @@ const AdminGroups = () => {
           name: data.name,
           science: data.science.id,
           branch: data.branch.id,
-          staff: data.staff.map((staffMember) => staffMember.id),
+          teacher: data.staff.map((staffMember) => staffMember.id),
           student: data.student.map((studentMember) => studentMember),
           status: data.status,
         };
@@ -305,11 +310,20 @@ const AdminGroups = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="staff" label="O'qituvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
-            <Select mode="multiple" size="large" placeholder="O'qituvchi tanlang" onChange={handleChangeStaff}>
+          <Form.Item name="teacher" label="O'qituvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
+            <Select size="large" placeholder="O'qituvchi tanlang" onChange={handleChangeStaff}>
               {teacherOptions.map((teacher) => (
                 <Select.Option key={teacher.value} value={teacher.value}>
                   {teacher.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="sub_teacher" label="Yordamchi o'quvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
+            <Select size="large" placeholder="Yordamchi o'qituvchini tanlang" onChange={handleChangeBranch}>
+              {teacherOptions.map((value) => (
+                <Select.Option key={value.id} value={value.value}>
+                  {value.label}
                 </Select.Option>
               ))}
             </Select>

@@ -9,7 +9,7 @@ export default defineConfig({
     outDir: 'dist',
   },
   server: {
-    port: 5050,
+    port: 5005,
     open: true,
   },
 });

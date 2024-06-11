@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Input, Modal, Space, Table, Pagination, Select, Row, Col, message, Checkbox } from "antd";
+import { Form, Button, Input, Modal, Space, Table, Pagination, Select, Row, Col, Checkbox } from "antd";
 import { useForm } from "antd/es/form/Form";
 import "./style.scss";
 import { LIMIT } from "../../../constants";
@@ -8,7 +8,6 @@ import useUsers from "../../../states/adminUsers";
 import { request } from "../../../request";
 import { patchChanges, removeNullish } from "./functions";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
-import parsePhoneNumberFromString, { isValidNumber } from "libphonenumber-js";
 import { toast } from "react-toastify";
 
 const UsersPageAdmin = () => {
@@ -20,7 +19,6 @@ const UsersPageAdmin = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [position, setPosition] = useState([]);
-
   const [positionOption, setPositionOption] = useState([]);
 
   useEffect(() => {
@@ -38,11 +36,13 @@ const UsersPageAdmin = () => {
               await getData(selectedBranch); // Fetch updated data after deletion
             } catch (error) {
               console.error("Failed to delete data:", error);
+              toast.error("Failed to delete data.");
             }
           },
         });
       } catch (err) {
         console.log(err);
+        toast.error("Failed to delete data.");
       }
     },
     [getData, selectedBranch]
@@ -65,7 +65,6 @@ const UsersPageAdmin = () => {
           branch: data.branch.id,
           salary: data.salary,
           position: data.position.map((pos) => pos?.id),
-          // position: data.position?.id,
           birthday: data.birthday,
           status: data.status,
         };
@@ -73,9 +72,8 @@ const UsersPageAdmin = () => {
         form.setFieldsValue(formattedData);
         localStorage.setItem("editData", JSON.stringify(formattedData));
       } catch (err) {
-        console.log(err);
-        
         console.error(err);
+        toast.error("Failed to load user data.");
       }
     },
     [form]
@@ -94,12 +92,12 @@ const UsersPageAdmin = () => {
     },
     {
       title: "Username",
-      render: (record:any) => record?.user?.username,
+      render: (record) => record?.user?.username,
       key: "username",
     },
     {
       title: "Tug'ilgan kun",
-      render: (record:any) => record?.birthday,
+      render: (record) => record?.birthday,
       key: "birthday",
     },
     {
@@ -109,12 +107,12 @@ const UsersPageAdmin = () => {
     },
     {
       title: "Fillial",
-      render: (record:any) => record?.branch?.name,
+      render: (record) => record?.branch?.name,
       key: "branch",
     },
     {
       title: "Lavozimi",
-      render: (record:any) => record.position[0]?.name,
+      render: (record) => record.position[0]?.name,
       key: "position",
     },
     {
@@ -124,14 +122,14 @@ const UsersPageAdmin = () => {
     },
     {
       title: "Foydalanuvchi roli",
-      render: (record:any) => record?.user?.roles,
+      render: (record) => record?.user?.roles,
       key: "user_roles",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status:any) => (status ? <h3 style={{ color: "green" }}>Faoliyatda</h3> : <h3 style={{ color: "red" }}>Faoliyatda emas</h3>),
+      render: (status) => (status ? <h3 style={{ color: "green" }}>Faoliyatda</h3> : <h3 style={{ color: "red" }}>Faoliyatda emas</h3>),
     },
     {
       title: "Action",
@@ -150,7 +148,7 @@ const UsersPageAdmin = () => {
           >
             Tahrirlash
           </Button>
-  
+
           <Button onClick={() => deleteStaff(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
             O'chirish
           </Button>
@@ -166,23 +164,27 @@ const UsersPageAdmin = () => {
       const values = await form.validateFields();
       let originalData = JSON.parse(localStorage.getItem("editData"));
 
-      const payload = patchChanges(originalData, removeNullish(formData));
+      const payload = patchChanges(originalData, removeNullish(values));
 
       if (editId) {
         await request.patch(`account/staff-profile-update/${editId}/`, payload);
       } else {
-        await request.post("/account/staff-profile-create/", formData);
+        await request.post("/account/staff-profile-create/", values);
       }
       setEditId(null);
       handleCancel();
       getData();
     } catch (error) {
-      toast.error(error?.response?.data.position[0]);
-      console.error(error.response.data);
+      if (error?.response?.data?.position) {
+        toast.error(error.response.data.position[0]);
+      } else {
+        toast.error("Failed to submit form.");
+      }
+      console.error("Form submission error:", error.response?.data || error);
     }
   };
 
-  const handleChangeBranch = (value: any) => {
+  const handleChangeBranch = (value) => {
     setSelectedBranch(value);
   };
 
@@ -193,8 +195,10 @@ const UsersPageAdmin = () => {
       setBranch(data.results);
     } catch (err) {
       console.log(err);
+      toast.error("Failed to load branches.");
     }
   }, []);
+
   const getPosition = useCallback(async () => {
     try {
       const res = await request.get(`account/positions/`);
@@ -202,6 +206,7 @@ const UsersPageAdmin = () => {
       setPosition(data);
     } catch (err) {
       console.log(err);
+      toast.error("Failed to load positions.");
     }
   }, []);
 
@@ -212,8 +217,6 @@ const UsersPageAdmin = () => {
     }));
     setPositionOption(PosOption);
   }, [position]);
-
-  console.log(position, "position");
 
   useEffect(() => {
     getBranches();
@@ -226,9 +229,10 @@ const UsersPageAdmin = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-  const handleChange = (value: any) => {
+  const handleChange = (value) => {
     setSelectedRole(value); // Update the selected role state
   };
+
   useEffect(() => {
     getData(selectedBranch, selectedRole); // Fetch data based on the selected role
   }, [getData, selectedBranch, selectedRole]);
@@ -245,6 +249,7 @@ const UsersPageAdmin = () => {
     };
     updatePositionOptions();
   }, [position]);
+
   return (
     <Fragment>
       <section id="search">

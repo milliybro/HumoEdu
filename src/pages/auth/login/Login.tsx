@@ -10,7 +10,7 @@ import image from "../../../assets/humo oquv markazi.png";
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [userForm, setUserForm] = useState({username: "", password: ""});
+  const [userForm, setUserForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const auth = useAuth();
 
@@ -21,7 +21,7 @@ const Login = () => {
       setLoading(true);
       await auth.login(userForm, navigate);
       setLoading(false);
-      toast.success("Login Success")
+      toast.success("Login Success");
     } catch (err) {
       toast.error("Login or password reset failed");
     }
@@ -36,11 +36,7 @@ const Login = () => {
     setUserForm({ ...userForm, [name]: value });
   };
   if (loading) {
-    return (
-      <div className="loader">
-        {/* <Loading /> */}
-      </div>
-    );
+    return <div className="loader">{/* <Loading /> */}</div>;
   }
   return (
     <main className="main">
@@ -48,13 +44,12 @@ const Login = () => {
         <div className="section-main">
           <div className="section-login-2">
             <div className="section-login-2-main">
-              <h1 className="section-login-2-title poppins-bold">
-                Tizimga kirish
-              </h1>
-              <p className="poppins-medium">
-                Kirish uchun ma'lumotlarni kiriting
-              </p>
-              
+              <div className="mobile-logo">
+                <img src={image} alt="" />
+              </div>
+              <h1 className="section-login-2-title poppins-bold">Tizimga kirish</h1>
+
+
               <form className="login-form" onSubmit={handleLogin}>
                 <div className="login-form-1">
                   <label htmlFor="input-username">Username</label>
@@ -64,7 +59,6 @@ const Login = () => {
                     onChange={handleChange}
                     name="username"
                     id="username"
-                    // placeholder="Username"
                     required
                   />
                 </div>
@@ -72,29 +66,22 @@ const Login = () => {
                   <label htmlFor="input-password">Password</label>
                   <div className="password-input-container">
                     <input
-                    className="input-form"
+                      className="input-form"
                       type={showPassword ? "text" : "password"}
                       name="password"
                       id="password"
-                      // placeholder="Password"
                       required
                       onChange={handleChange}
                     />
-                    <button
-                      type="button"
-                      onClick={handlePasswordToggle}
-                      >
-                      {showPassword ? (
-                        <img src={hide} alt="" />
-                      ) : (
-                        <img src={show} alt="" />
-                      )}
+                    <button type="button" onClick={handlePasswordToggle}>
+                      {showPassword ? <img src={hide} alt="" /> : <img src={show} alt="" />}
                     </button>
                   </div>
                 </div>
                 <div className="login-form-submit-btn">
-                  <button className="login-button" type="submit">Kirish</button>
-                      
+                  <button className="login-button" type="submit">
+                    Kirish
+                  </button>
                 </div>
               </form>
             </div>
@@ -103,12 +90,10 @@ const Login = () => {
         <div className="login-image">
           <div className="login-image-text">
             <h1 className="poppins-bold">
-              Humo Edu tizimiga <br />{" "}
-              <span className="poppins-regular">Hush kelibsiz</span>
+              Humo Edu tizimiga <br /> <span className="poppins-regular">Hush kelibsiz</span>
             </h1>
-            {/* <p className="poppins-medium">Tizimga kiring</p> */}
-            <div >
-              <img className="animated-image" style={{ filter: 'invert(100%)' }} src={image} alt="" />
+            <div>
+              <img className="animated-image" style={{ filter: "invert(100%)" }} src={image} alt="" />
             </div>
           </div>
         </div>
