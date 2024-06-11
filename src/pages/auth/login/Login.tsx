@@ -21,7 +21,7 @@ const Login = () => {
       setLoading(true);
       await auth.login(userForm, navigate);
       setLoading(false);
-      toast.success("Login Success");
+      // toast.success("Login Success");
     } catch (err) {
       toast.error("Login or password reset failed");
     }

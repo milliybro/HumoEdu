@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { userLogin, userRegister } from "../types";
 import { ROLE, TOKEN, USERID } from "../constants";
 import { request } from "../request";
+import { toast } from "react-toastify";
 
 type AuthTypes = {
   isAuthenticated: boolean;
@@ -21,6 +22,8 @@ export const useAuth = create<AuthTypes>((set, get) => ({
   login: async (data, navigate) => {
     try {
       const res = await request.post("account/login/", data);
+      toast.success("Hisobga muvaffaqiyatli kirildi");
+
       
       function isTokenExpired(accessToken: string) {
         const arrayToken = accessToken.split(".");
@@ -56,6 +59,7 @@ export const useAuth = create<AuthTypes>((set, get) => ({
         console.log("other");
       }
     } catch (err) {
+      toast.error("Parol yoki username xato!");
       console.log(err);
     }
   },
