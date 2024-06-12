@@ -181,14 +181,14 @@ const TeacherHomePage = () => {
   return (
     <div className="home-main container">
       <div className="App">
-        <Announcement message="Hello swetha, your live session is about to start!" />
+        <Announcement message="Salom" />
         <div className="dashboard">
           <LeaderBoard />
           <CompletionProgress />
           <Assignments />
         </div>
       </div>
-      <div className="schedule-table container">
+      <div className="schedule-table">
         <h2>June 2024</h2>
         <div>
           <button>dushanba 10</button>

@@ -25,6 +25,9 @@ const AdminGroups = () => {
   const [selectedScience, setSelectedScience] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [open, setOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [modalText, setModalText] = useState("Content of the modal");
 
   const handleGroupSelectChange = (value) => {
     setSelectedGroupName(value);
@@ -262,7 +265,7 @@ const AdminGroups = () => {
   );
 
   const nextStudent = (id) => {
-    navigate(`/adminBranch/${id}`);
+    setOpen(true);
   };
 
   const nextSchedule = (id) => {
@@ -275,8 +278,26 @@ const AdminGroups = () => {
     handleStatusChange(value);
   };
 
+
+  const modalOk = () => {
+    setModalText("The modal will be closed after two seconds");
+    setConfirmLoading(true);
+    setTimeout(() => {
+      setOpen(false);
+      setConfirmLoading(false);
+    }, 2000);
+  };
+
+  const modalCancel = () => {
+    console.log("Clicked cancel button");
+    setOpen(false);
+  };
+
   return (
     <Fragment>
+      <Modal title="Title" open={open} onOk={modalOk} confirmLoading={confirmLoading} onCancel={modalCancel}>
+        <p>{modalText}</p>
+      </Modal>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20 }}>Guruhlar boshqaruvi</h3>
         <Button onClick={() => showModal(form)} type="primary" style={{ backgroundColor: "#264653", borderRadius: 5 }}>

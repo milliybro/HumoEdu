@@ -45,7 +45,7 @@ const TeacherEducation = () => {
               key={res._id}
               name={res.name}
               price={res.price}
-              staff={res.staff}
+              teacher={res.teacher}
               student={res.student}
               science={res.science}
               branch={res.branch}

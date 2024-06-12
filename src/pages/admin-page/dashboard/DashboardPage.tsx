@@ -187,8 +187,8 @@ const DashboardPage = () => {
   }, [student]);
 
   console.log(science, "donut");
-  const totalStaffCount = staff.reduce((acc, current) => acc + current.staffs_count, 0);
-  const totalStudentCount = student.reduce((acc, current) => acc + current.student_count, 0);
+  const totalStaffCount = staff.reduce((acc, current) => acc + current?.staffs_count, 0);
+  const totalStudentCount = student.reduce((acc, current) => acc + current?.student_count, 0);
   const totalScienceCount = science?.length || 0;
   console.log(totalScienceCount);
 

@@ -7,7 +7,7 @@ export interface EduCardProps {
   id: string;
   name: string;
   price: string;
-  staff: [];
+  teacher: [];
   student: [];
   science: [{ name: string }];
   branch: [];
@@ -20,7 +20,7 @@ const EduCard = ({
   id,
   name,
   price,
-  staff,
+  teacher,
   student,
   science,
   branch,
@@ -42,7 +42,7 @@ const EduCard = ({
               O'qituvchi{" "}
               <span>
                 {" "}
-                {staff[0].first_name} {staff[0].last_name}{" "}
+                {teacher.first_name} {teacher.last_name}{" "}
               </span>
             </h4>
           </div>

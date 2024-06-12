@@ -1,18 +1,10 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
 
-.home-main{
+.home-main {
+  width: 100% !important;
   display: grid;
   grid-template-columns: 65% 35%;
   grid-gap: 20px;
-}
-
-.App {
-  padding: 20px;
-  max-width: 1200px;
-  margin: auto;
+  position: relative;
 }
 
 .announcement {
@@ -46,7 +38,9 @@ body {
   gap: 20px;
 }
 
-.leader-board, .completion-progress, .assignments {
+.leader-board,
+.completion-progress,
+.assignments {
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
@@ -54,7 +48,9 @@ body {
   border: 1px solid #ddd;
 }
 
-.leader-board h2, .completion-progress h2, .assignments h2 {
+.leader-board h2,
+.completion-progress h2,
+.assignments h2 {
   margin-top: 0;
   color: #00796b;
 }
@@ -104,8 +100,12 @@ body {
   }
 }
 
-
-.schedule-table{
+.schedule-table {
+  border-radius: 20px;
+  width: 350px;
   background-color: #ffffff;
   padding: 20px;
+  position: absolute;
+  top: 0;
+  right: 0;
 }

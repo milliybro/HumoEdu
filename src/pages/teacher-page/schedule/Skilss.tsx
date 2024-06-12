@@ -139,7 +139,7 @@ const TeacherSkilss = () => {
                                 {res.end_time.slice(0, 5)}
                               </p>
                               <h4>Xona: {res?.room_name}</h4>
-                              <h4>Ustoz: {res.group.staff[0].last_name} {res.group.staff[0].first_name} </h4>
+                              <h4>Ustoz: {res.group.teacher.last_name} {res.group.teacher.first_name} </h4>
                             </Card>
                           ))}
                       </div>
