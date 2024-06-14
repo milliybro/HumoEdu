@@ -26,9 +26,9 @@ function getData<T>(url: string) {
     handlePage: (page: number, navigate: NavigateFunction) => void;
     getData: () => void;
     handleOk: (form: FormInstance) => void;
-    editData: (id: string, form: FormInstance) => void;
-    deleteData: (id: string) => void;
-    setActive: (active: number) => void;
+    editData: (id: number, form: FormInstance) => void;
+    deleteData: (id: number) => void;
+    setActive: (active: boolean) => void;
     showModal: (form: FormInstance) => void;
     handleCancel: () => void;
     SerachSkills: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -172,7 +172,7 @@ function getData<T>(url: string) {
     handleCancel: () => {
       set((state) => ({ ...state, isModalOpen: false, selected: null }));
     },
-    SerachSkills: (e) => {
+    SearchSkills: (e) => {
       set((state) => ({ ...state, search: e.target.value }));
       get().getData();
     },

@@ -2,7 +2,7 @@ import { userInteface } from "../types";
 import getData from "./data";
 
 interface skill {
-  _id: string;
+  _id: number;
   name: string;
   percent: number;
   user: null | userInteface;

@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Row, Col } from "antd";
+import { Form, Button, Input, Modal, Space, Table, Pagination, Row, Col } from "antd";
 import { useForm } from "antd/es/form/Form";
-
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import "./style.scss";
 
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,10 @@ import { LIMIT } from "../../constants";
 import useSkills from "../../states/adminSkills";
 import { request } from "../../request";
 import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+
+
+const { confirm } = Modal;
+
 const EducationPageAdmin = () => {
   const {
     total,
@@ -19,20 +23,16 @@ const EducationPageAdmin = () => {
     data,
     page,
     getData,
-    editData,
-    deleteData,
-    SerachSkills,
-    //  setActive,
+    SearchSkills,
     showModal,
     handleCancel,
-    handleOk,
     handlePage,
   } = useSkills();
 
   const [form] = useForm();
   const navigate = useNavigate();
   const [editId, setEditId] = useState(null); // State variable to hold the id
-
+  const [deleteModal, setDeleteModal] = useState(false);
   useEffect(() => {
     getData();
   }, [getData]);
@@ -48,7 +48,7 @@ const EducationPageAdmin = () => {
       title: "Action",
       dataIndex: "id",
       key: "id",
-      render: (id: string) => {
+      render: (id: number) => {
         return (
           <Space size="middle">
             <Button
@@ -63,7 +63,7 @@ const EducationPageAdmin = () => {
               Edit
             </Button>
             <Button
-              onClick={() => deleteScience(id)}
+              onClick={() => showDeleteConfirm(id)}
               type="primary"
               style={{
                 backgroundColor: "#f54949",
@@ -78,7 +78,7 @@ const EducationPageAdmin = () => {
   ];
 
   const editScience = useCallback(
-    async (id: any) => {
+    async (id: number) => {
       try {
         const { data } = await request.get(`group/science/${id}/`);
         const formattedData = {
@@ -113,24 +113,50 @@ const EducationPageAdmin = () => {
     }
   };
 
+  ////// delete modal for delete funtion start //////
+
+  const showDeleteConfirm = (id:number) => {
+    confirm({
+      title: "Bu fanni ro'yhatdan o'chirishni hohlaysizmi ?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+      okText: "ha",
+      okType: "danger",
+      cancelText: "ortga",
+      onOk() {
+        deleteScience(id);
+      },
+      onCancel() {
+        setDeleteModal(false);
+      },
+    });
+  };
+
+  ////// delete modal for delete funtion end //////
+
+  ///////// delete function  start ///////
   const deleteScience = useCallback(
-    async (id) => {
+    async (id: number) => {
+      setDeleteModal(true);
       try {
         await request.delete(`group/science-delete/${id}/`);
         getData(); // Refresh data after deletion
       } catch (err) {
         console.log(err);
+      } finally {
+        setDeleteModal(false);
       }
     },
     [getData]
   );
+
+  ///////// delete function  end ///////
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
-
 
   return (
     <Fragment>
@@ -139,33 +165,60 @@ const EducationPageAdmin = () => {
         className="table"
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 20 }}
+            >
               <Col>
                 <h1>Fanlar ({total})</h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+              >
                 <Col>
                   <div className="search-box">
                     <Input
                       onChange={(e) => {
-                        SerachSkills(e);
+                        SearchSkills(e);
                         console.log(e.target.value);
                       }}
-                      className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
+                      className={
+                        isSearchOpen ? "searchInput open" : "searchInput"
+                      } // Apply different class based on isSearchOpen state
                       placeholder="Search..."
                     />
                     <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                      {isSearchOpen ? (
+                        <CloseOutlined style={{ color: "white" }} />
+                      ) : (
+                        <SearchOutlined />
+                      )}
                     </a>
                   </div>
                 </Col>
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
+                  <Button
+                    className="Add"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
                     <div className="center">
                       <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
+                        <svg
+                          width="180px"
+                          height="60px"
+                          viewBox="0 0 180 60"
+                          className="border"
+                        >
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="bg-line"
+                          />
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="hl-line"
+                          />
                         </svg>
                         <span>Fan yaratish</span>
                       </button>
@@ -182,7 +235,15 @@ const EducationPageAdmin = () => {
         rowKey="id"
       />
 
-      {total > LIMIT ? <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(page) => handlePage(page, navigate)} /> : null}
+      {total > LIMIT ? (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(page) => handlePage(page, navigate)}
+        />
+      ) : null}
       {/* {totalPaginate > 1 ? (
         <section id="pagination">
           <div className="container">

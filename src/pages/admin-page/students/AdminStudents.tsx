@@ -12,6 +12,8 @@ import {
   Row,
   Col,
 } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+
 import { useForm } from "antd/es/form/Form";
 import { useNavigate, useParams } from "react-router-dom";
 import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
@@ -20,6 +22,9 @@ import { LIMIT } from "../../../constants";
 import { request } from "../../../request";
 import useStudent from "../../../states/adminStudents";
 import { patchChanges, removeNullish } from "../../../utils/functions";
+
+
+const { confirm } = Modal;
 
 const AdminStudents = () => {
   const {
@@ -31,7 +36,7 @@ const AdminStudents = () => {
     getData,
     editData,
     deleteData,
-    searchSkills,
+    SearchSkills,
     showModal,
     handleCancel,
     handleStatusChange,
@@ -46,8 +51,10 @@ const AdminStudents = () => {
   const [editId, setEditId] = useState(null);
   const [originalData, setOriginalData] = useState({});
   const [selectedBranch, setSelectedBranch] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(false);
+
+   ////// delete modal states ////
+  const [deleteModal, setDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,20 +129,24 @@ const AdminStudents = () => {
     {
       title: "Action",
       key: "action",
-      render: (id) => (
+      render: (record) => (
         <Space size="middle">
           <Button
             style={{ backgroundColor: "green" }}
             onClick={() => {
               showModal(form);
-              setEditId(id);
-              editStudent(id);
+              setEditId(record.id);
+              editStudent(record.id);
             }}
             type="primary"
           >
             Edit
           </Button>
-          <Button onClick={() => deleteStudent(id)} type="primary" danger>
+          <Button
+            onClick={() => showDeleteConfirm(record.id)}
+            type="primary"
+            danger
+          >
             Delete
           </Button>
         </Space>
@@ -144,10 +155,10 @@ const AdminStudents = () => {
   ];
 
   const editStudent = useCallback(
-    async (id) => {
+    async (id:number) => {
       try {
         const { data } = await request.get(`account/student-profile/${id}/`);
-        console.log(data, "dataa");
+        console.log(data, "data");
         
         const formattedData = {
           id: data.id,
@@ -156,6 +167,7 @@ const AdminStudents = () => {
           phone_number1: data.phone_number1,
           phone_number2: data.phone_number2,
           user: {
+            id:data.user.id,
             password: data.user.password,
             username: data.user.username,
           },
@@ -174,7 +186,7 @@ const AdminStudents = () => {
   );
 console.log(originalData, "originalData");
 
-  const handleChangeBranch = (value) => {
+  const handleChangeBranch = (value:string) => {
     setSelectedBranch(value);
   };
 
@@ -191,26 +203,52 @@ console.log(originalData, "originalData");
       handleCancel();
       getData();
     } catch (err) {
-      toast.error(err.message);
+      if(err) toast.error(err.message);
       console.error(err);
     }
   };
 
-  const deleteStudent = useCallback(
-    async (id) => {
-      try {
-        await request.delete(`account/student-profile-delete/${id}/`);
-        getData();
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [getData]
-  );
+  /////// delete modal /////
+    const showDeleteConfirm = (id: number) => {
+      confirm({
+        title: "Bu o'quvchini ro'yhatdan o'chirishni hohlaysizmi ?",
+        icon: <ExclamationCircleOutlined />,
+        content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+        okText: "ha",
+        okType: "danger",
+        cancelText: "ortga",
+        onOk() {
+          deleteStudent(id);
+        },
+        onCancel() {
+          setDeleteModal(false);
+        },
+      });
+    }; 
 
+    const deleteStudent = useCallback(
+      async (id: number) => {
+        setDeleteModal(true);
+        try {
+          await request.delete(`account/student-profile-delete/${id}/`);
+          getData(); // Refresh data after deletion
+        } catch (err) {
+          console.log(err);
+        } finally {
+          setDeleteModal(false);
+        }
+      },
+      [getData]
+    );
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+ 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
+
+  ////// search input function code start /////
+  
+  ///// search input function code end ///////
 
   const handleChangeStatus = (value) => {
     setSelectedStatus(value);
@@ -232,8 +270,9 @@ console.log(originalData, "originalData");
                 <Col>
                   <div className="search-box">
                     <Input
-                      onChange={(e) => {
-                        searchSkills(e.target.value);
+                      onChange={(e)=>{
+                        SearchSkills(e);
+                        console.log(e.target.value);
                       }}
                       className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
                       placeholder="Search..."

@@ -2,7 +2,7 @@ import { userInteface } from "../types";
 import getData from "./data";
 
 interface students {
-  _id: string;
+  _id: number;
   name: string;
   level: string;
   description: string;
