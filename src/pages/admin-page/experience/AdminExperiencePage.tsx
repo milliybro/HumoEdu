@@ -2,16 +2,21 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Select, Col, Row } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useNavigate, useParams } from "react-router-dom";
-import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  CloseOutlined,
+  SearchOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 
 import "./style.scss";
 import { LIMIT } from "../../../constants";
 import useExperience from "../../../states/adminExperience";
 import { request } from "../../../request";
 
+const { confirm } = Modal;
 const ExperiencePageAdmin = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
-
+  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
+ 
   const { branchId } = useParams<{ branchId: string }>();
 
   const [form] = useForm();
@@ -22,7 +27,8 @@ const ExperiencePageAdmin = () => {
   const [branchName, setBranchName] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
-
+   const [deteleModal, setDeleteModal] = useState(false);
+  
   const getRooms = useCallback(async () => {
     try {
       const { data } = await request.get(`branch/rooms/`);
@@ -45,7 +51,24 @@ const ExperiencePageAdmin = () => {
     setSelectedBranch(value);
     getData(value);
   };
-
+ 
+  ////////delete modal //////////
+  const showDeleteConfirm = (id: number) => {
+    confirm({
+      title: "Bu filialni ro'yhatdan o'chirishni hohlaysizmi ?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+      okText: "ha",
+      okType: "danger",
+      cancelText: "ortga",
+      onOk() {
+        deleteRoom(id);
+      },
+      onCancel() {
+        setDeleteModal(false);
+      },
+    });
+  };
   const deleteRoom = useCallback(
     async (id: number) => {
       try {
@@ -160,7 +183,7 @@ const ExperiencePageAdmin = () => {
             Edit
           </Button>
           <Button
-            onClick={() => deleteRoom(id)}
+            onClick={() => showDeleteConfirm(id)}
             type="primary"
             style={{
               backgroundColor: "red",
@@ -192,7 +215,7 @@ const ExperiencePageAdmin = () => {
               <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
                 <Col>
                   <div className="search-box">
-                    <Input onChange={(e) => SerachSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
+                    <Input onChange={(e) => SearchSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
                     <a href="#" onClick={toggleSearch}>
                       {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
                     </a>

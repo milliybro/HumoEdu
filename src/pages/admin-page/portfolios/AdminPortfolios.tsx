@@ -2,12 +2,15 @@ import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { Form, Button, Input, Modal, Space, Table, Pagination, Row, Col, Select, Checkbox } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import usePortfolios from "../../../states/adminPortfolios";
 import { request } from "../../../request";
 import { LIMIT } from "../../../constants";
 import "./style.scss";
 
+const { confirm } = Modal;
 const PortfoliosPageAdmin = () => {
   const {
     total,
@@ -16,7 +19,7 @@ const PortfoliosPageAdmin = () => {
     data,
     page,
     getData,
-    SerachSkills,
+    SearchSkills,
     showModal,
     handleCancel,
     handlePage,
@@ -28,7 +31,7 @@ const PortfoliosPageAdmin = () => {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
-
+   const [deteleModal , setDeleteModal] = useState(false);
   useEffect(() => {
     getData();
   }, [getData]);
@@ -81,8 +84,8 @@ const PortfoliosPageAdmin = () => {
           id: data.id,
           name: data.name,
           address: data.address,
-          start_at: data.start_at,
-          end_at: data.end_at,
+          start_at: moment(data.start_at).format("YYYY-MM-DD"),
+          end_at: moment(data.end_at).format("YYYY-MM-DD"),
           status: data.status,
         };
         setEditId(formattedData.id);
@@ -93,7 +96,25 @@ const PortfoliosPageAdmin = () => {
     },
     [form]
   );
+ ////////////  delete modal   ////////////////
+ const showDeleteConfirm = (id: number) => {
+   confirm({
+     title: "Bu filialni ro'yhatdan o'chirishni hohlaysizmi ?",
+     icon: <ExclamationCircleOutlined />,
+     content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+     okText: "ha",
+     okType: "danger",
+     cancelText: "ortga",
+     onOk() {
+       deleteBranch(id);
+     },
+     onCancel() {
+       setDeleteModal(false);
+     },
+   });
+ };
 
+ ///////////  delete funtion ///////////
   const deleteBranch = useCallback(
     async (id) => {
       try {
@@ -156,7 +177,7 @@ const PortfoliosPageAdmin = () => {
           >
             Edit
           </Button>
-          <Button onClick={() => deleteBranch(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
             Delete
           </Button>
           <Button onClick={() => nextRoom(id)}>Xonalarni ko'rish</Button>
@@ -185,7 +206,10 @@ const PortfoliosPageAdmin = () => {
                 <Col>
                   <div className="search-box">
                     <Input
-                      onChange={(e) => SerachSkills(e)}
+                      onChange={(e) => {
+                        SearchSkills(e);
+                        // console.log(e.target.value);
+                      }}
                       className={isSearchOpen ? "searchInput open" : "searchInput"}
                       placeholder="Search..."
                     />

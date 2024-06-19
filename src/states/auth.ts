@@ -20,16 +20,14 @@ export const useAuth = create<AuthTypes>((set, get) => ({
   userId: Cookies.get(USERID) || "",
   role: Cookies.get(ROLE) || "",
   login: async (data, navigate) => {
+    function isTokenExpired(accessToken: string) {
+      const arrayToken = accessToken.split(".");
+      const tokenPayload = JSON.parse(atob(arrayToken[1]));
+      return tokenPayload;
+    }
     try {
       const res = await request.post("account/login/", data);
       toast.success("Hisobga muvaffaqiyatli kirildi");
-
-      
-      function isTokenExpired(accessToken: string) {
-        const arrayToken = accessToken.split(".");
-        const tokenPayload = JSON.parse(atob(arrayToken[1]));
-        return tokenPayload;
-      }
       isTokenExpired(res.data.access);
       const tokenUser = isTokenExpired(res.data.access);
 
@@ -50,8 +48,6 @@ export const useAuth = create<AuthTypes>((set, get) => ({
         navigate("/home");
       } else if (get().role === "superadmin") {
         navigate("/dashboard");
-      } else if (get().role === "admin") {
-        navigate("/branchDashboard");
       } else if (get().role === "teacher") {
         navigate("/teacher-home");
       } else {
@@ -63,10 +59,20 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       console.log(err);
     }
   },
-  logout: (navigate) => {
-    Cookies.remove(TOKEN);
-    Cookies.remove(USERID);
+ logout: (navigate) => {
+    // Barcha cookie nomlarini olish
+    const allCookies = document.cookie.split(';');
+    
+    // Har bir cookie'ni o'chirish
+    allCookies.forEach(cookie => {
+        const cookieName = cookie.split('=')[0].trim();
+        Cookies.remove(cookieName, { path: '/' });
+    });
+
+    // Auth state yangilash
     set({ isAuthenticated: false });
+
+    // Navigatsiya qilish
     navigate("/");
   },
   register: async (data, navigate) => {

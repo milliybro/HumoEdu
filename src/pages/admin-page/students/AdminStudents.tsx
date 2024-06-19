@@ -272,7 +272,6 @@ console.log(originalData, "originalData");
                     <Input
                       onChange={(e)=>{
                         SearchSkills(e);
-                        console.log(e.target.value);
                       }}
                       className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
                       placeholder="Search..."

@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Select } from "antd";
+import { Form, Button, Input, Modal, Space, Table, Pagination, Select } from "antd";
 import { useForm } from "antd/es/form/Form";
 
 // import "./style.scss";
@@ -7,10 +7,26 @@ import { LIMIT } from "../../../constants";
 import { useNavigate, useParams } from "react-router-dom";
 import { request } from "../../../request";
 import usePayments from "../../../states/adminPayment";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import CRangePicker from "../../../utils/datapicker";
+import moment from "moment";
+
 const AdminPayments = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = usePayments();
+  const {
+    total,
+    loading,
+    isModalOpen,
+    data,
+    page,
+    getData,
+    editData,
+    deleteData,
+    SerachSkills,
+    showModal,
+    handleCancel,
+    handleOk,
+    handlePage,
+  } = usePayments();
 
   const { branchId } = useParams();
   console.log(branchId, "branchId");
@@ -27,8 +43,9 @@ const AdminPayments = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
-
-
+  const [groupId, setGroupId] = useState(null);
+  const { confirm } = Modal;
+  const [deleteModal, setDeleteModal] = useState(false);
 
   useEffect(() => {
     getData();
@@ -36,15 +53,16 @@ const AdminPayments = () => {
 
   const columns = [
     {
-      title: "Ism Familiya",
-      render: (text) => text.student.first_name + " " + text.student.last_name,
-      key: "name",
-    },
-    {
       title: "Guruh nomi",
       render: (data: any) => data.group?.name,
       key: "name",
     },
+    {
+      title: "Ism Familiya",
+      render: (text) => text?.student?.first_name + " " + text?.student?.last_name,
+      key: "name",
+    },
+
     {
       title: "Boshlanish",
       // dataIndex: "student.username",
@@ -101,7 +119,7 @@ const AdminPayments = () => {
             Edit
           </Button>
           <Button
-            onClick={() => deletePayment(id)}
+            onClick={() => showDeleteConfirm(id)}
             type="primary"
             style={{
               backgroundColor: "#f54949",
@@ -115,15 +133,18 @@ const AdminPayments = () => {
   ];
 
   const editPayment = useCallback(
-    async (id: any) => {
+    async (id: number) => {
       try {
         const { data } = await request.get(`account/payment/${id}/`);
         const formattedData = {
           id: data.id,
           price_sum: data.price_sum,
-          student: data.student,
-          group: data.group,
-          date: data.date,
+          student: data.student.first_name + " " + data.student.last_name,
+          group: data.group.name,
+          date: [
+            moment(data.date.from_date).format("MM/DD/YYYY HH:mm:ss"),
+            moment(data.date.to_date).format("MM/DD/YYYY HH:mm:ss"),
+          ],
         };
         console.log(formattedData, "formattedData");
         setEditId(formattedData.id);
@@ -154,9 +175,11 @@ const AdminPayments = () => {
       console.error(err);
     }
   };
-  const getStudent = useCallback(async () => {
+  const getStudent = useCallback(async (groupId:number) => {
     try {
-      const res = await request.get(`account/student-profiles/`);
+      const res = await request.get(
+        `account/student-profiles/?group=${groupId}`
+      );
       const data = res.data.results;
       setStudent(data);
     } catch (err) {
@@ -179,14 +202,38 @@ const AdminPayments = () => {
     getGroup();
   }, [getStudent, getGroup]);
 
-  const filterOption = (input: string, option?: { label: string; value: string }) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
-  const onChange = (value: string) => {
+  const onChange = (value: number) => {
     console.log(`selected ${value}`);
+    getStudent(value);
+    // console.log(value)
+    setGroupId(value)
   };
 
   const onSearch = (value: string) => {
     console.log("search:", value);
+  };
+
+  ///// delete modal  ///////
+  const showDeleteConfirm = (id: number) => {
+    confirm({
+      title: "Bu to'lovni ro'yhatdan o'chirishni hohlaysizmi?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+      okText: "ha",
+      okType: "danger",
+      cancelText: "ortga",
+      onOk() {
+        deletePayment(id);
+      },
+      onCancel() {
+        setDeleteModal(false);
+      },
+    });
   };
 
   const deletePayment = useCallback(
@@ -209,7 +256,7 @@ const AdminPayments = () => {
     setSelectedStaff(value);
   };
   useEffect(() => {
-    getData(selectedBranch,  selectedStaff);
+    getData(selectedBranch, selectedStaff);
   }, [getData, selectedBranch, selectedStaff]);
 
   const [teacherOptions, setTeacherOptions] = useState([]);
@@ -243,8 +290,8 @@ const AdminPayments = () => {
   useEffect(() => {
     getTeacher();
     getStudent();
-    getBranches()
-  }, [ getTeacher, getStudent, getBranches]);
+    getBranches();
+  }, [getTeacher, getStudent, getBranches]);
 
   const handleGroupSelectChange = (value) => {
     setSelectedGroupName(value);
@@ -254,13 +301,21 @@ const AdminPayments = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-
-
   return (
     <Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
         <h3 style={{ fontWeight: 700, fontSize: 20 }}>To'lovlar boshqaruvi</h3>
-        <Button onClick={() => showModal(form)} type="primary" style={{ backgroundColor: "#264653", borderRadius: 5 }}>
+        <Button
+          onClick={() => showModal(form)}
+          type="primary"
+          style={{ backgroundColor: "#264653", borderRadius: 5 }}
+        >
           To'lov yaratish
         </Button>
       </div>
@@ -272,38 +327,59 @@ const AdminPayments = () => {
           style={{ width: 200 }}
           suffix={<SearchOutlined />}
         />
-        <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
+        <Select
+          placeholder="Fillial tanlang"
+          onChange={handleChangeBranch}
+          allowClear
+        >
           {branch.map((value) => (
             <Select.Option key={value.id} value={value.id}>
               {value.name}
             </Select.Option>
           ))}
         </Select>
-        <Select placeholder="Guruhni tanlang" onChange={handleChangeStaff} allowClear>
+        <Select
+          placeholder="Guruhni tanlang"
+          onChange={handleChangeStaff}
+          allowClear
+        >
           {mygroup.map((group) => (
             <Select.Option key={group.id} value={group.id}>
               {group.name}
             </Select.Option>
           ))}
         </Select>
-        <Select placeholder="O'qituvchi tanlang" onChange={handleChangeStaff} allowClear>
+        <Select
+          placeholder="O'qituvchi tanlang"
+          onChange={handleChangeStaff}
+          allowClear
+        >
           {teacherOptions.map((teacher) => (
             <Select.Option key={teacher.value} value={teacher.value}>
               {teacher.label}
             </Select.Option>
           ))}
         </Select>
-        <Button onClick={toggleSearch}>{isSearchOpen ? "Yopish" : "Izlash"}</Button>
+        <Button onClick={toggleSearch}>
+          {isSearchOpen ? "Yopish" : "Izlash"}
+        </Button>
       </Space>
       <Table
         loading={loading}
         className="table"
-        
         pagination={false}
         dataSource={data} // corrected from 'experience' to 'data'
         columns={columns}
       />
-      {total > LIMIT ? <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(page) => handlePage(page, navigate)} /> : null}
+      {total > LIMIT ? (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(page) => handlePage(page, navigate)}
+        />
+      ) : null}
       <Modal
         visible={isModalOpen} // corrected from 'open' to 'visible'
         title="Title"
@@ -345,6 +421,29 @@ const AdminPayments = () => {
             <Input />
           </Form.Item>
           <Form.Item
+            label="Guruh"
+            name="group"
+            rules={[
+              {
+                required: true,
+                message: "Guruhni kiriting!",
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="O'quvchini tanlang"
+              optionFilterProp="children"
+              onChange={onChange}
+              onSearch={onSearch}
+              filterOption={filterOption}
+              options={mygroup.map((value) => ({
+                value: value.id,
+                label: value.name,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
             label="O'quvchi"
             name="student"
             rules={[
@@ -369,31 +468,7 @@ const AdminPayments = () => {
           </Form.Item>
 
           <Form.Item
-            label="Guruh"
-            name="group"
-            rules={[
-              {
-                required: true,
-                message: "Guruhni kiriting!",
-              },
-            ]}
-          >
-            <Select
-              showSearch
-              placeholder="O'quvchini tanlang"
-              optionFilterProp="children"
-              onChange={onChange}
-              onSearch={onSearch}
-              filterOption={filterOption}
-              options={mygroup.map((value) => ({
-                value: value.id,
-                label: value.name,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
-          className="dataPickerForm"
+            className="dataPickerForm"
             label="Oy uchun"
             name="date"
             rules={[
@@ -403,7 +478,7 @@ const AdminPayments = () => {
               },
             ]}
           >
-            <CRangePicker  />
+            <CRangePicker />
           </Form.Item>
 
           <Form.Item

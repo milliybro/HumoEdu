@@ -11,7 +11,7 @@ import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 
 const UsersPageAdmin = () => {
-  const { total, loading, isModalOpen, data, page, getData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = useUsers();
+  const { total, loading, isModalOpen, data, page, getData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useUsers();
 
   const [form] = useForm();
   const navigate = useNavigate();
@@ -125,11 +125,11 @@ const UsersPageAdmin = () => {
       render: (record) => record?.user?.roles,
       key: "user_roles",
     },
-    {
+     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h3 style={{ color: "green" }}>Faoliyatda</h3> : <h3 style={{ color: "red" }}>Faoliyatda emas</h3>),
+      render: (status) => (status ? <h5 style={{ color: "green" }}>Faoliyatda</h5> : <h5 style={{ color: "red" }}>Faoliyatda emas</h5>),
     },
     {
       title: "Action",
@@ -149,7 +149,11 @@ const UsersPageAdmin = () => {
             Tahrirlash
           </Button>
 
-          <Button onClick={() => deleteStaff(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button
+            onClick={() => deleteStaff(id)}
+            type="primary"
+            style={{ backgroundColor: "#f54949" }}
+          >
             O'chirish
           </Button>
         </Space>
@@ -159,7 +163,7 @@ const UsersPageAdmin = () => {
 
   const [branch, setBranch] = useState([]);
 
-  const handleForm = async (formData) => {
+  const handleForm = async () => {
     try {
       const values = await form.validateFields();
       let originalData = JSON.parse(localStorage.getItem("editData"));
@@ -212,7 +216,7 @@ const UsersPageAdmin = () => {
 
   useEffect(() => {
     const PosOption = position.map((data) => ({
-      label: `${data.name}`,
+      label: data.name,
       value: data.id,
     }));
     setPositionOption(PosOption);
@@ -262,33 +266,60 @@ const UsersPageAdmin = () => {
         className="table"
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 20 }}
+            >
               <Col>
                 <h1>Xodimlar ({total})</h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+              >
                 <Col>
                   <div className="search-box">
                     <Input
                       onChange={(e) => {
-                        SerachSkills(e);
+                        SearchSkills(e);
                         console.log(e.target.value);
                       }}
-                      className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
+                      className={
+                        isSearchOpen ? "searchInput open" : "searchInput"
+                      } // Apply different class based on isSearchOpen state
                       placeholder="Search..."
                     />
                     <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                      {isSearchOpen ? (
+                        <CloseOutlined style={{ color: "white" }} />
+                      ) : (
+                        <SearchOutlined />
+                      )}
                     </a>
                   </div>
                 </Col>
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
+                  <Button
+                    className="Add"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
                     <div className="center">
                       <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
+                        <svg
+                          width="180px"
+                          height="60px"
+                          viewBox="0 0 180 60"
+                          className="border"
+                        >
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="bg-line"
+                          />
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="hl-line"
+                          />
                         </svg>
                         <span>Xodim qo'shish</span>
                       </button>
@@ -297,8 +328,18 @@ const UsersPageAdmin = () => {
                 </Col>
               </div>
             </Row>
-            <Row justify="start" align="middle" style={{ gap: "20px" }} className="filtrTable">
-              <Select size="large" defaultValue="Filliallar" style={{ width: 250 }} onChange={handleChangeBranch}>
+            <Row
+              justify="start"
+              align="middle"
+              style={{ gap: "20px" }}
+              className="filtrTable"
+            >
+              <Select
+                size="large"
+                defaultValue="Filliallar"
+                style={{ width: 250 }}
+                onChange={handleChangeBranch}
+              >
                 <Select.Option key="" value="">
                   Filliallar
                 </Select.Option>
@@ -328,8 +369,23 @@ const UsersPageAdmin = () => {
         columns={columns}
         rowKey="id"
       />
-      {total > LIMIT && <Pagination defaultCurrent={1} className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(offset) => handlePage(offset, navigate)} />}
-      <Modal open={isModalOpen} title={editId ? "Xodimni tahrirlash" : "Yangi xodim qo'shish"} onCancel={handleCancel} footer={null}>
+      {total > LIMIT && (
+        <Pagination
+          defaultCurrent={1}
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(offset) => handlePage(offset, navigate)}
+        />
+      )}
+      <Modal
+        open={isModalOpen}
+        title={editId ? "Xodimni tahrirlash" : "Yangi xodim qo'shish"}
+        onCancel={handleCancel}
+        footer={null}
+        width={900}
+      >
         <Form
           name="basic"
           labelCol={{
@@ -339,7 +395,7 @@ const UsersPageAdmin = () => {
             span: 24,
           }}
           style={{
-            maxWidth: 600,
+            maxWidth: 850,
             margin: "0 auto",
           }}
           initialValues={{
@@ -350,10 +406,11 @@ const UsersPageAdmin = () => {
           form={form}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Familiyasi"
                 name="last_name"
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
                     required: true,
@@ -364,10 +421,11 @@ const UsersPageAdmin = () => {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Ismi"
                 name="first_name"
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
                     required: true,
@@ -378,26 +436,28 @@ const UsersPageAdmin = () => {
                 <Input />
               </Form.Item>
             </Col>
-          </Row>
-          <Col span={12}>
-            <Form.Item
-              label="Tug'ilgan kuni"
-              name="birthday"
-              rules={[
-                {
-                  required: true,
-                  message: "Please fill!",
-                },
-              ]}
-            >
-              <Input type="date" />
-            </Form.Item>
-          </Col>
 
+            <Col span={8}>
+              <Form.Item
+                label="Tug'ilgan kuni"
+                name="birthday"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Input type="date" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Telefon raqami"
+                style={{ marginBottom: 0 }}
                 // onChange={handlePhoneNumberChange}
 
                 name="phone_number"
@@ -411,10 +471,27 @@ const UsersPageAdmin = () => {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+
+            <Col span={8}>
               <Form.Item
-                label="Username"
+                label="username"
                 name={["user", "username"]}
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Parol"
+                name={["user", "password"]}
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
                     required: false,
@@ -426,87 +503,95 @@ const UsersPageAdmin = () => {
               </Form.Item>
             </Col>
           </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Rol"
+                name={["user", "roles"]}
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Select>
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="superadmin">Superadmin</Select.Option>
+                  <Select.Option value="teacher">Teacher</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Parol"
-            name={["user", "password"]}
-            rules={[
-              {
-                required: false,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Filliali"
+                name="branch"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Select>
+                  {branch.map((value) => (
+                    <Select.Option key={value.id} value={value.id}>
+                      {value.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Rol"
-            name={["user", "roles"]}
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Select>
-              <Select.Option value="admin">Admin</Select.Option>
-              <Select.Option value="superadmin">Superadmin</Select.Option>
-              <Select.Option value="teacher">Teacher</Select.Option>
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Oylik"
+                name="salary"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Filliali"
-            name="branch"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Select>
-              {branch.map((value) => (
-                <Select.Option key={value.id} value={value.id}>
-                  {value.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Oylik"
-            name="salary"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Lavozimi"
-            name="position"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Select mode="multiple" size="large" placeholder="lavozimni tanlang" onChange={handleChange}>
-              {positionOption.map((student) => (
-                <Select.Option key={student.value} value={student.value}>
-                  {student.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Lavozimi"
+                name="position"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  size="large"
+                  style={{ marginBottom: 0 }}
+                  placeholder="lavozimni tanlang"
+                  onChange={handleChange}
+                >
+                  {positionOption.map((student) => (
+                    <Select.Option key={student.value} value={student.value}>
+                      {student.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item name="status" valuePropName="checked">
             <Checkbox> Faoliyatda</Checkbox>
           </Form.Item>
@@ -515,7 +600,11 @@ const UsersPageAdmin = () => {
               span: 24,
             }}
           >
-            <Button style={{ backgroundColor: "#264653", width: "100%" }} type="primary" htmlType="submit">
+            <Button
+              style={{ backgroundColor: "#264653", width: "100%" }}
+              type="primary"
+              htmlType="submit"
+            >
               {editId ? "Saqlash" : "Yaratish"}
             </Button>
           </Form.Item>
