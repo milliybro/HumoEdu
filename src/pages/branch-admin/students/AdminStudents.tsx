@@ -31,7 +31,7 @@ const BranchStudents = () => {
     getData,
     editData,
     deleteData,
-    searchSkills,
+    SearchSkills,
     showModal,
     handleCancel,
     handleStatusChange,
@@ -244,7 +244,7 @@ const BranchStudents = () => {
                   <div className="search-box">
                     <Input
                       onChange={(e) => {
-                        searchSkills(e.target.value);
+                        SearchSkills(e);
                       }}
                       className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
                       placeholder="Search..."

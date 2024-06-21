@@ -186,7 +186,7 @@ const AdminLayout = () => {
               </Badge>
             </Link> */}
             <Button
-            className="LogOut"
+                  className="LogOut"
                   onClick={() =>
                     Modal.confirm({
                       title: "Do you want to log out ?",

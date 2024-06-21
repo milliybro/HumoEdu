@@ -2,7 +2,7 @@ import { NavigateFunction } from "react-router-dom";
 import { create } from "zustand";
 import Cookies from "js-cookie";
 import { userLogin, userRegister } from "../types";
-import { ROLE, TOKEN, USERID } from "../constants";
+import { ROLE, TOKEN, USERID, USERNAME, BRANCHID } from "../constants";
 import { request } from "../request";
 import { toast } from "react-toastify";
 
@@ -13,12 +13,16 @@ type AuthTypes = {
   register: (data: userRegister, navigate: NavigateFunction) => void;
   userId: string;
   role: string | null;
+  username:string | null;
+  branchId:string | null;
 };
 
 export const useAuth = create<AuthTypes>((set, get) => ({
   isAuthenticated: Cookies.get(TOKEN) ? true : false,
   userId: Cookies.get(USERID) || "",
   role: Cookies.get(ROLE) || "",
+  username:Cookies.get(USERNAME) || "",
+  branchId:Cookies.get(BRANCHID) || "",
   login: async (data, navigate) => {
     function isTokenExpired(accessToken: string) {
       const arrayToken = accessToken.split(".");
@@ -36,7 +40,8 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       Cookies.set(TOKEN, res.data.access);
       Cookies.set(USERID, tokenUser.user_id);
       Cookies.set(ROLE, tokenUser.roles);
-
+      Cookies.set(USERNAME, tokenUser.username);
+      Cookies.set(BRANCHID, tokenUser.branch)
       set({
         isAuthenticated: true,
         role: tokenUser.roles,

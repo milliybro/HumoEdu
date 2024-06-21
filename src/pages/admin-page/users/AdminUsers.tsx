@@ -203,16 +203,15 @@ const UsersPageAdmin = () => {
     }
   }, []);
 
-  const getPosition = useCallback(async () => {
-    try {
-      const res = await request.get(`account/positions/`);
-      const data = res.data.results;
-      setPosition(data);
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to load positions.");
-    }
-  }, []);
+    const getPosition = useCallback(async () => {
+      try {
+        const res = await request.get(`account/positions/`);
+        const data = res.data.results;
+        setPosition(data);
+      } catch (err) {
+        console.log(err);
+      }
+    }, []);
 
   useEffect(() => {
     const PosOption = position.map((data) => ({
@@ -253,7 +252,6 @@ const UsersPageAdmin = () => {
     };
     updatePositionOptions();
   }, [position]);
-
   return (
     <Fragment>
       <section id="search">

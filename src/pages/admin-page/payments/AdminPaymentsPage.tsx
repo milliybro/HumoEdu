@@ -59,38 +59,26 @@ const AdminPayments = () => {
     },
     {
       title: "Ism Familiya",
-      render: (text) => text?.student?.first_name + " " + text?.student?.last_name,
-      key: "name",
+      render: (text) =>
+        text?.student?.first_name + " " + text?.student?.last_name,
+      key: "student",
     },
 
     {
-      title: "Boshlanish",
-      // dataIndex: "student.username",
-      render: (text) => text.from_date,
-      key: "name",
-    },
-    {
-      title: "Tugash",
-      // dataIndex: "student.username",
-      render: (text) => text.to_date,
-      key: "name",
-    },
-    {
       title: "Kunlik",
       render: (text) => {
-        const fromDate = new Date(text.from_date);
-        const toDate = new Date(text.to_date);
-        const differenceInTime = toDate - fromDate;
-        const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-        return differenceInDays + " " + "kun";
+        const fromDate = moment(text.from_date);
+        const toDate = moment(text.to_date);
+        const differenceInDays = toDate.diff(fromDate, "days");
+        return differenceInDays + " kun";
       },
-      key: "name",
+      key: "date",
     },
     {
       title: "To'lov miqdori",
       // dataIndex: "student.username",
       render: (text) => text.price_sum + "/" + text.group?.price,
-      key: "name",
+      key: "price_sum",
     },
     {
       title: "To'langanlik",
@@ -98,7 +86,7 @@ const AdminPayments = () => {
         const percentage = (text.price_sum / text.group?.price) * 100;
         return `${percentage.toFixed(2)}%`;
       },
-      key: "name",
+      key: "price_sum",
     },
 
     {
@@ -162,9 +150,15 @@ const AdminPayments = () => {
 
     try {
       const values = await formData.validateFields();
+
+      // values.date = [
+      //   moment(values.date.from_date).valueOf(),
+      //   moment(values.date.to_date).valueOf(),
+      // ];
+
       if (editId) {
         values.id = editId;
-        await request.put(`account/payment-update/${editId}/`, values);
+        await request.patch(`account/payment-update/${editId}/`, values);
       } else {
         await request.post("account/payment-create/", values);
       }
@@ -177,9 +171,7 @@ const AdminPayments = () => {
   };
   const getStudent = useCallback(async (groupId:number) => {
     try {
-      const res = await request.get(
-        `account/student-profiles/?group=${groupId}`
-      );
+      const res = await request.get(`account/student-profiles/?group=${groupId}`);
       const data = res.data.results;
       setStudent(data);
     } catch (err) {
@@ -210,8 +202,8 @@ const AdminPayments = () => {
   const onChange = (value: number) => {
     console.log(`selected ${value}`);
     getStudent(value);
-    // console.log(value)
-    setGroupId(value)
+    console.log(value);
+    setGroupId(value);
   };
 
   const onSearch = (value: string) => {
@@ -381,7 +373,7 @@ const AdminPayments = () => {
         />
       ) : null}
       <Modal
-        visible={isModalOpen} // corrected from 'open' to 'visible'
+        open={isModalOpen} // corrected from 'open' to 'visible'
         title="Title"
         onCancel={handleCancel}
         footer={(_, { CancelBtn }) => (
@@ -432,16 +424,18 @@ const AdminPayments = () => {
           >
             <Select
               showSearch
-              placeholder="O'quvchini tanlang"
+              placeholder="Guruhni tanlang"
               optionFilterProp="children"
               onChange={onChange}
               onSearch={onSearch}
               filterOption={filterOption}
-              options={mygroup.map((value) => ({
-                value: value.id,
-                label: value.name,
-              }))}
-            />
+            >
+              {mygroup.map((value) => (
+                <Select.Option key={value.id} value={value.id}>
+                  {value.name}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
             label="O'quvchi"
@@ -460,11 +454,13 @@ const AdminPayments = () => {
               onChange={onChange}
               onSearch={onSearch}
               filterOption={filterOption}
-              options={student.map((value) => ({
-                value: value.id,
-                label: value.last_name + " " + value.first_name,
-              }))}
-            />
+              >
+                {student.map((value) => (
+                   <Select.Option key={value.id} value={value.id}>
+                      {value.last_name + " " + value.first_name}
+                  </Select.Option>
+                ))}
+            </Select>
           </Form.Item>
 
           <Form.Item

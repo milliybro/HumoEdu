@@ -24,11 +24,11 @@ import "./style.scss";
 const { Sider, Header, Content } = Layout;
 
 const BranchAdminLayout = () => {
-  const { role, logout } = useAuth();
+  const { role, logout , username} = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.user-dropdown')) {
@@ -52,6 +52,7 @@ const BranchAdminLayout = () => {
       onOk: () => logout(navigate),
     });
   };
+ 
 
   const menuItems = [
     {
@@ -137,55 +138,44 @@ const BranchAdminLayout = () => {
             icon={<MenuFoldOutlined />}
             style={{ fontSize: "18px", width: 64, height: 64 }}
           />
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center" , paddingRight:'50px'}}>
             <li className={`dropdown user-dropdown ${dropdownVisible ? "open" : ""}`}>
               <a href="#" className="dropdown-toggle me-n1" onClick={handleDropdownToggle}>
                 <div className="user-toggle">
                   <div className="user-avatar sm">
-                    <img src="" alt="avatar" />
+                    {/* <img src="#" alt="JD" /> */}
                   </div>
                   <div className="user-info d-none d-xl-block">
                     <div className="user-status user-status-active">Administrator</div>
-                    <div className="user-name dropdown-indicator">Abu Bin Ishityak</div>
+                    <div className="user-name dropdown-indicator">{username}</div>
                   </div>
                 </div>
               </a>
               {dropdownVisible && (
-                <div className="dropdown-menu dropdown-menu-md dropdown-menu-end">
+                <div className="dropdown-menu dropdown-menu-md dropdown-menu-end ">
                   <div className="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
-                    <div className="user-card">
+                    <div className="user-card"> 
                       <div className="user-avatar">
-                        <span>AB</span>
+                        <span>{username.substring(0,2)}</span>
                       </div>
                       <div className="user-info">
-                        <span className="lead-text">Abu Bin Ishtiyak</span>
-                        <span className="sub-text">info@softnio.com</span>
+                        <span className="lead-text">{username}</span>
                       </div>
                     </div>
                   </div>
                   <div className="dropdown-inner">
                     <ul className="link-list">
-                      <li>
-                        <a href="">
+                      <li className = "link-list__item" onClick={handleDropdownToggle}>
+                        <Link to={role == "admin" ? "/adminprofile" : " "}>
                           <span>View Profile</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="">
-                          <span>Account Setting</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="">
-                          <span>Login Activity</span>
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
                   <div className="dropdown-inner">
                     <ul className="link-list">
-                      <li>
-                        <a href="" onClick={handleLogout}>
+                      <li onClick={handleLogout} className = "link-list__item">
+                        <a href="#">
                           <span>Logout</span>
                         </a>
                       </li>
@@ -194,13 +184,6 @@ const BranchAdminLayout = () => {
                 </div>
               )}
             </li>
-            <Button
-              className="LogOutB"
-              onClick={handleLogout}
-            >
-              <img src={logoutImage} alt="logout" />
-              Chiqish
-            </Button>
           </div>
         </Header>
         <Content className="dashboard-main">

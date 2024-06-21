@@ -35,6 +35,7 @@ import AdminGroups from "./pages/admin-page/groups/AdminGroupsPage";
 import AdminPayments from "./pages/admin-page/payments/AdminPaymentsPage";
 import AdminStudents from "./pages/admin-page/students/AdminStudents";
 import AdminSchedule from "./pages/admin-page/schedule/AdminSchedule";
+import AdminProfile from './pages/branch-admin/profile/AdminProfile'
 import BranchAdminLayout from "./layouts/branch-admin/AdminLayout";
 import BranchDashboardPage from "./pages/branch-admin/dashboard/DashboardPage";
 import RoomsPageAdmin from "./pages/branch-admin/experience/AdminExperiencePage";
@@ -43,6 +44,7 @@ import BranchPayments from "./pages/branch-admin/payments/AdminPaymentsPage";
 import BranchSchedule from "./pages/branch-admin/schedule/AdminSchedule";
 import BranchStudents from "./pages/branch-admin/students/AdminStudents";
 import UsersPageBranch from "./pages/branch-admin/users/AdminUsers";
+
 
 function App() {
   const { isAuthenticated, role } = useAuth();
@@ -79,6 +81,7 @@ function App() {
           <Route path="/branchGroup" element={<BranchGroups />} />
           <Route path="/branchGroup/:scheduleId" element={<BranchSchedule />} />
           <Route path="/branchStudents" element={<BranchStudents />} />
+          <Route path="/adminprofile" element={<AdminProfile />} />
         </Route>
 
         <Route path="/" element={isAuthenticated && role === "student" ? <UserLayout /> : <Navigate to="/login" />}>

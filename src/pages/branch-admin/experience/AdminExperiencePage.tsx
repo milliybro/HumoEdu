@@ -10,10 +10,9 @@ import useExperience from "../../../states/adminExperience";
 import { request } from "../../../request";
 
 const RoomsPageAdmin = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
+  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
 
   const { branchId } = useParams<{ branchId: string }>();
-
   const [form] = useForm();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
@@ -192,7 +191,7 @@ const RoomsPageAdmin = () => {
               <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
                 <Col>
                   <div className="search-box">
-                    <Input onChange={(e) => SerachSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
+                    <Input onChange={(e) => SearchSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
                     <a href="#" onClick={toggleSearch}>
                       {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
                     </a>
@@ -213,18 +212,7 @@ const RoomsPageAdmin = () => {
                 </Col>
               </div>
             </Row>
-            <Row justify="start" align="middle" style={{ gap: "20px" }} className="filtrTable">
-              <Select size="large" defaultValue={branchName} style={{ width: 250 }} onChange={handleChangeBranch}>
-                <Select.Option key={branchName} value={branchName}>
-                  {branchName ? branchName : "Filliallar"}
-                </Select.Option>
-                {branch.map((value) => (
-                  <Select.Option key={value.id} value={value.id}>
-                    {value.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Row>
+            
           </>
         )}
         pagination={false}

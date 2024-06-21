@@ -8,13 +8,17 @@ import useUsers from "../../../states/adminUsers";
 import { request } from "../../../request";
 import Cookies from "js-cookie";
 import { patchChanges, removeNullish } from "./functions";
-import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
+import { SearchOutlined, CloseOutlined ,ExclamationCircleOutlined } from "@ant-design/icons";
 import parsePhoneNumberFromString, { isValidNumber } from "libphonenumber-js";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../states/auth";
 
+
+const  { confirm } = Modal
 const UsersPageBranch = () => {
-  const { total, loading, isModalOpen, data, page, getData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = useUsers();
-
+  const { total, loading, isModalOpen, data, page, getData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useUsers();
+  const { branchId} = useAuth();
+  console.log(branchId);
   const [form] = useForm();
   const navigate = useNavigate();
   const [editId, setEditId] = useState(null);
@@ -23,27 +27,19 @@ const UsersPageBranch = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [position, setPosition] = useState([]);
+  const [deleteStaff, setDeleteStaff] = useState(false)
 
   useEffect(() => {
     getData(selectedBranch); // Fetch data based on the selected branch
   }, [getData, selectedBranch]);
 
-  const deleteStaff = useCallback(
-    async (id) => {
-      try {
-        await request.delete(`/account/staff-profile-delete/${id}/`);
-        getData(selectedBranch); // Fetch updated data after deletion
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [getData]
-  );
+  
 
   const editData = useCallback(
     async (id) => {
       try {
         const { data } = await request.get(`/account/staff-profile/${id}/`);
+        console.log(data)
         const formattedData = {
           id: data.id,
           first_name: data.first_name,
@@ -54,10 +50,10 @@ const UsersPageBranch = () => {
             password: data.user.password,
             roles: data.user.roles,
           },
-          branch: data.branch.id,
           salary: data.salary,
-          position: data.position[0].id,
+          // position: data.position,
           birthday: data.birthday,
+          branch: branchId,
         };
         setEditId(formattedData.id);
         form.setFieldsValue(formattedData);
@@ -139,7 +135,7 @@ const UsersPageBranch = () => {
             Tahrirlash
           </Button>
 
-          <Button onClick={() => deleteStaff(record.id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button onClick={() => showDeleteConfirm(record.id)} type="primary" style={{ backgroundColor: "#f54949" }}>
             O'chirish
           </Button>
         </Space>
@@ -154,13 +150,24 @@ const UsersPageBranch = () => {
       const values = await form.validateFields();
       let originalData = JSON.parse(localStorage.getItem("editData"));
 
-      const payload = patchChanges(originalData, removeNullish(formData));
+      // Add branchId to formData
+      const branch = branchId; // Replace with the actual branchId value
+      const updatedFormData = { ...formData, branch };
+
+      const payload = patchChanges(
+        originalData,
+        removeNullish(updatedFormData)
+      );
 
       if (editId) {
-        await request.patch(`account/staff-profile-update/${editId}/`, payload);
+        await request.patch(
+          `/account/staff-profile-update/${editId}/`,
+          payload
+        );
       } else {
-        await request.post("/account/staff-profile-create/", formData);
+        await request.post("/account/staff-profile-create/", updatedFormData);
       }
+
       setEditId(null);
       handleCancel();
       getData();
@@ -169,11 +176,34 @@ const UsersPageBranch = () => {
       console.error(error);
     }
   };
-
-  const handleChangeBranch = (value: any) => {
-    setSelectedBranch(value);
-  };
-
+   ////////////////////// delete function ///////////////////
+   const showDeleteConfirm = (id: number) => {
+      confirm({
+        title: "Bu xodimni  ro'yhatdan o'chirishni hohlaysizmi?",
+        icon: <ExclamationCircleOutlined />,
+        content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+        okText: "ha",
+        okType: "danger",
+        cancelText: "ortga",
+        onOk() {
+          deleteStaffFunc(id);
+        },
+        onCancel() {
+          setDeleteStaff(false);
+        },
+      });
+    };
+  const deleteStaffFunc = useCallback(
+    async (id:number) => {
+      try {
+        await request.delete(`group/group-delete/${id}/`);
+        getData();
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [getData]
+  );
   const getBranches = useCallback(async () => {
     try {
       const res = await request.get(`branch/branches/`);
@@ -206,7 +236,7 @@ const UsersPageBranch = () => {
 
   const currentBranch = user[0]?.branch?.name;
 
-  console.log(position, "position");
+  // console.log(position, "position");
 
   useEffect(() => {
     getBranches();
@@ -256,33 +286,60 @@ const UsersPageBranch = () => {
         className="table"
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 20 }}
+            >
               <Col>
                 <h1>Xodimlar ({total})</h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+              >
                 <Col>
                   <div className="search-box">
                     <Input
                       onChange={(e) => {
-                        SerachSkills(e);
+                        SearchSkills(e);
                         console.log(e.target.value);
                       }}
-                      className={isSearchOpen ? "searchInput open" : "searchInput"} // Apply different class based on isSearchOpen state
+                      className={
+                        isSearchOpen ? "searchInput open" : "searchInput"
+                      } // Apply different class based on isSearchOpen state
                       placeholder="Search..."
                     />
                     <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                      {isSearchOpen ? (
+                        <CloseOutlined style={{ color: "white" }} />
+                      ) : (
+                        <SearchOutlined />
+                      )}
                     </a>
                   </div>
                 </Col>
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
+                  <Button
+                    className="Add"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
                     <div className="center">
                       <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
+                        <svg
+                          width="180px"
+                          height="60px"
+                          viewBox="0 0 180 60"
+                          className="border"
+                        >
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="bg-line"
+                          />
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="hl-line"
+                          />
                         </svg>
                         <span>Xodim qo'shish</span>
                       </button>
@@ -291,20 +348,6 @@ const UsersPageBranch = () => {
                 </Col>
               </div>
             </Row>
-            <Row justify="start" align="middle" style={{ gap: "20px" }} className="filtrTable">
-              <Select
-                size="large"
-                defaultValue=""
-                style={{ width: 250 }}
-                onChange={handleChange}
-                options={[
-                  { value: "", label: "Rollar" },
-                  { value: "superadmin", label: "Superadmin" },
-                  { value: "admin", label: "Admin" },
-                  { value: "teacher", label: "Teacher" },
-                ]}
-              />
-            </Row>
           </>
         )}
         pagination={false}
@@ -312,8 +355,21 @@ const UsersPageBranch = () => {
         columns={columns}
         rowKey="id"
       />
-      {total > LIMIT && <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(offset) => handlePage(offset, navigate)} />}
-      <Modal open={isModalOpen} title={editId ? "Xodimni tahrirlash" : "Yangi xodim qo'shish"} onCancel={handleCancel} footer={null}>
+      {total > LIMIT && (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(offset) => handlePage(offset, navigate)}
+        />
+      )}
+      <Modal
+        open={isModalOpen}
+        title={editId ? "Xodimni tahrirlash" : "Yangi xodim qo'shish"}
+        onCancel={handleCancel}
+        footer={null}
+      >
         <Form
           name="basic"
           labelCol={{
@@ -377,7 +433,18 @@ const UsersPageBranch = () => {
               <Input type="date" />
             </Form.Item>
           </Col>
-
+          {/* <Form.Item
+            label="Branch Id"
+            name="branch"
+            rules={[
+              {
+                required: true,
+                message: "Please fill!",
+              },
+            ]}
+          >
+            <Input/>
+          </Form.Item> */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -423,7 +490,7 @@ const UsersPageBranch = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             label="Filliali"
             name="branch"
             rules={[
@@ -436,9 +503,9 @@ const UsersPageBranch = () => {
             <Input value={currentBranch} disabled/>
 
             {/* <Select value={currentBranch} defaultValue={currentBranch} disabled> */}
-              {/* {currentBranch} */}
-            {/* </Select> */}
-          </Form.Item>
+          {/* {currentBranch} */}
+          {/* </Select> */}
+          {/* </Form.Item> */}
 
           <Form.Item
             label="Oylik"
@@ -453,18 +520,33 @@ const UsersPageBranch = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item
-            label="Lavozimi"
-            name="position"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Select mode="multiple" allowClear placeholder="Please select" onChange={handleChange} options={positionOptions} />
-          </Form.Item>
+          {/* <Col span={12}>
+              <Form.Item
+                label="Lavozimi"
+                name="position"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  size="large"
+                  style={{ marginBottom: 0 }}
+                  placeholder="lavozimni tanlang"
+                  onChange={handleChange}
+                >
+                  {positionOptions && positionOptions.map((student) => (
+                    <Select.Option key={student.value} value={student.value}>
+                      {student.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+          </Col> */}
           <Form.Item name="status" valuePropName="checked">
             <Checkbox> Faoliyatda</Checkbox>
           </Form.Item>
@@ -473,7 +555,11 @@ const UsersPageBranch = () => {
               span: 24,
             }}
           >
-            <Button style={{ backgroundColor: "#264653", width: "100%" }} type="primary" htmlType="submit">
+            <Button
+              style={{ backgroundColor: "#264653", width: "100%" }}
+              type="primary"
+              htmlType="submit"
+            >
               {editId ? "Saqlash" : "Yaratish"}
             </Button>
           </Form.Item>
