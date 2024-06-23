@@ -13,7 +13,7 @@ import {
   BookFilled
 } from "@ant-design/icons";
 
-import { Layout, Menu, Button, Modal, Badge, Flex } from "antd";
+import { Layout, Menu, Button, Modal, Flex } from "antd";
 
 import Sider from "antd/es/layout/Sider";
 import logo from "../../assets/logo.jpg";
@@ -23,7 +23,6 @@ import { Content, Header } from "antd/es/layout/layout";
 
 import "./style.scss";
 import { useAuth } from "../../states/auth";
-import { ROLE } from "../../constants";
 
 // const UserRole = Cookies.get(ROLE) || ""
 

@@ -102,7 +102,7 @@ function App() {
           <Route path="/teacher-schedule" element={<TeacherSkilss />} />
           <Route path="/my-groups" element={<TeacherEducation />} />
           <Route path="/my-groups/:groupId" element={<TeacherExperience />} />
-          <Route path="/payments" element={<TeacherPortfolios />} />
+          <Route path="/teacher-payments" element={<TeacherPortfolios />} />
           <Route path="/account" element={<TeacherAccount />} />
         </Route>
         <Route path="/" element={<DefaultLayout />}>

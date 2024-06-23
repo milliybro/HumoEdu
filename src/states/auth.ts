@@ -47,6 +47,7 @@ export const useAuth = create<AuthTypes>((set, get) => ({
         role: tokenUser.roles,
         userId: tokenUser.user_id,
       });
+
       if (get().role === "admin") {
         navigate("/branchDashboard");
       } else if (get().role === "student") {
@@ -63,6 +64,8 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       toast.error("Parol yoki username xato!");
       console.log(err);
     }
+    window.location.reload();
+
   },
  logout: (navigate) => {
     // Barcha cookie nomlarini olish

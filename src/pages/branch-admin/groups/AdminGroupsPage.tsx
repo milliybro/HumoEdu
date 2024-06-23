@@ -1,14 +1,15 @@
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { Form, Button, Space, Input, Modal, Select, Table, Pagination, Checkbox } from "antd";
 import { useForm } from "antd/es/form/Form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useGroup from "../../../states/adminGroups";
 import { request } from "../../../request";
+import { useAuth } from "../../../states/auth";
 import { SearchOutlined } from "@ant-design/icons";
 
 const BranchGroups = () => {
   const { total, loading, isModalOpen, data, page, handleStatusChange, getData, showModal, handleCancel, handlePage } = useGroup();
-  const { branchId } = useParams();
+  const { branchId } = useAuth();
   const [form] = useForm();
   const navigate = useNavigate();
   const [room, setRoom] = useState({});
@@ -34,14 +35,14 @@ const BranchGroups = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-  const getBranches = useCallback(async () => {
-    try {
-      const res = await request.get(`branch/branches/`);
-      setBranch(res.data.results);
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+  // const getBranches = useCallback(async () => {
+  //   try {
+  //     const res = await request.get(`branch/branches/`);
+  //     setBranch(res.data.results);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }, []);
 
   const getTeacher = useCallback(async () => {
     try {

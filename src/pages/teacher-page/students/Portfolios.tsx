@@ -41,9 +41,9 @@ const TeacherPortfolios = () => {
           <h2 className="title">To'lovlar tarixi</h2>
           <div className="payment-page">
             <div className="payment-row">
-              {portfolioData.map((res) => (
-                <PortfolioCard key={res._id} cash={res} />
-              ))}
+              {/* {portfolioData.map((res) => (
+                <PortfolioCard key={res.id} cash={res} />
+              ))} */}
             </div>
             <div>
               <img src={paymentIcon} alt="" />

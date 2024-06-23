@@ -143,7 +143,7 @@ const UsersPageBranch = () => {
     },
   ];
 
-  const [branch, setBranch] = useState([]);
+  // const [branch, setBranch] = useState([]);
 
   const handleForm = async (formData) => {
     try {
