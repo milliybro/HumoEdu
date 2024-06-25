@@ -16,7 +16,7 @@
   }
   .experience__list {
     margin-top: 20px;
-    height: 78vh;
+    // height: 78vh;
     border-radius: 10px;
     width: 100%;
 
@@ -27,8 +27,6 @@
       width: 100%;
     }
     .exp_title {
-      // border-radius: 10px;
-      border: 1px solid #925fe250;
       h1 {
         padding: 8px 0;
         font-family: "Poppins", sans-serif;
@@ -56,11 +54,11 @@
 }
 
 .group-in-info {
-  position: fixed;
-  right: 0;
-  width: 350px;
+  // position: fixed;
+  // right: 0;
+  // width: 350px;
   height: 500px;
-  background-color: #925fe2;
+  background-color: #77757a;
   margin: 20px;
   padding: 20px 15px;
   div {

@@ -1,18 +1,23 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Select, Col, Row } from "antd";
+import { Form, Button, Input, Modal, Space, Table, Pagination, Select, Col, Row } from "antd";
 import { useForm } from "antd/es/form/Form";
-import { useNavigate, useParams } from "react-router-dom";
-import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { useNavigate} from "react-router-dom";
+import {
+  CloseOutlined,
+  SearchOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 
 import "./style.scss";
 import { LIMIT } from "../../../constants";
 import useExperience from "../../../states/adminExperience";
 import { request } from "../../../request";
-
+import { useAuth } from "../../../states/auth";
 const RoomsPageAdmin = () => {
   const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
 
-  const { branchId } = useParams<{ branchId: string }>();
+  const { branchId } = useAuth();
+  console.log(branchId);
   const [form] = useForm();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
@@ -21,10 +26,12 @@ const RoomsPageAdmin = () => {
   const [branchName, setBranchName] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [deleteStaff, setDeleteStaff] = useState(false);
 
+  const { confirm } = Modal;
   const getRooms = useCallback(async () => {
     try {
-      const { data } = await request.get(`branch/rooms/`);
+      const { data } = await request.get(`branch/rooms/${branchId}`);
       setRooms(data.results); // Assuming 'data' is an array of room objects
     } catch (err) {
       console.log(err);
@@ -45,18 +52,7 @@ const RoomsPageAdmin = () => {
     getData(value);
   };
 
-  const deleteRoom = useCallback(
-    async (id: number) => {
-      try {
-        await request.delete(`branch/room-delete/${id}/`);
-        getRooms();
-        getData(); // Refresh data after deletion
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [getData, getRooms]
-  );
+  
 
   const editRoom = useCallback(
     async (id: number) => {
@@ -67,7 +63,7 @@ const RoomsPageAdmin = () => {
           name: data.name,
           number: data.number,
           max_count: data.max_count,
-          branch: data.branch.id,
+          branch: branchId,
         };
         setEditId(formattedData.id);
         form.setFieldsValue(formattedData);
@@ -91,7 +87,7 @@ const RoomsPageAdmin = () => {
 
   const getBranch = useCallback(async () => {
     try {
-      const res = await request.get(`branch/branches/`);
+      const res = await request.get(`branch/branches/${branchId}`);
       const data = res.data;
       setBranch(data.results);
     } catch (err) {
@@ -106,11 +102,14 @@ const RoomsPageAdmin = () => {
 
   const handleForm = async (values: any) => {
     try {
+      const branch = branchId; // Replace with the actual branchId value
+      const updatedFormData = { ...values, branch };
       if (editId) {
-        await request.put(`branch/room-update/${editId}/`, values);
+        await request.put(`branch/room-update/${editId}/`, updatedFormData);
       } else {
-        await request.post("branch/room-create/", values);
+        await request.post("branch/room-create/", updatedFormData);
       }
+        
       setEditId(null);
       handleCancel();
       getRooms();
@@ -137,11 +136,6 @@ const RoomsPageAdmin = () => {
       key: "max_count",
     },
     {
-      title: "Fillial",
-      render: (data: any) => data.branch.name,
-      key: "branch",
-    },
-    {
       title: "Action",
       dataIndex: "id",
       key: "id",
@@ -159,7 +153,7 @@ const RoomsPageAdmin = () => {
             Edit
           </Button>
           <Button
-            onClick={() => deleteRoom(id)}
+            onClick={() => showDeleteConfirm(id)}
             type="primary"
             style={{
               backgroundColor: "red",
@@ -172,6 +166,35 @@ const RoomsPageAdmin = () => {
     },
   ];
 
+   const showDeleteConfirm = (id: number) => {
+     confirm({
+       title: "Bu xonani ro'yhatdan o'chirishni hohlaysizmi?",
+       icon: <ExclamationCircleOutlined />,
+       content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+       okText: "ha",
+       okType: "danger",
+       cancelText: "ortga",
+       onOk() {
+         deleteRoom(id);
+       },
+       onCancel() {
+         setDeleteStaff(false);
+       },
+     });
+   };
+   const deleteRoom  = useCallback(
+     async (id: number) => {
+       try {
+         await request.delete(`branch/room-delete/${id}/`);
+         getRooms();
+         getData(); // Refresh data after deletion
+       } catch (err) {
+         console.log(err);
+       }
+     },
+     [getData, getRooms]
+   );
+
   return (
     <Fragment>
       <section id="search">
@@ -182,6 +205,7 @@ const RoomsPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
+        style={{width:'1300px'}}
         title={() => (
           <>
             <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
@@ -288,7 +312,7 @@ const RoomsPageAdmin = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Fillial"
             name="branch"
             rules={[
@@ -305,7 +329,7 @@ const RoomsPageAdmin = () => {
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </Fragment>

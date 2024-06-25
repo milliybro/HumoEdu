@@ -14,6 +14,7 @@ import { UploadOutlined } from "@ant-design/icons";
 const TeacherAccount = () => {
   const [userData, setUserData] = useState<AccountType[]>([]);
   const { userId } = useAuth();
+  console.log(userId);
   const [form] = Form.useForm();
 
   const getAccount = useCallback(async () => {

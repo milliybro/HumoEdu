@@ -1,20 +1,65 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import {
-  FaHome,
-  FaUser,
-  FaCog,
-
-} from "react-icons/fa";
+import { Menu } from "antd";
+import { HomeOutlined,UsergroupAddOutlined,CreditCardOutlined ,ScheduleOutlined } from "@ant-design/icons";
 import { Content } from "antd/es/layout/layout";
 import { Link } from "react-router-dom";
-import { MdOutlinePayments } from "react-icons/md";
 import TeacherHeader from "../../components/header/TeacherHeader";
 import logoTeacher from '../../assets/logo-teacher-admin.png'
 import avatarUrl from '../../assets/avatar-svgrepo-com.svg'
 import { useAuth } from "../../states/auth";
+import iconAttendance from '../../assets/yoqlama.webp'
 const TeacherLayout: React.FC = () => {
     const { role } = useAuth();
+    const menuItems = [
+      {
+        key: "/teacher-home",
+        icon: <HomeOutlined />,
+        label: (
+          <Link to={role === "teacher" ? "/teacher-home" : ""}>
+            <span className="ml-2">Home</span>
+          </Link>
+        ),
+      },
+      {
+        key: "/my-groups",
+        icon: <UsergroupAddOutlined />,
+        label: (
+          <Link to={role === "teacher" ? "/my-groups" : ""}>
+            <span className="ml-2">Guruhlar</span>
+          </Link>
+        ),
+      },
+
+      {
+        key: "/teacher-schedule",
+        icon: <ScheduleOutlined />,
+        label: (
+          <Link to={role === "teacher" ? "/teacher-schedule" : ""}>
+            <span className="ml-2">Dars Jadvali</span>
+          </Link>
+        ),
+      },
+
+      {
+        key: "/teacher-payments",
+        icon: <CreditCardOutlined />,
+        label: (
+          <Link to={role === "teacher" ? "/teacher-payments" : ""}>
+            <span className="ml-2">To'lovlar</span>
+          </Link>
+        ),
+      },
+      {
+        key: "/teacher-attendance",
+        icon: <CreditCardOutlined />,
+        label: (
+          <Link to={role === "teacher" ? "/teacher-attendance" : ""}>
+            <span className="ml-2">Yo'qlama</span>
+          </Link>
+        ),
+      },
+    ];
 
   return (
     <div className="flex">
@@ -22,46 +67,22 @@ const TeacherLayout: React.FC = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-white text-2xl font-bold">Admin Panel</h1>
         </div>
-        <nav className="mt-0">
-          <img
-            src={logoTeacher}
-            className="text-2xl text-white fond-medium  px-2 py-1 flex items-center justify-center mb-12"
-          />
-          <Link
-            to={role === "teacher" ? "/teacher-home" : ""}
-            className="flex items-center p-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded-md"
-          >
-            <FaHome className="w-6 h-6" />
-            <span className="ml-2">Home</span>
-          </Link>
-          <Link
-            to={role === "teacher" ? "/my-groups" : ""}
-            className="flex items-center p-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded-md"
-          >
-            <FaUser className="w-6 h-6" />
-            <span className="ml-2">Guruhlar</span>
-          </Link>
-          <Link
-            to={role === "teacher" ? "/teacher-schedule" : ""}
-            className="flex items-center p-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded-md"
-          >
-            <FaCog className="w-6 h-6" />
-            <span className="ml-2">Dars Jadvali</span>
-          </Link>
-          <Link
-            to={role === "teacher" ? "/teacher-payments" : ""}
-            className="flex items-center p-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded-md"
-          >
-            <MdOutlinePayments className="w-6 h-6" />
-            <span className="ml-2">To'lovlar</span>
-          </Link>
-        </nav>
+        <img
+          src={logoTeacher}
+          className="text-2xl text-white fond-medium  px-2 py-1 flex items-center justify-center mb-12"
+        />
+        <Menu
+          className="bg-gray-800"
+          theme="dark"
+          mode="inline"
+          items={menuItems}
+        />
       </div>
       <div className="flex-1 flex flex-col min-h-screen">
         <div className="bg-white shadow-md p-4">
           <TeacherHeader avatarUrl={avatarUrl} teacherName={"John Doe"} />
         </div>
-        <main className="flex-1 p-4 ml-48">
+        <main className="flex-1 p-4 ml-48 bg-[#F4F7FE] mt-6">
           <Content
             className="dashboard-main"
             style={{
@@ -78,3 +99,8 @@ const TeacherLayout: React.FC = () => {
 };
 
 export default TeacherLayout ;
+
+
+         
+          
+          

@@ -31,6 +31,7 @@ import TeacherSkilss from "./pages/teacher-page/schedule/Skilss";
 import TeacherEducation from "./pages/teacher-page/group/Education";
 import TeacherPortfolios from "./pages/teacher-page/students/Portfolios";
 import TeacherAccount from "./pages/teacher-page/account/Account";
+import TeacherAttendance from "./pages/teacher-page/attendance/Attendance";
 import AdminGroups from "./pages/admin-page/groups/AdminGroupsPage";
 import AdminPayments from "./pages/admin-page/payments/AdminPaymentsPage";
 import AdminStudents from "./pages/admin-page/students/AdminStudents";
@@ -52,16 +53,33 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+        <Route
+          index
+          element={
+            isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/login" />
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={isAuthenticated && role === "superadmin" ? <AdminLayout /> : <Navigate to="/login" />}>
+        <Route
+          path="/"
+          element={
+            isAuthenticated && role === "superadmin" ? (
+              <AdminLayout />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
           {" "}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/adminUsers" element={<UsersPageAdmin />} />
           <Route path="/adminEducation" element={<EducationPage />} />
           <Route path="/adminBranch" element={<PortfoliosPageAdmin />} />
-          <Route path="/adminBranch/:branchId" element={<ExperiencePageAdmin />} />
+          <Route
+            path="/adminBranch/:branchId"
+            element={<ExperiencePageAdmin />}
+          />
           <Route path="/adminScience" element={<AdminSkillsPage />} />
           <Route path="/adminPayments" element={<AdminPayments />} />
           <Route path="/adminGroup" element={<AdminGroups />} />
@@ -69,13 +87,25 @@ function App() {
           <Route path="/adminStudents" element={<AdminStudents />} />
         </Route>
 
-        <Route path="/" element={isAuthenticated && role === "admin" ? <BranchAdminLayout /> : <Navigate to="/login" />}>
+        <Route
+          path="/"
+          element={
+            isAuthenticated && role === "admin" ? (
+              <BranchAdminLayout />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
           {" "}
           <Route path="/branchDashboard" element={<BranchDashboardPage />} />
           <Route path="/branchUsers" element={<UsersPageBranch />} />
           <Route path="/branchEducation" element={<EducationPage />} />
           <Route path="/branchRooms" element={<RoomsPageAdmin />} />
-          <Route path="/adminBranch/:branchId" element={<ExperiencePageAdmin />} />
+          <Route
+            path="/adminBranch/:branchId"
+            element={<ExperiencePageAdmin />}
+          />
           <Route path="/adminScience" element={<AdminSkillsPage />} />
           <Route path="/branchPayments" element={<BranchPayments />} />
           <Route path="/branchGroup" element={<BranchGroups />} />
@@ -84,7 +114,16 @@ function App() {
           <Route path="/adminprofile" element={<AdminProfile />} />
         </Route>
 
-        <Route path="/" element={isAuthenticated && role === "student" ? <UserLayout /> : <Navigate to="/login" />}>
+        <Route
+          path="/"
+          element={
+            isAuthenticated && role === "student" ? (
+              <UserLayout />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
           <Route path="/home" element={<HomePage />} />
           {/* <Route path="/experience" element={<Experience />} /> */}
           <Route path="/skilss" element={<Skilss />} />
@@ -96,7 +135,16 @@ function App() {
           <Route path="/settings" element={<Settings />} />
         </Route>
 
-        <Route path="/" element={isAuthenticated && role === "teacher" ? <TeacherLayout /> : <Navigate to="/login" />}>
+        <Route
+          path="/"
+          element={
+            isAuthenticated && role === "teacher" ? (
+              <TeacherLayout />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
           <Route path="/teacher-home" element={<TeacherHomePage />} />
           <Route path="/teacher-experience" element={<TeacherExperience />} />
           <Route path="/teacher-schedule" element={<TeacherSkilss />} />
@@ -104,6 +152,7 @@ function App() {
           <Route path="/my-groups/:groupId" element={<TeacherExperience />} />
           <Route path="/teacher-payments" element={<TeacherPortfolios />} />
           <Route path="/account" element={<TeacherAccount />} />
+          <Route path="/teacher-attendance" element={<TeacherAttendance />} />
         </Route>
         <Route path="/" element={<DefaultLayout />}>
           <Route path="about" element={<About />} />

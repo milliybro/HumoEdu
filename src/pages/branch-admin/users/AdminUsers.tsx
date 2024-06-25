@@ -51,7 +51,7 @@ const UsersPageBranch = () => {
             roles: data.user.roles,
           },
           salary: data.salary,
-          // position: data.position,
+          position: data.position[0].id,
           birthday: data.birthday,
           branch: branchId,
         };
@@ -106,11 +106,7 @@ const UsersPageBranch = () => {
       dataIndex: "salary",
       key: "salary",
     },
-    {
-      title: "Foydalanuvchi roli",
-      render: (record) => record.user.roles,
-      key: "user_roles",
-    },
+    
     {
       title: "Status",
       dataIndex: "status",
@@ -135,7 +131,7 @@ const UsersPageBranch = () => {
             Tahrirlash
           </Button>
 
-          <Button onClick={() => showDeleteConfirm(record.id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
             O'chirish
           </Button>
         </Space>
@@ -206,7 +202,7 @@ const UsersPageBranch = () => {
   );
   const getBranches = useCallback(async () => {
     try {
-      const res = await request.get(`branch/branches/`);
+      const res = await request.get(`branch/branches/${8}`);
       const data = res.data;
       setBranch(data.results);
     } catch (err) {
@@ -234,7 +230,6 @@ const UsersPageBranch = () => {
     }
   }, []);
 
-  const currentBranch = user[0]?.branch?.name;
 
   // console.log(position, "position");
 
@@ -284,6 +279,7 @@ const UsersPageBranch = () => {
       <Table
         loading={loading}
         className="table"
+        style={{width:'1500px'}}
         title={() => (
           <>
             <Row
@@ -433,18 +429,6 @@ const UsersPageBranch = () => {
               <Input type="date" />
             </Form.Item>
           </Col>
-          {/* <Form.Item
-            label="Branch Id"
-            name="branch"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input/>
-          </Form.Item> */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -490,22 +474,6 @@ const UsersPageBranch = () => {
           >
             <Input />
           </Form.Item>
-          {/* <Form.Item
-            label="Filliali"
-            name="branch"
-            rules={[
-              {
-                required: false,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input value={currentBranch} disabled/>
-
-            {/* <Select value={currentBranch} defaultValue={currentBranch} disabled> */}
-          {/* {currentBranch} */}
-          {/* </Select> */}
-          {/* </Form.Item> */}
 
           <Form.Item
             label="Oylik"
@@ -520,7 +488,7 @@ const UsersPageBranch = () => {
             <Input />
           </Form.Item>
 
-          {/* <Col span={12}>
+          <Col span={12}>
               <Form.Item
                 label="Lavozimi"
                 name="position"
@@ -546,7 +514,7 @@ const UsersPageBranch = () => {
                   ))}
                 </Select>
               </Form.Item>
-          </Col> */}
+          </Col>
           <Form.Item name="status" valuePropName="checked">
             <Checkbox> Faoliyatda</Checkbox>
           </Form.Item>

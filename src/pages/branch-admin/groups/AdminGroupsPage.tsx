@@ -1,19 +1,19 @@
-import React, { Fragment, useCallback, useEffect, useState } from "react";
+import  { Fragment, useCallback, useEffect, useState } from "react";
 import { Form, Button, Space, Input, Modal, Select, Table, Pagination, Checkbox } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useNavigate } from "react-router-dom";
 import useGroup from "../../../states/adminGroups";
 import { request } from "../../../request";
 import { useAuth } from "../../../states/auth";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
+const { confirm } = Modal;
 const BranchGroups = () => {
   const { total, loading, isModalOpen, data, page, handleStatusChange, getData, showModal, handleCancel, handlePage } = useGroup();
   const { branchId } = useAuth();
   const [form] = useForm();
   const navigate = useNavigate();
   const [room, setRoom] = useState({});
-  const [branch, setBranch] = useState([]);
   const [teacher, setTeacher] = useState([]);
   const [student, setStudent] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -26,6 +26,7 @@ const BranchGroups = () => {
   const [selectedScience, setSelectedScience] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [deleteModal, setDeleteModal] = useState(false)
 
   const handleGroupSelectChange = (value) => {
     setSelectedGroupName(value);
@@ -35,18 +36,11 @@ const BranchGroups = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-  // const getBranches = useCallback(async () => {
-  //   try {
-  //     const res = await request.get(`branch/branches/`);
-  //     setBranch(res.data.results);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, []);
+  
 
   const getTeacher = useCallback(async () => {
     try {
-      const res = await request.get(`account/staff-profiles/`);
+      const res = await request.get(`account/staff-profiles/?branch=${branchId}`);
       setTeacher(res.data.results);
     } catch (err) {
       console.error(err);
@@ -55,8 +49,9 @@ const BranchGroups = () => {
 
   const getStudent = useCallback(async () => {
     try {
-      const res = await request.get(`account/student-profiles/`);
+      const res = await request.get(`account/student-profiles/?branch=${branchId}`);
       setStudent(res.data.results);
+      console.log(res.data.results);
     } catch (err) {
       console.error(err);
     }
@@ -72,11 +67,10 @@ const BranchGroups = () => {
   }, []);
 
   useEffect(() => {
-    getBranches();
     getTeacher();
     getStudent();
     getScience();
-  }, [getBranches, getTeacher, getStudent, getScience]);
+  }, [ getTeacher, getStudent, getScience]);
 
   const getRooms = useCallback(async () => {
     try {
@@ -109,8 +103,15 @@ const BranchGroups = () => {
     },
     {
       title: "O'qituvchi",
-      render: (record) => record.staff[0]?.first_name + " " + record.staff[0]?.last_name,
+      render: (record) =>
+        record.teacher.first_name + " " + record.teacher.last_name,
       key: "teacher",
+    },
+    {
+      title: "Yordamchi o'qituvchi",
+      render: (record) =>
+        record.sub_teacher ? record.sub_teacher.first_name + " " + record.sub_teacher.last_name : " ",
+      key: "sub_teacher",
     },
     {
       title: "O'quvchilar soni",
@@ -126,13 +127,18 @@ const BranchGroups = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h5 style={{ color: "green" }}>Faoliyatda</h5> : <h5 style={{ color: "red" }}>Faoliyatda emas</h5>),
+      render: (status) =>
+        status ? (
+          <h5 style={{ color: "green" }}>Faoliyatda</h5>
+        ) : (
+          <h5 style={{ color: "red" }}>Faoliyatda emas</h5>
+        ),
     },
     {
       title: "Action",
       dataIndex: "id",
       key: "action",
-      render: (id) => (
+      render: (id:number) => (
         <Space size="middle">
           <Button
             onClick={() => {
@@ -145,16 +151,52 @@ const BranchGroups = () => {
           >
             Edit
           </Button>
-          <Button onClick={() => deleteGroup(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button
+            onClick={() => showDeleteConfirm(id)}
+            type="primary"
+            style={{ backgroundColor: "#f54949" }}
+          >
             Delete
           </Button>
           <Button onClick={() => nextStudent(id)}>O'quvchilarni ko'rish</Button>
-          <Button onClick={() => nextSchedule(id)}>Dars jadvalini ko'rish</Button>
+          <Button onClick={() => nextSchedule(id)}>
+            Dars jadvalini ko'rish
+          </Button>
         </Space>
       ),
     },
   ];
 
+
+  //////////////// delete function parm ////////////
+  const showDeleteConfirm = (id: number) => {
+    confirm({
+      title: "Bu guruhni ro'yhatdan o'chirishni hohlaysizmi?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+      okText: "ha",
+      okType: "danger",
+      cancelText: "ortga",
+      onOk() {
+        deleteGroup(id);
+      },
+      onCancel() {
+        setDeleteModal(false);
+      },
+    });
+  };
+  
+    const deleteGroup = useCallback(
+      async (id: number) => {
+        try {
+          await request.delete(`account/staff-profile-delete/${id}/`);
+          getData();
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      [getData]
+    );
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
   };
@@ -165,13 +207,15 @@ const BranchGroups = () => {
     async (id) => {
       try {
         const { data } = await request.get(`group/group/${id}/`);
+        console.log(data);
         const formattedData = {
           id: data.id,
           price: data.price,
           name: data.name,
           science: data.science.id,
           branch: data.branch.id,
-          staff: data.staff.map((staffMember) => staffMember.id),
+          teacher: data.teacher.id,
+          sub_teacher:data.sub_teacher.map((st)=>st?.id),
           student: data.student.map((studentMember) => studentMember),
           status: data.status,
         };
@@ -188,11 +232,13 @@ const BranchGroups = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      const branch = branchId;
+      const updateValues = {...values, branch}
       if (editId) {
         values.id = editId;
-        await request.put(`group/group-update/${editId}/`, values);
+        await request.put(`group/group-update/${editId}/`, updateValues);
       } else {
-        await request.post("group/group-create/", values);
+        await request.post("group/group-create/", updateValues);
       }
 
       setEditId(null);
@@ -245,17 +291,7 @@ const BranchGroups = () => {
     getData(selectedBranch, selectedScience, selectedStaff);
   }, [getData, selectedBranch, selectedScience, selectedStaff]);
 
-  const deleteGroup = useCallback(
-    async (id) => {
-      try {
-        await request.delete(`group/group-delete/${id}/`);
-        getData();
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [getData]
-  );
+ 
 
   const nextStudent = (id) => {
     navigate(`/adminBranch/${id}`);
@@ -297,29 +333,30 @@ const BranchGroups = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="branch" label="Fillial" rules={[{ required: true, message: "Iltimos, fillialni tanlang" }]}>
-            <Select size="large" placeholder="Fillial tanlang" onChange={handleChangeBranch}>
-              {branch.map((value) => (
-                <Select.Option key={value.id} value={value.id}>
-                  {value.name}
+        
+          <Form.Item name="teacher" label="O'qituvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
+            <Select  size="large" placeholder="O'qituvchi tanlang" onChange={handleChangeStaff}>
+              {teacher.map((teacher) => (
+                <Select.Option key={teacher.id} value={teacher.id}>
+                  {teacher.first_name  + teacher.last_name}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="staff" label="O'qituvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
-            <Select mode="multiple" size="large" placeholder="O'qituvchi tanlang" onChange={handleChangeStaff}>
-              {teacherOptions.map((teacher) => (
-                <Select.Option key={teacher.value} value={teacher.value}>
-                  {teacher.label}
+           <Form.Item name="sub_teacher" label="Yordamchi o'qituvchi " rules={[{ required: false, message: "Iltimos, o'qituvchini tanlang" }]}>
+            <Select mode="multiple" size="large" placeholder="Yordamchi o'qituvchi tanlang" onChange={handleChangeBranch}>
+              {teacher.map((teacher) => (
+               <Select.Option key={teacher.id} value={teacher.id}>
+                  {teacher.first_name  + teacher.last_name}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
           <Form.Item name="student" label="O'quvchi" rules={[{ required: true, message: "Iltimos, o'quvchilarni tanlang" }]}>
             <Select mode="multiple" size="large" placeholder="O'quvchilarni tanlang" onChange={handleChange}>
-              {options.map((student) => (
-                <Select.Option key={student.value} value={student.value}>
-                  {student.label}
+              {student.map((student) => (
+                <Select.Option key={student.id} value={student.id}>
+                  {student.first_name + student.last_name}
                 </Select.Option>
               ))}
             </Select>
@@ -332,13 +369,13 @@ const BranchGroups = () => {
 
       <Space style={{ margin: "15px 0" }}>
         <Input placeholder="Search by group name" value={selectedGroupName} onChange={(e) => handleGroupSelectChange(e.target.value)} style={{ width: 200 }} suffix={<SearchOutlined />} />
-        <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
+        {/* <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
           {branch.map((value) => (
             <Select.Option key={value.id} value={value.id}>
               {value.name}
             </Select.Option>
           ))}
-        </Select>
+        </Select> */}
         <Select placeholder="Fan tanlang" onChange={handleChangeScience} allowClear>
           {science.map((value) => (
             <Select.Option key={value.id} value={value.id}>

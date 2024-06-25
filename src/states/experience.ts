@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import { USERID } from '../constants';
 
 const userId = Cookies.get(USERID);
-
+console.log(userId);
 type Experience = {
   _id: string;
   workName: string;

@@ -10,8 +10,8 @@ import DataLoading from "../../../components/dataLoading/Loading";
 const TeacherEducation = () => {
   const [euducationData, setEducationData] = useState<EduCardProps[]>([]);
   const [loading, setLoading] = useState(false);
-  const { userId } = useAuth();
-
+  const { branchId } = useAuth();
+   
   const getEducation = useCallback(async () => {
     try {
       setLoading(true);
@@ -25,17 +25,19 @@ const TeacherEducation = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [branchId]);
 
   useEffect(() => {
     getEducation();
   }, [getEducation]);
 
   return (
-    <section className="education">
-        <div className="educationTitle">
-          <h2>Mening guruhlarim ({euducationData.length})</h2>
-        </div>
+    <section className="education mt-6">
+      <div className="educationTitle">
+        <h2 className="text-2xl text-[#925fe2]">
+          Sizning guruhlaringiz soni <span>{euducationData.length}</span> ta
+        </h2>
+      </div>
       <div className="education_main">
         <div className="edu_cards">
           {euducationData.map((res) => (

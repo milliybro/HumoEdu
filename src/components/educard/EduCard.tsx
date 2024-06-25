@@ -23,7 +23,6 @@ const EduCard = ({
   teacher,
   student,
   science,
-  branch,
   start_at,
   end_at,
 }: EduCardProps) => {
@@ -39,11 +38,14 @@ const EduCard = ({
               Fan: <span> {science?.name}</span>
             </h4>
             <h4>
-              O'qituvchi{" "}
+              O'qituvchi: {" "}
               <span>
                 {" "}
                 {teacher.first_name} {teacher.last_name}{" "}
               </span>
+            </h4>
+            <h4>
+              Kurs narxi: {price}
             </h4>
           </div>
           <div className="card-btn">

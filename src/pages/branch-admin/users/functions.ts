@@ -6,12 +6,14 @@ function patchChanges(
 
   Object.keys(data).forEach((key) => {
     const value = data[key];
-    const recordValue = record[key];
+    const recordValue = record ? record[key] : undefined;
+
+    console.log(`Key: ${key}, Value: ${value}, Record Value: ${recordValue}`);
 
     if (isObj(value)) {
       resultSet[key] = patchChanges(
-        record[key] as Record<string, unknown>,
-        data[key] as Record<string, unknown>
+        (recordValue as Record<string, unknown>) || {},
+        value as Record<string, unknown>
       );
     } else {
       if (value !== recordValue) {
@@ -30,7 +32,7 @@ function removeNullish(obj: Record<string, unknown>) {
     const val = obj[key];
 
     if (isObj(val)) {
-      result[key] = removeNullish(val);
+      result[key] = removeNullish(val as Record<string, unknown>);
     } else {
       if (typeof val !== "undefined" && val !== null) {
         result[key] = val;

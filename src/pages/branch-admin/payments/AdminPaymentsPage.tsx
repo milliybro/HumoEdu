@@ -9,23 +9,20 @@ import { request } from "../../../request";
 import usePayments from "../../../states/adminPayment";
 import { SearchOutlined } from "@ant-design/icons";
 import CRangePicker from "../../../utils/datapicker";
+import { useAuth } from "../../../states/auth";
 const BranchPayments = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SerachSkills, showModal, handleCancel, handleOk, handlePage } = usePayments();
+  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = usePayments();
 
-  const { branchId } = useParams();
-  console.log(branchId, "branchId");
+  const {branchId} = useAuth();
 
   const [form] = useForm();
   const navigate = useNavigate();
   const [student, setStudent] = useState([]);
   const [mygroup, setMyGroup] = useState([]);
   const [editId, setEditId] = useState(null); // State variable to hold the id
-  const [branch, setBranch] = useState([]);
   const [teacher, setTeacher] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
 
 
@@ -87,7 +84,7 @@ const BranchPayments = () => {
       title: "Action",
       dataIndex: "id",
       key: "id",
-      render: (id: any) => (
+      render: (id: number) => (
         <Space size="middle">
           <Button
             style={{ backgroundColor: "#264653" }}
@@ -100,7 +97,7 @@ const BranchPayments = () => {
           >
             Edit
           </Button>
-          <Button
+          {/* <Button
             onClick={() => deletePayment(id)}
             type="primary"
             style={{
@@ -108,22 +105,24 @@ const BranchPayments = () => {
             }}
           >
             Delete
-          </Button>
+          </Button> */}
         </Space>
       ),
     },
   ];
 
   const editPayment = useCallback(
-    async (id: any) => {
+    async (id: number) => {
       try {
         const { data } = await request.get(`account/payment/${id}/`);
+        console.log(data)
         const formattedData = {
           id: data.id,
           price_sum: data.price_sum,
           student: data.student,
           group: data.group,
           mothly: data.mothly,
+          branch:branchId,
         };
         console.log(formattedData, "formattedData");
         setEditId(formattedData.id);
@@ -141,11 +140,13 @@ const BranchPayments = () => {
 
     try {
       const values = await formData.validateFields();
+      const branch = branchId;
+      const updateValues = {...formData, branch};
       if (editId) {
         values.id = editId;
-        await request.put(`account/payment-update/${editId}/`, values);
+        await request.put(`account/payment-update/${editId}/`, updateValues);
       } else {
-        await request.post("account/payment-create/", values);
+        await request.post("account/payment-create/", updateValues);
       }
       setEditId(null);
       handleCancel();
@@ -156,7 +157,7 @@ const BranchPayments = () => {
   };
   const getStudent = useCallback(async () => {
     try {
-      const res = await request.get(`account/student-profiles/`);
+      const res = await request.get(`account/student-profiles/?branch=${branchId}`);
       const data = res.data.results;
       setStudent(data);
     } catch (err) {
@@ -166,7 +167,7 @@ const BranchPayments = () => {
 
   const getGroup = useCallback(async () => {
     try {
-      const res = await request.get(`group/groups/`);
+      const res = await request.get(`group/groups/?branch=${branchId}`);
       const data = res.data.results;
       setMyGroup(data);
     } catch (err) {
@@ -183,23 +184,14 @@ const BranchPayments = () => {
 
   const onChange = (value: string) => {
     console.log(`selected ${value}`);
+    SearchSkills(value)
   };
 
   const onSearch = (value: string) => {
     console.log("search:", value);
   };
 
-  const deletePayment = useCallback(
-    async (id) => {
-      try {
-        await request.delete(`account/payment-delete/${id}/`);
-        getData(); // Refresh data after deletion
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [getData]
-  );
+  
 
   const handleChangeBranch = (value) => {
     setSelectedBranch(value);
@@ -209,8 +201,8 @@ const BranchPayments = () => {
     setSelectedStaff(value);
   };
   useEffect(() => {
-    getData(selectedBranch,  selectedStaff);
-  }, [getData, selectedBranch, selectedStaff]);
+    getData( selectedStaff);
+  }, [getData, selectedStaff]);
 
   const [teacherOptions, setTeacherOptions] = useState([]);
   useEffect(() => {
@@ -224,27 +216,26 @@ const BranchPayments = () => {
   }, [teacher]);
   const getTeacher = useCallback(async () => {
     try {
-      const res = await request.get(`account/staff-profiles/`);
+      const res = await request.get(`account/staff-profiles/?branch=${branchId}`);
       setTeacher(res.data.results);
     } catch (err) {
       console.error(err);
     }
   }, []);
 
-  const getBranches = useCallback(async () => {
-    try {
-      const res = await request.get(`branch/branches/`);
-      setBranch(res.data.results);
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+  // const getBranches = useCallback(async () => {
+  //   try {
+  //     const res = await request.get(`branch/branches/`);
+  //     setBranch(res.data.results);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }, []);
 
   useEffect(() => {
     getTeacher();
     getStudent();
-    getBranches()
-  }, [ getTeacher, getStudent, getBranches]);
+  }, [ getTeacher, getStudent]);
 
   const handleGroupSelectChange = (value) => {
     setSelectedGroupName(value);
@@ -272,13 +263,7 @@ const BranchPayments = () => {
           style={{ width: 200 }}
           suffix={<SearchOutlined />}
         />
-        <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
-          {branch.map((value) => (
-            <Select.Option key={value.id} value={value.id}>
-              {value.name}
-            </Select.Option>
-          ))}
-        </Select>
+        
         <Select placeholder="Guruhni tanlang" onChange={handleChangeStaff} allowClear>
           {mygroup.map((group) => (
             <Select.Option key={group.id} value={group.id}>
@@ -298,7 +283,7 @@ const BranchPayments = () => {
       <Table
         loading={loading}
         className="table"
-        
+        style={{width:'1300px'}}
         pagination={false}
         dataSource={data} // corrected from 'experience' to 'data'
         columns={columns}
