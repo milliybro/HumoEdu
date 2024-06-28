@@ -42,7 +42,7 @@ const EduCard = ({
               O'qituvchi: {" "}
               <span>
                 {" "}
-                {teacher.first_name} {teacher.last_name}{" "}
+                {teacher?.first_name} {teacher?.last_name}{" "}
               </span>
             </h4>
             <h4>
@@ -51,7 +51,7 @@ const EduCard = ({
           </div>
           <div className="card-btn">
             <Button>
-            <Link to={`/my-groups/${id}`} type="primary">
+            <Link to={`/my-group/${id}`} type="primary">
             Guruhni ko'rish
           </Link>
           </Button>

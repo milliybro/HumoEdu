@@ -126,6 +126,8 @@ function App() {
             )
           }
         >
+          <Route path="/" element={<HomePage />} />
+
           <Route path="/home" element={<HomePage />} />
           {/* <Route path="/experience" element={<Experience />} /> */}
           <Route path="/skilss" element={<Skilss />} />

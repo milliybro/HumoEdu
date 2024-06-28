@@ -13,23 +13,23 @@ import { UploadOutlined } from "@ant-design/icons";
 
 const Account = () => {
   const [userData, setUserData] = useState<AccountType[]>([]);
-  const { userId } = useAuth();
+  const { teacherId } = useAuth();
   const [form] = Form.useForm();
 
   const getAccount = useCallback(async () => {
     try {
-      const res = await request.get(`account/student-profile/${userId}/`);
+      const res = await request.get(`account/student-profile/${teacherId}/`);
       setUserData(res.data);
     } catch (err) {
       toast.error("Error");
     }
-  }, [userId]);
+  }, [teacherId]);
 
 
   const handleSubmit = async (values: any) => {
     console.log(values, "val");
     try {
-      await request.put(`account/user-password-update/${userId}/`, {
+      await request.put(`account/user-password-update/${teacherId}/`, {
         password: values.newpassword,
       });
       setOpen(false);
@@ -47,9 +47,12 @@ const Account = () => {
         toast.success(`${info.file.name} file uploaded successfully`);
         // Assuming `info.file.response` contains the uploaded image URL
         const imageUrl = info.file.response.url; 
-        await request.put(`/account/student-profile-update-image/${userId}/`, {
-          image: imageUrl,
-        });
+        await request.put(
+          `/account/student-profile-update-image/${teacherId}/`,
+          {
+            image: imageUrl,
+          }
+        );
         setOpen(false);
       } else if (info.file.status === "error") {
         toast.error(`${info.file.name} file upload failed.`);
@@ -62,7 +65,7 @@ const Account = () => {
   
   const props = {
     name: "file",
-    action: `http://51.20.248.99:8000/api/v1/account/student-profile-update-image/${userId}`,
+    action: `http://51.20.248.99:8000/api/v1/account/student-profile-update-image/${teacherId}`,
     headers: {
       authorization: "authorization-text",
     },
@@ -140,7 +143,7 @@ const Account = () => {
             <Button onClick={showModal}>Tahrirlash</Button>
             <Modal
               className="account-modal"
-              visible={open}
+              open={open}
               title="Parol o'zgartirish"
               onCancel={handleCancel}
               footer={null} // Hide the footer (OK and Cancel buttons)
