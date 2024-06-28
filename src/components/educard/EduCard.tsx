@@ -1,6 +1,7 @@
 import { Button } from "antd";
 import "./educard.scss";
 import { Link } from "react-router-dom";
+import Loading from '../authLoading/Loading';
 
 export interface EduCardProps {
   _id: string;

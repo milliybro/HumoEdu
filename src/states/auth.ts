@@ -2,7 +2,7 @@ import { NavigateFunction } from "react-router-dom";
 import { create } from "zustand";
 import Cookies from "js-cookie";
 import { userLogin, userRegister } from "../types";
-import { ROLE, TOKEN, USERID, USERNAME, BRANCHID } from "../constants";
+import { ROLE, TOKEN, USERID, USERNAME, BRANCHID ,TEACHERID} from "../constants";
 import { request } from "../request";
 import { toast } from "react-toastify";
 
@@ -15,6 +15,7 @@ type AuthTypes = {
   role: string | null;
   username:string | null;
   branchId:string | null;
+  teacherId:string | null;
 };
 
 export const useAuth = create<AuthTypes>((set, get) => ({
@@ -23,6 +24,7 @@ export const useAuth = create<AuthTypes>((set, get) => ({
   role: Cookies.get(ROLE) || "",
   username:Cookies.get(USERNAME) || "",
   branchId:Cookies.get(BRANCHID) || "",
+  teacherId:Cookies.get(TEACHERID) || "",
   login: async (data, navigate) => {
     function isTokenExpired(accessToken: string) {
       const arrayToken = accessToken.split(".");
@@ -41,7 +43,8 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       Cookies.set(USERID, tokenUser.user_id);
       Cookies.set(ROLE, tokenUser.roles);
       Cookies.set(USERNAME, tokenUser.username);
-      Cookies.set(BRANCHID, tokenUser.branch)
+      Cookies.set(BRANCHID, tokenUser.branch);
+      Cookies.set(TEACHERID, tokenUser.profile);
       set({
         isAuthenticated: true,
         role: tokenUser.roles,

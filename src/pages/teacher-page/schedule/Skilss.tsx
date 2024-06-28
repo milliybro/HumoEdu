@@ -69,6 +69,7 @@ const TeacherSkilss = () => {
     <div className="skill_wrapper mt-8 p-4">
       <h1 className="text-2xl mb-4 font-medium">Dars jadvali</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
         {daysOfWeek.map((day) => {
           const similarGroups = groupedSkills[day];
           const classesExist = similarGroups && similarGroups.length > 0;

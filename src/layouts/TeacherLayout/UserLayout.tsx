@@ -8,7 +8,6 @@ import TeacherHeader from "../../components/header/TeacherHeader";
 import logoTeacher from '../../assets/logo-teacher-admin.png'
 import avatarUrl from '../../assets/avatar-svgrepo-com.svg'
 import { useAuth } from "../../states/auth";
-import iconAttendance from '../../assets/yoqlama.webp'
 const TeacherLayout: React.FC = () => {
     const { role } = useAuth();
     const menuItems = [
@@ -52,7 +51,7 @@ const TeacherLayout: React.FC = () => {
       },
       {
         key: "/teacher-attendance",
-        icon: <CreditCardOutlined />,
+        icon: <UsergroupAddOutlined />,
         label: (
           <Link to={role === "teacher" ? "/teacher-attendance" : ""}>
             <span className="ml-2">Yo'qlama</span>

@@ -2,19 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { request } from "../../../request";
 import { useAuth } from "../../../states/auth";
 import { toast } from "react-toastify";
-
+import { Spin } from "antd";
 import EduCard, { EduCardProps } from "../../../components/educard/EduCard";
 
 import "./education.scss";
-import DataLoading from "../../../components/dataLoading/Loading";
 const TeacherEducation = () => {
   const [euducationData, setEducationData] = useState<EduCardProps[]>([]);
-  const [loading, setLoading] = useState(false);
   const { branchId } = useAuth();
    
   const getEducation = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await request.get(`group/groups/`);
       console.log(res.data, "data");
 
@@ -22,15 +19,20 @@ const TeacherEducation = () => {
       setEducationData(data);
     } catch (err) {
       toast.error("Error getting education");
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [branchId]);
 
   useEffect(() => {
     getEducation();
   }, [getEducation]);
-
+   
+  if (!euducationData) {
+    return (
+      <div>
+        <Spin size="small" className="flex justify-center text-center mt-12" />
+      </div>
+    );
+  }
   return (
     <section className="education mt-6">
       <div className="educationTitle">

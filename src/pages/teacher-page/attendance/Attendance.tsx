@@ -1,54 +1,18 @@
+
 import React, { useEffect, useState } from "react";
-import { Button, Table, Modal, Spin, message, List } from "antd";
+import { Button, Table, Modal, Spin, message, List, Checkbox,Radio } from "antd";
 import { useNavigate } from "react-router-dom";
 import { request } from "../../../request";
-
-interface Teacher {
-  id: number;
-  last_name: string;
-  first_name: string;
-}
-
-interface Group {
-  id: number;
-  name: string;
-  teacher: Teacher;
-  sub_teacher: string | null;
-  science: string;
-}
-
-interface Schedule {
-  id: number;
-  start_time: string;
-  end_time: string;
-  room: number;
-  room_name: string;
-  days: string[];
-  group: Group;
-}
-
-interface Student {
-  id: number;
-  last_name: string;
-  first_name: string;
-  user: number;
-  branch: number;
-  phone_number1: string;
-  phone_number2: string;
-  image: string;
-  birthday: string;
-  start_at: string | null;
-  end_at: string | null;
-  status: boolean;
-  is_debtor: string;
-}
+import { Student, Schedule } from "../types";
 
 const TeacherAttendance: React.FC = () => {
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [lessonId, setLessonId] = useState<number | null>(null);
+  const [withReasonMap, setWithReasonMap] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,8 +21,7 @@ const TeacherAttendance: React.FC = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await request.get(`group/lessonschedules/`
-      );
+      const response = await request.get(`group/lessonschedules/`);
       const daysOfWeek = [
         "Yakshanba",
         "Dushanba",
@@ -68,20 +31,37 @@ const TeacherAttendance: React.FC = () => {
         "Juma",
         "Shanba",
       ];
-      const todayIndex = new Date().getDay(); // Hafta kuni indeksi (0 dan 6 gacha)
+      const todayIndex = new Date().getDay();
       const today = daysOfWeek[todayIndex];
-      const todayGroups = response.data.filter((schedule: Schedule) => schedule.days.includes(today))
-        .map((schedule: Schedule) => schedule.group);
+      const todayGroups = response.data
+        .filter((schedule: Schedule) => schedule.days.includes(today))
+        .map((schedule: Schedule) => schedule);
       setGroups(todayGroups);
     } catch (error) {
-      message.error("Failed to fetch groups.");
+      message.error("Guruhlarni yuklab olishda xatolik yuz berdi.");
     } finally {
       setLoading(false);
     }
   };
-  console.log(groups)
+
+  const fetchLessonSchedules = async (groupId: number) => {
+    try {
+      const response = await request.get(
+        `group/lessonschedules/?group=${groupId}`
+      );
+      if (response.data.length > 0) {
+        const firstSchedule = response.data[0];
+        setLessonId(firstSchedule.id);
+      } else {
+        message.error("Ushbu guruh uchun dars jadvali topilmadi.");
+      }
+    } catch (error) {
+      message.error("Dars jadvalini yuklashda xatolik yuz berdi.");
+    }
+  };
+
   const handleAttendanceClick = (groupId: number) => {
-    navigate(`/attendance/${groupId}`);
+    navigate(`/teacher-attendance/${groupId}`);
   };
 
   const handleAddAttendanceClick = async (groupId: number) => {
@@ -90,36 +70,48 @@ const TeacherAttendance: React.FC = () => {
         `group/group-students/?group=${groupId}`
       );
       setStudents(response.data.results);
+      await fetchLessonSchedules(groupId);
       setIsModalVisible(true);
     } catch (error) {
-      message.error("Failed to fetch students.");
+      message.error("Talabalarni yuklashda xatolik yuz berdi.");
     }
   };
 
   const handleOk = async () => {
     try {
-      const absentStudents = selectedStudents.map((id) => ({
-        student: id,
-        with_reason: true,
-      }));
+      if (!lessonId) {
+        message.error("Dars ID'si aniqlanmagan.");
+        return;
+      }
 
-      
-      await request.post(`group/attendance-create/`, {
+      const absentStudents = students
+        .filter((student) => selectedStudents.includes(student.id))
+        .map((student) => ({
+          student: student.id,
+          with_reason: withReasonMap[student.id] || false, // Default to false if withReasonMap[student.id] is undefined
+        }));
+
+      await request.post("group/attendance-create/", {
         attendance_check: {
-          lesson: 6,
+          lesson: lessonId,
         },
         absent_students: absentStudents,
       });
 
-      message.success("yo'qlama amalga oshirildi");
-      setIsModalVisible(false);
+      message.success("yo'qlama qilindi");
+      setIsModalVisible(false); 
+      setSelectedStudents([]); 
+      setWithReasonMap({}); 
+      setStudents([]); 
     } catch (error) {
-      message.error("Yo'qlamani amalga oshirishda muammo bor");
+      message.error("Siz bugungi yo'qlamani qilib bo'lgansiz ");
     }
   };
-
   const handleCancel = () => {
     setIsModalVisible(false);
+    setSelectedStudents([]); 
+    setWithReasonMap({}); 
+    setStudents([]); 
   };
 
   const handleStudentSelection = (studentId: number) => {
@@ -128,49 +120,101 @@ const TeacherAttendance: React.FC = () => {
         ? prevSelected.filter((id) => id !== studentId)
         : [...prevSelected, studentId]
     );
+
+    setWithReasonMap((prevMap) => ({
+      ...prevMap,
+      [studentId]: false,
+    }));
   };
 
   const columns = [
     {
-      title: "Group Name",
-      dataIndex: "name",
-      key: "name",
+      title: "№",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: "Actions",
+      title: "Guruh Nomi",
+      dataIndex: "groupName",
+      key: "groupName",
+    },
+    {
+      title: "Fan",
+      dataIndex: "science",
+      key: "science",
+    },
+    {
+      title: "O'qituvchi",
+      dataIndex: "teacher",
+      key: "teacher",
+    },
+    {
+      title: "Xona",
+      dataIndex: "roomName",
+      key: "roomName",
+    },
+    {
+      title: "Boshlanish Vaqti",
+      dataIndex: "startTime",
+      key: "startTime",
+    },
+    {
+      title: "Tugash Vaqti",
+      dataIndex: "endTime",
+      key: "endTime",
+    },
+    {
+      title: "Yo'qlamalarni ko'rish va qo'shish",
       key: "actions",
-      render: (_: any, record: Group) => (
+      render: (record) => (
         <>
           <Button
             className="mr-5"
             type="primary"
-            onClick={() => handleAttendanceClick(record.id)}
+            onClick={() => handleAttendanceClick(record.groupId)}
           >
-            View Attendance
+            Yo'qlamalarni ko'rish
           </Button>
-          <Button onClick={() => handleAddAttendanceClick(record.id)}>
-            Add Attendance
+          <Button onClick={() => handleAddAttendanceClick(record.groupId)}>
+            Yo'qlama qilish
           </Button>
         </>
       ),
     },
   ];
 
+  const tableData = groups.map((group, index) => ({
+    key: group.id,
+    id: index + 1,
+    groupId: group.group.id,
+    groupName: group.group.name,
+    science: group.group.science,
+    teacher: group.group.teacher
+      ? `${group.group.teacher.last_name} ${group.group.teacher.first_name}`
+      : "-",
+    roomName: group.room_name,
+    startTime: group.start_time,
+    endTime: group.end_time,
+  }));
+
   return (
     <div className="p-4">
+      <h2 className="text-medium text-2xl mb-3">
+        Bugun dars o'tadigan guruhlaringiz
+      </h2>
       {loading ? (
-        <Spin size="large" className="text-center flex justify-center" />
+        <Spin size="small" className="text-center flex justify-center" />
       ) : (
         <Table
-          dataSource={groups}
+          dataSource={tableData}
           columns={columns}
           rowKey="id"
           pagination={false}
         />
       )}
       <Modal
-        title="Select Absent Students"
-        visible={isModalVisible}
+        title="Yo'qlamalarni tanlash"
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >
@@ -178,12 +222,29 @@ const TeacherAttendance: React.FC = () => {
           dataSource={students}
           renderItem={(student: Student) => (
             <List.Item
-              onClick={() => handleStudentSelection(student.id)}
-              className={`cursor-pointer ${
-                selectedStudents.includes(student.id) ? "bg-red-100" : ""
-              }`}
+              className="cursor-pointer"
+              // onClick={() => handleStudentSelection(student.id)}
             >
-              {student.first_name} {student.last_name}
+              <Checkbox
+                checked={selectedStudents.includes(student.id)}
+                onChange={() => handleStudentSelection(student.id)}
+              >
+                {student.first_name} {student.last_name}
+              </Checkbox>
+              {selectedStudents.includes(student.id) && (
+                <Radio
+                  onChange={(e) => {
+                    const checked = e.target.checked; 
+                    setWithReasonMap((prevMap) => ({
+                      ...prevMap,
+                      [student.id]: checked, 
+                    }));
+                  }}
+                  checked={withReasonMap[student.id] || false}
+                >
+                  sababli
+                </Radio>
+              )}
             </List.Item>
           )}
         />

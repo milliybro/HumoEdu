@@ -32,6 +32,8 @@ import TeacherEducation from "./pages/teacher-page/group/Education";
 import TeacherPortfolios from "./pages/teacher-page/students/Portfolios";
 import TeacherAccount from "./pages/teacher-page/account/Account";
 import TeacherAttendance from "./pages/teacher-page/attendance/Attendance";
+import GetAttendanceStudents from "./pages/teacher-page/attendance/getAttendanceStudents";
+import TeacherAttendanceGet from "./pages/teacher-page/attendance/TeacherAttendanceGet";
 import AdminGroups from "./pages/admin-page/groups/AdminGroupsPage";
 import AdminPayments from "./pages/admin-page/payments/AdminPaymentsPage";
 import AdminStudents from "./pages/admin-page/students/AdminStudents";
@@ -153,6 +155,14 @@ function App() {
           <Route path="/teacher-payments" element={<TeacherPortfolios />} />
           <Route path="/account" element={<TeacherAccount />} />
           <Route path="/teacher-attendance" element={<TeacherAttendance />} />
+          <Route
+            path="/teacher-attendance/:groupId"
+            element={<TeacherAttendanceGet />}
+          />
+          <Route
+            path="/teacher-attendance/:groupId/:lessonId"
+            element={<GetAttendanceStudents />}
+          />
         </Route>
         <Route path="/" element={<DefaultLayout />}>
           <Route path="about" element={<About />} />

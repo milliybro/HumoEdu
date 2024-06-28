@@ -6,30 +6,26 @@ import { toast } from "react-toastify";
 import EduCard, { EduCardProps } from "../../../components/educard/EduCard";
 
 import "./education.scss";
-import DataLoading from "../../../components/dataLoading/Loading";
 const Education = () => {
   const [euducationData, setEducationData] = useState<EduCardProps[]>([]);
-  const [loading, setLoading] = useState(false);
   const { userId } = useAuth();
 
   const getEducation = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await request.get(`group/groups/`);
       console.log(res.data, "data");
-
+      
       const data = res.data.results;
       setEducationData(data);
     } catch (err) {
       toast.error("Error getting education");
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [userId]);
 
   useEffect(() => {
     getEducation();
   }, [getEducation]);
+
 
   return (
     <section className="education">
