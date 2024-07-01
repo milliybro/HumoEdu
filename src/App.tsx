@@ -5,10 +5,10 @@ import Skilss from "./pages/user-page/schedule/Skilss";
 import Education from "./pages/user-page/group/Education";
 import Portfolios from "./pages/user-page/students/Portfolios";
 import Message from "./pages/user-page/messages/Message";
-import Settings from "./pages/user-page/settings/Settings";
+// import Settings from "./pages/user-page/settings/Settings";
 import Login from "./pages/auth/login/Login";
 import Register from "./pages/auth/register/Register";
-import Account from "./pages/user-page/account/Account";
+import StudentAccount from "./pages/user-page/account/StudentAccount";
 import DefaultLayout from "./layouts/defaultLayout/DefaultLayout";
 import About from "./pages/default-page/about/About";
 import Resume from "./pages/default-page/resume/Resume";
@@ -135,8 +135,8 @@ function App() {
           <Route path="/my-group/:groupId" element={<Experience />} />
           <Route path="/payments" element={<Portfolios />} />
           <Route path="/messages" element={<Message />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/account" element={<StudentAccount />} />
+          {/* <Route path="/settings" element={<Settings />} /> */}
         </Route>
 
         <Route

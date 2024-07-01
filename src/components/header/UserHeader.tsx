@@ -1,19 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Link} from "react-router-dom";
+// import { toast } from "react-toastify";
 import { useAuth } from "../../states/auth";
 import { useCallback, useEffect, useState } from "react";
 import { request } from "../../request";
-import { IMG_URL, USERID } from "../../constants";
 
 
-import bell from "../../assets/bell.png";
 import avatar from "../../assets/avatar-svgrepo-com.svg";
-import search from "../../assets/search-icon.png";
 
 import "./Header.scss";
 
 const UserHeader = () => {
-  const navigate = useNavigate()
   const [openDropdown, setOpenDropdown] = useState(false);
   const [unansweredMessages, setUnansweredMessages] = useState(0);
   const { teacherId } = useAuth();
@@ -64,13 +60,7 @@ const UserHeader = () => {
     setOpenDropdown(!openDropdown);
   };
 
-  const { logout } = useAuth();
-  const handleLogout = () => {
-    if (confirm("Are you sure you want to log")) {
-      logout(navigate);
-      navigate('/login')
-    }
-  };
+  
 
   const getData = async () => {
     try {
@@ -81,7 +71,6 @@ const UserHeader = () => {
     }
   };
   
-  console.log(getData);
   
 
   useEffect(() => {
@@ -89,13 +78,13 @@ const UserHeader = () => {
     unresponseMessages()
   }, [unresponseMessages, unansweredMessages]);
   return (
-    <header className="w-5/6 mx-auto bg-white h-20 p-2 px-6  fixed ml-64">
+    <header className="w-5/6 mx-auto bg-white h-20 p-2 px-6  fixed ml-64 ">
       <div className="flex justify-between items-center ">
         <div className=" poppins-medium">Student</div>
         <div className="account ">
           <Link to={"/account"} className="accountim" onClick={controlDropdown} title="profile">
             <img
-              className="account__img w-16 h-16 rounded-full"
+              className="account__img w-14 h-14 rounded-full"
               src={userInfo.image ? userInfo.image : avatar}
               alt="icon"
             />

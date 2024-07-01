@@ -59,7 +59,7 @@ const Sidebar = () => {
             theme="dark"
             mode="inline"
             selectedKeys={[location.pathname]}
-            className="bg-gray-800"
+            className="bg-gray-800 mt-4"
           >
             {navigationLinks.map((link) => (
               <Menu.Item
