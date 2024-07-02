@@ -1,5 +1,16 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Select, Col, Row } from "antd";
+import {
+  Form,
+  Button,
+  Input,
+  Modal,
+  Space,
+  Table,
+  Pagination,
+  Select,
+  Col,
+  Row,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -15,28 +26,43 @@ import { request } from "../../../request";
 
 const { confirm } = Modal;
 const ExperiencePageAdmin = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useExperience();
- 
+  const {
+    total,
+    loading,
+    isModalOpen,
+    data,
+    page,
+    getData,
+    editData,
+    deleteData,
+    SearchSkills,
+    showModal,
+    handleCancel,
+    handleOk,
+    handlePage,
+  } = useExperience();
+
   const { branchId } = useParams<{ branchId: string }>();
 
   const [form] = useForm();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [editId, setEditId] = useState<number | null>(null);
-  const [branch, setBranch] = useState([] as any[]);
-  const [branchName, setBranchName] = useState("");
+  const [branches, setBranches] = useState([] as any[]);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(
+    branchId || null
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
-   const [deteleModal, setDeleteModal] = useState(false);
-  
+  const [deleteModal, setDeleteModal] = useState(false);
+
   const getRooms = useCallback(async () => {
     try {
-      const { data } = await request.get(`branch/rooms/`);
-      setRooms(data.results); // Assuming 'data' is an array of room objects
+      const { data } = await request.get(`branch/room/${branchId}`);
+      setRooms(data.results);
     } catch (err) {
       console.log(err);
     }
-  }, []);
+  }, [branchId]);
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -51,8 +77,7 @@ const ExperiencePageAdmin = () => {
     setSelectedBranch(value);
     getData(value);
   };
- 
-  ////////delete modal //////////
+
   const showDeleteConfirm = (id: number) => {
     confirm({
       title: "Bu filialni ro'yhatdan o'chirishni hohlaysizmi ?",
@@ -69,17 +94,18 @@ const ExperiencePageAdmin = () => {
       },
     });
   };
+
   const deleteRoom = useCallback(
     async (id: number) => {
       try {
         await request.delete(`branch/room-delete/${id}/`);
         getRooms();
-        getData(); // Refresh data after deletion
+        getData(branchId);
       } catch (err) {
         console.log(err);
       }
     },
-    [getData, getRooms]
+    [getRooms, getData, branchId]
   );
 
   const editRoom = useCallback(
@@ -102,31 +128,18 @@ const ExperiencePageAdmin = () => {
     [form]
   );
 
-  const getRoomName = useCallback(async () => {
+  const getBranches = useCallback(async () => {
     try {
-      const { data } = await request.get(`branch/room/${branchId}/`);
-      setBranchName(data.branch.name);
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
-  console.log(branchName);
-
-  const getBranch = useCallback(async () => {
-    try {
-      const res = await request.get(`branch/branches/`);
-      const data = res.data;
-      setBranch(data.results);
+      const { data } = await request.get(`branch/branches/`);
+      setBranches(data.results);
     } catch (err) {
       console.log(err);
     }
   }, []);
 
   useEffect(() => {
-    getBranch();
-    getRoomName();
-  }, [getBranch, getRoomName]);
+    getBranches();
+  }, [getBranches]);
 
   const handleForm = async (values: any) => {
     try {
@@ -138,7 +151,7 @@ const ExperiencePageAdmin = () => {
       setEditId(null);
       handleCancel();
       getRooms();
-      getData(); // Refresh data after adding new staff or editing existing one
+      getData(branchId);
     } catch (err) {
       console.error(err);
     }
@@ -175,7 +188,7 @@ const ExperiencePageAdmin = () => {
             style={{ backgroundColor: "green" }}
             onClick={() => {
               showModal(form);
-              setEditId(id); // Set the id when Edit button is clicked
+              setEditId(id);
               editRoom(id);
             }}
             type="primary"
@@ -196,6 +209,9 @@ const ExperiencePageAdmin = () => {
     },
   ];
 
+  const selectedBranchName =
+    branches.find((branch) => branch.id === branchId)?.name || "";
+
   return (
     <Fragment>
       <section id="search">
@@ -206,28 +222,62 @@ const ExperiencePageAdmin = () => {
       <Table
         loading={loading}
         className="table"
+        style={{ width: "1300px" }}
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 20 }}
+            >
               <Col>
-                <h1>{branchName} / Xonalar ({total})</h1>
+                <h1>
+                  {selectedBranchName} / Xonalar ({total})
+                </h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+              >
                 <Col>
                   <div className="search-box">
-                    <Input onChange={(e) => SearchSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
+                    <Input
+                      onChange={(e) => SearchSkills(e)}
+                      className={
+                        isSearchOpen ? "searchInput open" : "searchInput"
+                      }
+                      placeholder="Search..."
+                    />
                     <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                      {isSearchOpen ? (
+                        <CloseOutlined style={{ color: "white" }} />
+                      ) : (
+                        <SearchOutlined />
+                      )}
                     </a>
                   </div>
                 </Col>
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
+                  <Button
+                    className="Add"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
                     <div className="center">
                       <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
+                        <svg
+                          width="180px"
+                          height="60px"
+                          viewBox="0 0 180 60"
+                          className="border"
+                        >
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="bg-line"
+                          />
+                          <polyline
+                            points="179,1 179,59 1,59 1,1 179,1"
+                            className="hl-line"
+                          />
                         </svg>
                         <span>Xona qo'shish</span>
                       </button>
@@ -236,27 +286,23 @@ const ExperiencePageAdmin = () => {
                 </Col>
               </div>
             </Row>
-            <Row justify="start" align="middle" style={{ gap: "20px" }} className="filtrTable">
-              <Select size="large" defaultValue={branchName} style={{ width: 250 }} onChange={handleChangeBranch}>
-                <Select.Option key={branchName} value={branchName}>
-                  {branchName ? branchName : "Filliallar"}
-                </Select.Option>
-                {branch.map((value) => (
-                  <Select.Option key={value.id} value={value.id}>
-                    {value.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Row>
           </>
         )}
         pagination={false}
         dataSource={data}
         columns={columns}
       />
-      {total > LIMIT ? <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(page) => handlePage(page, navigate)} /> : null}
+      {total > LIMIT ? (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(page) => handlePage(page, navigate)}
+        />
+      ) : null}
       <Modal
-        visible={isModalOpen}
+        open={isModalOpen}
         title="Title"
         onCancel={handleCancel}
         footer={[
@@ -334,9 +380,9 @@ const ExperiencePageAdmin = () => {
             ]}
           >
             <Select style={{ width: 120 }}>
-              {branch.map((value) => (
-                <Select.Option key={value.id} value={value.id}>
-                  {value.name}
+              {branches.map((branch) => (
+                <Select.Option key={branch.id} value={branch.id}>
+                  {branch.name}
                 </Select.Option>
               ))}
             </Select>

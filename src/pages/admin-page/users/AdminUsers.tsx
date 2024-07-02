@@ -163,31 +163,31 @@ const UsersPageAdmin = () => {
 
   const [branch, setBranch] = useState([]);
 
-  const handleForm = async () => {
-    try {
-      const values = await form.validateFields();
-      let originalData = JSON.parse(localStorage.getItem("editData"));
+ const handleForm = async () => {
+   try {
+     const values = await form.validateFields();
+     const originalData = JSON.parse(localStorage.getItem("editData"));
+     const cleanedValues = removeNullish(values);
+     const payload = patchChanges(originalData, cleanedValues);
 
-      const payload = patchChanges(originalData, removeNullish(values));
+     if (editId) {
+       await request.patch(`account/staff-profile-update/${editId}/`, payload);
+     } else {
+       await request.post("/account/staff-profile-create/", cleanedValues);
+     }
 
-      if (editId) {
-        await request.patch(`account/staff-profile-update/${editId}/`, payload);
-      } else {
-        await request.post("/account/staff-profile-create/", values);
-      }
-      setEditId(null);
-      handleCancel();
-      getData();
-    } catch (error) {
-      if (error?.response?.data?.position) {
-        toast.error(error.response.data.position[0]);
-      } else {
-        toast.error("Failed to submit form.");
-      }
-      console.error("Form submission error:", error.response?.data || error);
-    }
-  };
-
+     setEditId(null);
+     handleCancel();
+     getData();
+   } catch (error) {
+     if (error?.response?.data?.position) {
+       toast.error(error.response.data.position[0]);
+     } else {
+       toast.error("Failed to submit form.");
+     }
+     console.error("Form submission error:", error.response?.data || error);
+   }
+ };
   const handleChangeBranch = (value) => {
     setSelectedBranch(value);
   };

@@ -1,5 +1,14 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Input, Modal, Space, Table, Pagination, Select } from "antd";
+import {
+  Form,
+  Button,
+  Input,
+  Modal,
+  Space,
+  Table,
+  Pagination,
+  Select,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 
 // import "./style.scss";
@@ -21,7 +30,7 @@ const AdminPayments = () => {
     getData,
     editData,
     deleteData,
-    SerachSkills,
+    SearchSkills,
     showModal,
     handleCancel,
     handleOk,
@@ -53,9 +62,10 @@ const AdminPayments = () => {
 
   const columns = [
     {
-      title: "Guruh nomi",
-      render: (data: any) => data.group?.name,
-      key: "name",
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Ism Familiya",
@@ -63,7 +73,11 @@ const AdminPayments = () => {
         text?.student?.first_name + " " + text?.student?.last_name,
       key: "student",
     },
-
+    {
+      title: "Guruh nomi",
+      render: (data: any) => data.group?.name,
+      key: "name",
+    },
     {
       title: "Kunlik",
       render: (text) => {
@@ -151,10 +165,10 @@ const AdminPayments = () => {
     try {
       const values = await formData.validateFields();
 
-      // values.date = [
-      //   moment(values.date.from_date).valueOf(),
-      //   moment(values.date.to_date).valueOf(),
-      // ];
+      values.date = [
+        moment(values.date.from_date).valueOf(),
+        moment(values.date.to_date).valueOf(),
+      ];
 
       if (editId) {
         values.id = editId;
@@ -169,9 +183,12 @@ const AdminPayments = () => {
       console.error(err);
     }
   };
-  const getStudent = useCallback(async (groupId:number) => {
+
+  const getStudent = useCallback(async (groupId: number) => {
     try {
-      const res = await request.get(`account/student-profiles/?group=${groupId}`);
+      const res = await request.get(
+        `account/student-profiles/?group=${groupId}`
+      );
       const data = res.data.results;
       setStudent(data);
     } catch (err) {
@@ -247,6 +264,7 @@ const AdminPayments = () => {
   const handleChangeStaff = (value) => {
     setSelectedStaff(value);
   };
+
   useEffect(() => {
     getData(selectedBranch, selectedStaff);
   }, [getData, selectedBranch, selectedStaff]);
@@ -261,6 +279,7 @@ const AdminPayments = () => {
       }));
     setTeacherOptions(teacherOptions);
   }, [teacher]);
+
   const getTeacher = useCallback(async () => {
     try {
       const res = await request.get(`account/staff-profiles/`);
@@ -283,152 +302,106 @@ const AdminPayments = () => {
     getTeacher();
     getStudent();
     getBranches();
-  }, [getTeacher, getStudent, getBranches]);
-
-  const handleGroupSelectChange = (value) => {
-    setSelectedGroupName(value);
-  };
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
+  }, [getTeacher, getStudent, getBranches]);3
 
   return (
     <Fragment>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
-        <h3 style={{ fontWeight: 700, fontSize: 20 }}>To'lovlar boshqaruvi</h3>
-        <Button
-          onClick={() => showModal(form)}
-          type="primary"
-          style={{ backgroundColor: "#264653", borderRadius: 5 }}
-        >
-          To'lov yaratish
-        </Button>
-      </div>
-      <Space style={{ margin: "15px 0" }}>
-        <Input
-          placeholder="Qidiruv..."
-          value={selectedGroupName}
-          onChange={(e) => handleGroupSelectChange(e.target.value)}
-          style={{ width: 200 }}
-          suffix={<SearchOutlined />}
-        />
-        <Select
-          placeholder="Fillial tanlang"
-          onChange={handleChangeBranch}
-          allowClear
-        >
-          {branch.map((value) => (
-            <Select.Option key={value.id} value={value.id}>
-              {value.name}
-            </Select.Option>
-          ))}
-        </Select>
-        <Select
-          placeholder="Guruhni tanlang"
-          onChange={handleChangeStaff}
-          allowClear
-        >
-          {mygroup.map((group) => (
-            <Select.Option key={group.id} value={group.id}>
-              {group.name}
-            </Select.Option>
-          ))}
-        </Select>
-        <Select
-          placeholder="O'qituvchi tanlang"
-          onChange={handleChangeStaff}
-          allowClear
-        >
-          {teacherOptions.map((teacher) => (
-            <Select.Option key={teacher.value} value={teacher.value}>
-              {teacher.label}
-            </Select.Option>
-          ))}
-        </Select>
-        <Button onClick={toggleSearch}>
-          {isSearchOpen ? "Yopish" : "Izlash"}
-        </Button>
-      </Space>
-      <Table
-        loading={loading}
-        className="table"
-        pagination={false}
-        dataSource={data} // corrected from 'experience' to 'data'
-        columns={columns}
-      />
-      {total > LIMIT ? (
-        <Pagination
-          className="pagination"
-          total={total}
-          pageSize={LIMIT}
-          current={page}
-          onChange={(page) => handlePage(page, navigate)}
-        />
-      ) : null}
-      <Modal
-        open={isModalOpen} // corrected from 'open' to 'visible'
-        title="Title"
-        onCancel={handleCancel}
-        footer={(_, { CancelBtn }) => (
-          <>
-            <CancelBtn />
-          </>
-        )}
-      >
-        <Form
-          name="basic"
-          labelCol={{
-            span: 24,
-          }}
-          wrapperCol={{
-            span: 24,
-          }}
-          style={{
-            maxWidth: 600,
-          }}
-          initialValues={{
-            remember: true,
-          }}
-          onFinish={() => handleForm(form)}
-          autoComplete="off"
-          form={form}
-        >
-          <Form.Item
-            label="To'lov miqdori"
-            name="price_sum"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
+      <div className="flex justify-between py-4">
+        <Space direction="horizontal" size="middle">
+          <Input
+            placeholder="O'quvchining ismi"
+            onChange={(e) => SearchSkills(e)}
+            style={{ width: 200 }}
+          />
+          <Select
+            placeholder="Filialni tanlang"
+            value={selectedBranch}
+            showSearch
+            allowClear
+            optionFilterProp="children"
+            onChange={handleChangeBranch}
+            filterOption={(input, option) =>
+              option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            style={{ width: 200 }}
           >
-            <Input />
-          </Form.Item>
+            {branch.map((value) => (
+              <Select.Option key={value.id} value={value.id}>
+                {value.name}
+              </Select.Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Uqituvchini tanlang"
+            value={selectedStaff}
+            allowClear
+            showSearch
+            optionFilterProp="children"
+            onChange={handleChangeStaff}
+            filterOption={(input, option) =>
+              option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            style={{ width: 200 }}
+            options={teacherOptions}
+          />
+        </Space>
+        <Space>
+          <Button
+            style={{ backgroundColor: "#264653" }}
+            onClick={() => showModal(form)}
+            type="primary"
+          >
+            Tolov qo'shish
+          </Button>
+        </Space>
+      </div>
+
+      <div className="w-full h-full mt-4">
+        <Table
+          dataSource={data}
+          columns={columns}
+          pagination={false}
+          loading={loading}
+          rowKey="id"
+          bordered
+          style={{ marginBottom: 16 }}
+        />
+        <Pagination
+          total={total}
+          current={page}
+          pageSize={LIMIT}
+          onChange={handlePage}
+          showSizeChanger={false}
+        />
+      </div>
+
+      <Modal
+        title="To'lov qo'shish"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Bekor qilish
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => handleForm(form)}>
+            Saqlash
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
           <Form.Item
-            label="Guruh"
             name="group"
-            rules={[
-              {
-                required: true,
-                message: "Guruhni kiriting!",
-              },
-            ]}
+            label="Guruh nomi"
+            rules={[{ required: true, message: "Guruh nomini kiriting" }]}
           >
             <Select
               showSearch
-              placeholder="Guruhni tanlang"
+              placeholder="Guruh nomini tanlang"
               optionFilterProp="children"
               onChange={onChange}
               onSearch={onSearch}
               filterOption={filterOption}
+              style={{ width: 200 }}
             >
               {mygroup.map((value) => (
                 <Select.Option key={value.id} value={value.id}>
@@ -438,59 +411,40 @@ const AdminPayments = () => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="O'quvchi"
             name="student"
-            rules={[
-              {
-                required: true,
-                message: "Please input skill name!",
-              },
-            ]}
+            label="Talaba ismi"
+            rules={[{ required: true, message: "Talaba ismini kiriting" }]}
           >
             <Select
               showSearch
-              placeholder="O'quvchini tanlang"
+              placeholder="Talaba ismini tanlang"
               optionFilterProp="children"
-              onChange={onChange}
+              onChange={(value) => console.log(`selected ${value}`)}
               onSearch={onSearch}
               filterOption={filterOption}
-              >
-                {student.map((value) => (
-                   <Select.Option key={value.id} value={value.id}>
-                      {value.last_name + " " + value.first_name}
-                  </Select.Option>
-                ))}
+              style={{ width: 200 }}
+            >
+              {student.map((value) => (
+                <Select.Option key={value.id} value={value.id}>
+                  {value.first_name + " " + value.last_name}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
 
           <Form.Item
-            className="dataPickerForm"
-            label="Oy uchun"
-            name="date"
-            rules={[
-              {
-                required: true,
-                message: "oyni kiriting!",
-              },
-            ]}
+            name="price_sum"
+            label="To'lov miqdori"
+            rules={[{ required: true, message: "To'lov miqdorini kiriting" }]}
           >
-            <CRangePicker />
+            <Input placeholder="To'lov miqdorini kiriting" />
           </Form.Item>
-
           <Form.Item
-            wrapperCol={{
-              span: 24,
-            }}
+            name="date"
+            label="Sanani tanlang"
+            rules={[{ required: true, message: "Sanani tanlang" }]}
           >
-            <Button
-              style={{
-                width: "100%",
-              }}
-              type="primary"
-              htmlType="submit"
-            >
-              {editId ? "Saqlash" : "Yaratish"}
-            </Button>
+            <CRangePicker showTime format="MM/DD/YYYY HH:mm:ss" />
           </Form.Item>
         </Form>
       </Modal>

@@ -9,14 +9,15 @@ const UserLayout = () => {
 
   return (
     <div className="flex">
-      <div className="fixed inset-y-0 left-0 bg-gray-800  transition-transform transform w-64">
-        <Sidebar />
+      <div className="fixed inset-y-0 left-0 bg-gray-800 w-64 lg:w-64 lg:translate-x-0 transform -translate-x-full lg:fixed">
+         <Sidebar />
       </div>
-      <div className="flex-1 flex flex-col h-screen">
-        <div className="bg-white mb-12">
-          <UserHeader />
-        </div>
-        <main className="flex-1 p-4 ml-64 bg-[#F4F7FE] mt-6  overflow-auto">
+      <div className="flex-1 flex flex-col h-screen lg:pl-64">
+        <header className="w-full lg:w-5/6 mx-auto bg-white h-20 p-2 px-6 fixed top-0 z-10">
+           <UserHeader />
+        </header>
+
+        <main className="flex-1 p-4 bg-gray-100 mt-20 overflow-auto">
           <Outlet />
         </main>
       </div>

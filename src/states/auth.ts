@@ -67,7 +67,6 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       toast.error("Parol yoki username xato!");
       console.log(err);
     }
-    window.location.reload();
 
   },
  logout: (navigate) => {

@@ -32,44 +32,50 @@ const Portfolios = () => {
       dataIndex: "index",
       key: "index",
       render: (text: any, record: any, index: number) => index + 1,
+      className: "text-center", // Center aligns the content
     },
     {
       title: "To'langan summa",
       dataIndex: "price_sum",
       key: "price_sum",
-      render: (price_sum: any) => (
-        <span style={{ color: "green", padding: "0.5rem" }}>{price_sum}</span>
+      render: (price_sum: number) => (
+        <span className="text-green-600 px-2 py-1 rounded-lg inline-block">
+          {price_sum}
+        </span>
       ),
+      className: "text-center md:text-left", 
     },
     {
       title: "O'quvchi",
       dataIndex: "student",
       key: "student",
-      render: (student: any) => `${student.first_name} ${student.last_name}`,
+      render: (student: string) => `${student.first_name} ${student.last_name}`,
+      className: "text-center md:text-left", 
     },
     {
       title: "Guruh nomi",
       dataIndex: "group",
       key: "group",
-      render: (group: any) => group.name,
+      render: (group: string) => group?.name,
+      className: "text-center md:text-left", 
     },
     {
       title: "To'lov vaqti",
       dataIndex: "paid_time",
       key: "paid_time",
-      render: (paid_time: any) => new Date(paid_time).toLocaleString(),
+      render: (paid_time: number) => new Date(paid_time).toLocaleString(),
+      className: "text-center md:text-left",
     },
   ];
-
   return (
-    <section className="fixed">
+    <section className="overflow-x-auto">
       <Spin size="small" spinning={loading}>
         <Table
           dataSource={portfolioData}
           columns={columns}
           rowKey="id"
           pagination={false}
-          style={{width:'1200px'}}
+          className="w-full"
         />
       </Spin>
     </section>

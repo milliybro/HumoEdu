@@ -146,8 +146,8 @@ const BranchAdminLayout = () => {
                     {/* <img src="#" alt="JD" /> */}
                   </div>
                   <div className="user-info d-none d-xl-block">
-                    <div className="user-status user-status-active">Administrator</div>
-                    <div className="user-name dropdown-indicator">{username}</div>
+                    <div className="user-status user-status-active text-white">Administrator</div>
+                    <div className="user-name dropdown-indicator text-white">{username}</div>
                   </div>
                 </div>
               </a>

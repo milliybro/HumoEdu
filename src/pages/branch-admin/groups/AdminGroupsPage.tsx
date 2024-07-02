@@ -158,9 +158,9 @@ const BranchGroups = () => {
           >
             Delete
           </Button>
-          <Button onClick={() => nextStudent(id)}>O'quvchilarni ko'rish</Button>
+          <Button onClick={() => nextStudent(id)}>O'quvchilar</Button>
           <Button onClick={() => nextSchedule(id)}>
-            Dars jadvalini ko'rish
+            Dars jadvali
           </Button>
         </Space>
       ),

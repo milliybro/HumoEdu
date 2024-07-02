@@ -196,6 +196,7 @@ const PortfoliosPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
+        style={{width:'1300px'}}
         title={() => (
           <>
             <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>

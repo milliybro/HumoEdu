@@ -36,19 +36,19 @@ const Account = () => {
     }
   };
 
-  const handleUpdate = async (values: any) => {
-    console.log(values, "update");
-    try {
-      const branch  =  branchId;
-      const UpdateData = {...values, branch}
-      await request.put(`account/student-profile-update/${teacherId}/`, UpdateData);
-      getAccount();
-      setUpdateModalOpen(false);
-      toast.success("Profil muvaffaqiyatli yangilandi!");
-    } catch (err) {
-      toast.error("Profilni yangilashda xatolik");
-    }
-  };
+  // const handleUpdate = async (values: any) => {
+  //   console.log(values, "update");
+  //   try {
+  //     const branch  =  branchId;
+  //     const UpdateData = {...values, branch}
+  //     await request.put(`account/student-profile-update/${teacherId}/`, UpdateData);
+  //     getAccount();
+  //     setUpdateModalOpen(false);
+  //     toast.success("Profil muvaffaqiyatli yangilandi!");
+  //   } catch (err) {
+  //     toast.error("Profilni yangilashda xatolik");
+  //   }
+  // };
 
   const handleImage = async (info) => {
     console.log(info, "info");
@@ -105,10 +105,7 @@ const Account = () => {
     setPasswordModalOpen(true);
   };
 
-  const showUpdateModal = () => {
-    updateForm.setFieldsValue(userData);
-    setUpdateModalOpen(true);
-  };
+ 
 
   const handleOk = () => {
     setLoading(true);
@@ -147,7 +144,7 @@ const Account = () => {
   } = userData;
 
   return (
-    <section className="px-12 py-6 min-h-[30vh] h-3/4 ">
+    <section className="px-6 md:px-12 mt-6 py-6 min-h-[30vh] md:h-[75%] flex flex-col justify-center items-center">
       <div className="flex justify-center items-center">
         <img
           src={image ? image : avatar}
@@ -160,8 +157,7 @@ const Account = () => {
           {first_name} {last_name}
         </h2>
       </div>
-      <div className="mt-8">
-
+      <div className="mt-8 text-start">
         <p>
           <strong>Hisob:</strong> {balance}
         </p>
@@ -178,24 +174,23 @@ const Account = () => {
           <strong>Tug'ilgan kun:</strong>{" "}
           {new Date(birthday).toLocaleDateString()}
         </p>
-        <p className="mt-2 ">
-          <strong>telefon raqam 1:</strong>
-          {phone_number1}
+        <p className="mt-2">
+          <strong>telefon raqam 1:</strong> {phone_number1}
         </p>
-        <p className="mt-2 ">
-          <strong>telefon raqam 2:</strong>
-          {phone_number2}
+        <p className="mt-2">
+          <strong>telefon raqam 2:</strong> {phone_number2}
         </p>
         <p>
           <strong>Status:</strong> {status ? "Active" : "Inactive"}
         </p>
       </div>
-      <div className="mt-8 flex justify-center">
-        <Button type="primary" onClick={showPasswordModal}>
+      <div className="mt-8 flex justify-center items-center flex-wrap">
+        <Button
+          type="primary"
+          onClick={showPasswordModal}
+          className="mb-4 md:mb-0 md:mr-4"
+        >
           Parolni o'zgartirish
-        </Button>
-        <Button type="default" onClick={showUpdateModal} className="ml-4">
-          Profilni yangilash
         </Button>
         <Modal
           title="Parolni o'zgartirish"
@@ -254,92 +249,8 @@ const Account = () => {
             </Form.Item>
           </Form>
         </Modal>
-        <Modal
-          title="Profilni yangilash"
-          open={updateModalOpen}
-          onCancel={handleUpdateCancel}
-          footer={[
-            <Button key="back" onClick={handleUpdateCancel}>
-              Bekor qilish
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              onClick={() => updateForm.submit()}
-            >
-              Saqlash
-            </Button>,
-          ]}
-        >
-          <Form form={updateForm} onFinish={handleUpdate}>
-            <Form.Item
-              name="first_name"
-              label="Ism"
-              rules={[{ required: true, message: "Iltimos, ismni kiriting!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="last_name"
-              label="Familiya"
-              rules={[
-                { required: true, message: "Iltimos, familiyani kiriting!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="phone_number1"
-              label="Telefon raqam 1"
-              rules={[
-                {
-                  required: true,
-                  message: "Iltimos, telefon raqamni kiriting!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="phone_number2" label="Telefon raqam 2">
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="balance"
-              label="Balans"
-              rules={[
-                { required: true, message: "Iltimos, balansni kiriting!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name={["user", "username"]}
-              label="Foydalanuvchi nomi"
-              rules={[
-                {
-                  required: true,
-                  message: "Iltimos, foydalanuvchi nomini kiriting!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="birthday"
-              label="Tug'ilgan kun"
-              rules={[
-                {
-                  required: true,
-                  message: "Iltimos, tug'ilgan kunni kiriting!",
-                },
-              ]}
-            >
-              <Input type="date" />
-            </Form.Item>
-          </Form>
-        </Modal>
         <Upload {...props}>
-          <Button className="ml-4" icon={<UploadOutlined />}>Rasmni yangilash</Button>
+          <Button className="mb-4" icon={<UploadOutlined />}>Rasmni yangilash</Button>
         </Upload>
       </div>
     </section>

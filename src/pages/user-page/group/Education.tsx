@@ -39,10 +39,10 @@ const Education = () => {
         {loading ? (
           <Spin
             size="small"
-            className="flex justify-center items-center h-64 ml-96"
+            className="flex justify-center items-center h-64 mx-auto"
           />
         ) : (
-          <div className="edu_cards">
+          <div className="edu_cards grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {euducationData.map((res) => (
               <EduCard
                 _id={res._id}

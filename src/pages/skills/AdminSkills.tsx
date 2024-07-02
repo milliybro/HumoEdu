@@ -163,6 +163,7 @@ const EducationPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
+        style={{ width: "1300px" }}
         title={() => (
           <>
             <Row

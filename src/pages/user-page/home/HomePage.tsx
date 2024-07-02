@@ -117,64 +117,26 @@ const HomePage = () => {
   return (
     <Fragment>
       <header id="header" className={`${top ? "header-top" : null}`}>
-        <div className="container">
-          <div className="nav__wrapper">
+        <div className="container mx-auto px-4">
+          <div className="nav__wrapper flex justify-between items-center py-4">
             <div className="first__nav">
-              <h1 className="hero_name" onClick={toggleNavbar}>
-                <Link to={"#"}>Xush kelibsiz, {userData?.first_name}!</Link>
+              <h1 className="hero_name text-lg md:text-2xl cursor-pointer">
+                <Link to="#">Xush kelibsiz, {userData?.first_name}!</Link>
               </h1>
-              <h4>
+              <h4 className="text-sm md:text-base mb-6">
                 Talabalar portalida doimo ma'liumotlaringizni bilib turing
               </h4>
             </div>
-            <div className="second__nav">
-              <div>
-                <img
-                  className="centreStudentLeft"
-                  src={centreStudentLeft}
-                  alt=""
-                />
-                <img className="centreStudent" src={centreStudent} alt="" />
-                <img
-                  className="centreStudentRight"
-                  src={centreStudentRight}
-                  alt=""
-                />
+            <div className="second__nav hidden md:block">
+              <div className="flex">
+                <img className="centreStudentLeft w-8" src={centreStudentLeft} alt="image" />
+                <img className="centreStudent w-8" src={centreStudent} alt="image" />
+                <img className="centreStudentRight w-8" src={centreStudentRight} alt="image" />
               </div>
             </div>
           </div>
-        </div>
+       </div>
       </header>
-      <div
-        className="mobile_menue_modal"
-        style={{ display: `${menuControl ? "" : "none"}` }}
-      >
-        <button onClick={toggleMenu} className="close_btn">
-          <img src={close_icon} alt="" />
-        </button>
-        <ul>
-          <li onClick={toggleNavbar}>
-            <NavLink onClick={toggleMenu} to={"/"}>
-              Home
-            </NavLink>
-          </li>
-          <li onClick={toggleMenu}>
-            <NavLink to={"/about"}>About</NavLink>
-          </li>
-          <li onClick={toggleMenu}>
-            <NavLink to={"/resume"}>Resume</NavLink>
-          </li>
-          <li onClick={toggleMenu}>
-            <NavLink to={"/portfolio"}>Portfolio</NavLink>
-          </li>
-          <li onClick={toggleMenu}>
-            <NavLink to={"/contact"}>Contact</NavLink>
-          </li>
-        </ul>
-      </div>
-      <section id="about" className="about">
-        <div className="schedule-home"></div>
-      </section>
     </Fragment>
   );
 };

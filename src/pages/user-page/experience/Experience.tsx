@@ -64,7 +64,7 @@ const Experience: React.FC = () => {
   ];
 
   return (
-    <div>
+    <div className="overflow-x-auto">
       <h1 className="text-2xl font-bold mb-4">Dars qoldirilgan kunlar</h1>
       <Table
         dataSource={attendanceData}
@@ -73,6 +73,7 @@ const Experience: React.FC = () => {
         loading={loading}
         pagination={false}
         bordered
+        className="min-w-full"
       />
     </div>
   );

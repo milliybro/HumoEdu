@@ -1,32 +1,51 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Flex, Input, Modal, Space, Table, Pagination, Select } from "antd";
+import {
+  Form,
+  Button,
+  Input,
+  Modal,
+  Space,
+  Table,
+  Pagination,
+  Select,
+  DatePicker,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
-
-// import "./style.scss";
 import { LIMIT } from "../../../constants";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { request } from "../../../request";
 import usePayments from "../../../states/adminPayment";
 import { SearchOutlined } from "@ant-design/icons";
-import CRangePicker from "../../../utils/datapicker";
 import { useAuth } from "../../../states/auth";
 const BranchPayments = () => {
-  const { total, loading, isModalOpen, data, page, getData, editData, deleteData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = usePayments();
-
-  const {branchId} = useAuth();
+  const {
+    total,
+    loading,
+    isModalOpen,
+    data,
+    page,
+    getData,
+    editData,
+    deleteData,
+    SearchSkills,
+    showModal,
+    handleCancel,
+    handleOk,
+    handlePage,
+  } = usePayments();
+  const { branchId } = useAuth();
 
   const [form] = useForm();
   const navigate = useNavigate();
-  const [student, setStudent] = useState([]);
-  const [mygroup, setMyGroup] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [editId, setEditId] = useState(null); // State variable to hold the id
-  const [teacher, setTeacher] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
-
-
-
+   const [defaultType, setDefaultType] = useState(null)
   useEffect(() => {
     getData();
   }, [getData]);
@@ -34,7 +53,8 @@ const BranchPayments = () => {
   const columns = [
     {
       title: "Ism Familiya",
-      render: (text) => text.student.first_name + " " + text.student.last_name,
+      render: (text) =>
+        text.student?.first_name + " " + text.student?.last_name,
       key: "name",
     },
     {
@@ -44,13 +64,11 @@ const BranchPayments = () => {
     },
     {
       title: "Boshlanish",
-      // dataIndex: "student.username",
       render: (text) => text.from_date,
       key: "name",
     },
     {
       title: "Tugash",
-      // dataIndex: "student.username",
       render: (text) => text.to_date,
       key: "name",
     },
@@ -67,7 +85,6 @@ const BranchPayments = () => {
     },
     {
       title: "To'lov miqdori",
-      // dataIndex: "student.username",
       render: (text) => text.price_sum + "/" + text.group?.price,
       key: "name",
     },
@@ -79,7 +96,6 @@ const BranchPayments = () => {
       },
       key: "name",
     },
-
     {
       title: "Action",
       dataIndex: "id",
@@ -97,15 +113,6 @@ const BranchPayments = () => {
           >
             Edit
           </Button>
-          {/* <Button
-            onClick={() => deletePayment(id)}
-            type="primary"
-            style={{
-              backgroundColor: "#f54949",
-            }}
-          >
-            Delete
-          </Button> */}
         </Space>
       ),
     },
@@ -115,83 +122,98 @@ const BranchPayments = () => {
     async (id: number) => {
       try {
         const { data } = await request.get(`account/payment/${id}/`);
-        console.log(data)
+        console.log(data);
+        setDefaultType(data.date);
         const formattedData = {
           id: data.id,
           price_sum: data.price_sum,
+          group: data.group?.name,
+          monthly: data.monthly,
           student: data.student,
-          group: data.group,
-          mothly: data.mothly,
-          branch:branchId,
+          date: [data.date[0]?.from_date, data.date[1]?.to_date],
+          branch: branchId,
         };
-        console.log(formattedData, "formattedData");
-        setEditId(formattedData.id);
 
+        setEditId(formattedData.id);
         form.setFieldsValue(formattedData);
       } catch (err) {
         console.error(err);
       }
     },
-    [form]
+    [form, branchId]
   );
 
   const handleForm = async (formData: any) => {
-    console.log(formData, "formData");
-
     try {
       const values = await formData.validateFields();
+      const dataToSend = {
+        price_sum: values.price_sum,
+        student: values?.student,
+        group: values.group,
+        date: [values.date[0].valueOf(), values.date[1].valueOf()],
+      };
       const branch = branchId;
-      const updateValues = {...formData, branch};
+      const updateData = { ...dataToSend, branch };
+
       if (editId) {
-        values.id = editId;
-        await request.put(`account/payment-update/${editId}/`, updateValues);
+        await request.put(`account/payment-update/${editId}/`, updateData);
       } else {
-        await request.post("account/payment-create/", updateValues);
+        await request.post("account/payment-create/", updateData);
       }
+
       setEditId(null);
       handleCancel();
-      getData(); // Refresh data after adding new staff or editing existing one
+      getData();
     } catch (err) {
       console.error(err);
     }
   };
-  const getStudent = useCallback(async () => {
+
+  const getStudents = useCallback(async () => {
     try {
-      const res = await request.get(`account/student-profiles/?branch=${branchId}`);
-      const data = res.data.results;
-      setStudent(data);
+      const res = await request.get(
+        `account/student-profiles/?branch=${branchId}`
+      );
+      setStudents(res.data.results);
     } catch (err) {
       console.log(err);
     }
-  }, []);
+  }, [branchId]);
 
-  const getGroup = useCallback(async () => {
+  const getGroups = useCallback(async () => {
     try {
       const res = await request.get(`group/groups/?branch=${branchId}`);
-      const data = res.data.results;
-      setMyGroup(data);
+      setGroups(res.data.results);
     } catch (err) {
       console.log(err);
     }
-  }, []);
+  }, [branchId]);
 
   useEffect(() => {
-    getStudent();
-    getGroup();
-  }, [getStudent, getGroup]);
+    getStudents();
+    getGroups();
+  }, [getStudents, getGroups]);
 
-  const filterOption = (input: string, option?: { label: string; value: string }) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const onChange = (value: string) => {
     console.log(`selected ${value}`);
-    SearchSkills(value)
+    SearchSkills(value);
   };
 
   const onSearch = (value: string) => {
     console.log("search:", value);
   };
 
-  
+  const handleGroupSelectChange = (value) => {
+    setSelectedGroupName(value);
+    const filtered = students.filter((student) => student.group.id === value);
+    console.log(students)
+    setFilteredStudents(filtered);
+  };
 
   const handleChangeBranch = (value) => {
     setSelectedBranch(value);
@@ -200,58 +222,57 @@ const BranchPayments = () => {
   const handleChangeStaff = (value) => {
     setSelectedStaff(value);
   };
+
   useEffect(() => {
-    getData( selectedStaff);
+    getData(selectedStaff);
   }, [getData, selectedStaff]);
 
   const [teacherOptions, setTeacherOptions] = useState([]);
   useEffect(() => {
-    const teacherOptions = teacher
+    const teacherOptions = teachers
       .filter((value) => value?.user.roles === "teacher")
       .map((value) => ({
         label: `${value?.first_name} ${value?.last_name}`,
         value: value.id,
       }));
     setTeacherOptions(teacherOptions);
-  }, [teacher]);
-  const getTeacher = useCallback(async () => {
+  }, [teachers]);
+
+  const getTeachers = useCallback(async () => {
     try {
-      const res = await request.get(`account/staff-profiles/?branch=${branchId}`);
-      setTeacher(res.data.results);
+      const res = await request.get(
+        `account/staff-profiles/?branch=${branchId}`
+      );
+      setTeachers(res.data.results);
     } catch (err) {
       console.error(err);
     }
-  }, []);
-
-  // const getBranches = useCallback(async () => {
-  //   try {
-  //     const res = await request.get(`branch/branches/`);
-  //     setBranch(res.data.results);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, []);
+  }, [branchId]);
 
   useEffect(() => {
-    getTeacher();
-    getStudent();
-  }, [ getTeacher, getStudent]);
-
-  const handleGroupSelectChange = (value) => {
-    setSelectedGroupName(value);
-  };
+    getTeachers();
+    getStudents();
+  }, [getTeachers, getStudents]);
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-
-
   return (
     <Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
         <h3 style={{ fontWeight: 700, fontSize: 20 }}>To'lovlar boshqaruvi</h3>
-        <Button onClick={() => showModal(form)} type="primary" style={{ backgroundColor: "#264653", borderRadius: 5 }}>
+        <Button
+          onClick={() => showModal(form)}
+          type="primary"
+          style={{ backgroundColor: "#264653", borderRadius: 5 }}
+        >
           To'lov yaratish
         </Button>
       </div>
@@ -263,34 +284,51 @@ const BranchPayments = () => {
           style={{ width: 200 }}
           suffix={<SearchOutlined />}
         />
-        
-        <Select placeholder="Guruhni tanlang" onChange={handleChangeStaff} allowClear>
-          {mygroup.map((group) => (
+        <Select
+          placeholder="Guruhni tanlang"
+          onChange={handleGroupSelectChange}
+          allowClear
+        >
+          {groups.map((group) => (
             <Select.Option key={group.id} value={group.id}>
               {group.name}
             </Select.Option>
           ))}
         </Select>
-        <Select placeholder="O'qituvchi tanlang" onChange={handleChangeStaff} allowClear>
+        <Select
+          placeholder="O'qituvchi tanlang"
+          onChange={handleChangeStaff}
+          allowClear
+        >
           {teacherOptions.map((teacher) => (
             <Select.Option key={teacher.value} value={teacher.value}>
               {teacher.label}
             </Select.Option>
           ))}
         </Select>
-        <Button onClick={toggleSearch}>{isSearchOpen ? "Yopish" : "Izlash"}</Button>
+        <Button onClick={toggleSearch}>
+          {isSearchOpen ? "Yopish" : "Izlash"}
+        </Button>
       </Space>
       <Table
         loading={loading}
         className="table"
-        style={{width:'1300px'}}
+        style={{ width: "1300px" }}
         pagination={false}
-        dataSource={data} // corrected from 'experience' to 'data'
+        dataSource={data}
         columns={columns}
       />
-      {total > LIMIT ? <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(page) => handlePage(page, navigate)} /> : null}
+      {total > LIMIT ? (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(page) => handlePage(page, navigate)}
+        />
+      ) : null}
       <Modal
-        visible={isModalOpen} // corrected from 'open' to 'visible'
+        open={isModalOpen}
         title="Title"
         onCancel={handleCancel}
         footer={(_, { CancelBtn }) => (
@@ -301,18 +339,10 @@ const BranchPayments = () => {
       >
         <Form
           name="basic"
-          labelCol={{
-            span: 24,
-          }}
-          wrapperCol={{
-            span: 24,
-          }}
-          style={{
-            maxWidth: 600,
-          }}
-          initialValues={{
-            remember: true,
-          }}
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+          style={{ maxWidth: 600 }}
+          initialValues={{ remember: true }}
           onFinish={() => handleForm(form)}
           autoComplete="off"
           form={form}
@@ -320,89 +350,56 @@ const BranchPayments = () => {
           <Form.Item
             label="To'lov miqdori"
             name="price_sum"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
+            rules={[{ required: true, message: "Please fill!" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="O'quvchi"
-            name="student"
-            rules={[
-              {
-                required: true,
-                message: "Please input skill name!",
-              },
-            ]}
-          >
-            <Select
-              showSearch
-              placeholder="O'quvchini tanlang"
-              optionFilterProp="children"
-              onChange={onChange}
-              onSearch={onSearch}
-              filterOption={filterOption}
-              options={student.map((value) => ({
-                value: value.id,
-                label: value.last_name + " " + value.first_name,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
             label="Guruh"
             name="group"
-            rules={[
-              {
-                required: true,
-                message: "Guruhni kiriting!",
-              },
-            ]}
+            rules={[{ required: true, message: "Guruhni kiriting!" }]}
           >
             <Select
               showSearch
-              placeholder="O'quvchini tanlang"
+              placeholder="Gruruhni tanlang"
               optionFilterProp="children"
-              onChange={onChange}
+              onChange={handleGroupSelectChange}
               onSearch={onSearch}
               filterOption={filterOption}
-              options={mygroup.map((value) => ({
+              options={groups.map((value) => ({
                 value: value.id,
                 label: value.name,
               }))}
             />
           </Form.Item>
-
           <Form.Item
-          className="dataPickerForm"
+            label="O'quvchi"
+            name="student"
+            rules={[{ required: true, message: "Please input skill name!" }]}
+          >
+            <Select
+              showSearch
+              placeholder="O'quvchini tanlang"
+              optionFilterProp="children"
+              onChange={onChange}
+              onSearch={onSearch}
+              filterOption={filterOption}
+              options={filteredStudents.map((value) => ({
+                value: value.id,
+                label: value.last_name + " " + value.first_name,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
+            className="dataPickerForm"
             label="Oy uchun"
             name="date"
-            rules={[
-              {
-                required: true,
-                message: "oyni kiriting!",
-              },
-            ]}
+            rules={[{ required: true, message: "Oyini tanlang!" }]}
           >
-            <CRangePicker  />
+            <DatePicker.RangePicker/>
           </Form.Item>
-
-          <Form.Item
-            wrapperCol={{
-              span: 24,
-            }}
-          >
-            <Button
-              style={{
-                width: "100%",
-              }}
-              type="primary"
-              htmlType="submit"
-            >
+          <Form.Item wrapperCol={{ span: 24 }}>
+            <Button style={{ width: "100%" }} type="primary" htmlType="submit">
               {editId ? "Saqlash" : "Yaratish"}
             </Button>
           </Form.Item>

@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useGroup from "../../../states/adminGroups";
 import { request } from "../../../request";
 import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-
+import { removeNullish, patchChanges } from "../users/functions";
 const AdminGroups = () => {
   const { total, loading, isModalOpen, data, page, handleStatusChange, getData, showModal, handleCancel, handlePage } = useGroup();
   const { branchId } = useParams();
@@ -87,7 +87,7 @@ const AdminGroups = () => {
 
   const getRooms = useCallback(async () => {
     try {
-      const { data } = await request.get(`branch/rooms/${branchId}/`);
+      const { data } = await request.get(`branch/rooms/?branch=${branchId}`);
       setRoom(data);
     } catch (err) {
       console.error(err);
@@ -160,8 +160,8 @@ const AdminGroups = () => {
           <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
             Delete
           </Button>
-          <Button onClick={() => nextStudent(id)}>O'quvchilarni ko'rish</Button>
-          <Button onClick={() => nextSchedule(id)}>Dars jadvalini ko'rish</Button>
+          <Button onClick={() => nextStudent(id)}>O'quvchilar</Button>
+          <Button onClick={() => nextSchedule(id)}>Dars jadvali</Button>
         </Space>
       ),
     },
@@ -174,24 +174,23 @@ const AdminGroups = () => {
   const filteredData = selectedGroupName ? data.filter((group) => group.name.toLowerCase().includes(selectedGroupName.toLowerCase())) : data;
 
   const editGroup = useCallback(
-    async (id:number) => {
+    async (id: number) => {
       try {
         const { data } = await request.get(`group/group/${id}/`);
-        console.log(data)
+        console.log(data);
         const formattedData = {
           id: data.id,
           price: data.price,
           name: data.name,
           science: data.science.id,
           branch: data.branch.id,
-          teacher: data.teacher.first_name + " " + data.teacher.last_name,
-          sub_teacher: data.sub_teacher ? data?.sub_teacher?.first_name + " " + data?.sub_teacher?.last_name : "",
+          teacher: data.teacher.id, // Sending teacher id instead of full name
+          sub_teacher: data.sub_teacher ? data.sub_teacher.id : "", // Sending sub_teacher id if exists
           student: data.student.map((studentMember) => studentMember),
           status: data.status,
         };
         setEditId(formattedData.id);
         form.setFieldsValue(formattedData);
-        
       } catch (err) {
         console.error(err);
       }
@@ -199,24 +198,41 @@ const AdminGroups = () => {
     [form]
   );
 
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (editId) {
-        values.id = editId;
-        await request.put(`group/group-update/${editId}/`, values);
-      } else {
-        await request.post("group/group-create/", values);
-      }
+ const handleOk = async () => {
+   try {
+     const values = await form.validateFields();
 
-      setEditId(null);
-      handleCancel();
-      getData();
-      form.resetFields();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+     // Remove nullish values from the form data
+     const cleanedValues = removeNullish(values);
+
+     if (editId) {
+       cleanedValues.id = editId;
+       const changes = patchChanges(values, cleanedValues);
+
+       // Replace the required fields with their new values if changed
+       if (changes.branch) {
+         cleanedValues.branch = changes.branch;
+       }
+       if (changes.name) {
+         cleanedValues.name = changes.name;
+       }
+       if (changes.student) {
+         cleanedValues.student = changes.student;
+       }
+
+       await request.put(`group/group-update/${editId}/`, cleanedValues);
+     } else {
+       await request.post("group/group-create/", cleanedValues);
+     }
+
+     setEditId(null);
+     handleCancel();
+     getData();
+     form.resetFields();
+   } catch (err) {
+     console.error(err);
+   }
+ };
 
   const [options, setOptions] = useState([]);
   const [teacherOptions, setTeacherOptions] = useState([]);
@@ -226,6 +242,7 @@ const AdminGroups = () => {
       label: `${data.first_name} ${data.last_name}`,
       value: data.id,
     }));
+    
     setOptions(options);
   }, [student]);
 
@@ -255,9 +272,17 @@ const AdminGroups = () => {
     setSelectedStaff(value);
   };
 
-  useEffect(() => {
-    getData(selectedBranch, selectedScience, selectedStaff);
-  }, [getData, selectedBranch, selectedScience, selectedStaff]);
+   useEffect(() => {
+     getData(selectedBranch, selectedScience, selectedStaff, selectedStatus);
+     getRooms();
+   }, [
+     getData,
+     getRooms,
+     selectedBranch,
+     selectedScience,
+     selectedStaff,
+     selectedStatus,
+   ]);
 
    ///// delete modal  ///////
     const showDeleteConfirm = (id: number) => {
@@ -289,7 +314,7 @@ const AdminGroups = () => {
   );
 
   const nextStudent = (id) => {
-    setOpen(true);
+     navigate(`/adminGroup/students/${id}`);
   };
 
   const nextSchedule = (id) => {
@@ -298,7 +323,7 @@ const AdminGroups = () => {
   };
 
   const handleChangeStatus = (value) => {
-    setSelectedStatus(value);
+    // setSelectedStatus(value);
     handleStatusChange(value);
   };
 
@@ -429,12 +454,11 @@ const AdminGroups = () => {
                 rules={[
                   { required: true, message: "Iltimos, o'qituvchini tanlang" },
                 ]}
-              
               >
                 <Select
                   size="large"
                   placeholder="O'qituvchi tanlang"
-                  onChange={handleChangeStaff}
+                  onChange={handleChangeStaff} // O'zgartirilgan
                 >
                   {teacherOptions.map((teacher) => (
                     <Select.Option key={teacher.value} value={teacher.value}>
@@ -538,8 +562,8 @@ const AdminGroups = () => {
           onChange={handleChangeStatus}
           allowClear
         >
-          <Select.Option value="active">Active</Select.Option>
-          <Select.Option value="inactive">Inactive</Select.Option>
+          <Select.Option value="1">Active</Select.Option>
+          <Select.Option value="0">Inactive</Select.Option>
         </Select>
         <Button onClick={toggleSearch}>
           {isSearchOpen ? "Yopish" : "Izlash"}
@@ -551,6 +575,7 @@ const AdminGroups = () => {
         dataSource={filteredData}
         rowKey="id"
         pagination={false}
+        style={{ maxWidth: "100%" }}
         loading={loading}
       />
 

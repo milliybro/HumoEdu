@@ -7,7 +7,6 @@ import { request } from "../../request";
 
 import avatar from "../../assets/avatar-svgrepo-com.svg";
 
-import "./Header.scss";
 
 const UserHeader = () => {
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -78,11 +77,16 @@ const UserHeader = () => {
     unresponseMessages()
   }, [unresponseMessages, unansweredMessages]);
   return (
-    <header className="w-5/6 mx-auto bg-white h-20 p-2 px-6  fixed ml-64 ">
-      <div className="flex justify-between items-center ">
-        <div className=" poppins-medium">Student</div>
-        <div className="account ">
-          <Link to={"/account"} className="accountim" onClick={controlDropdown} title="profile">
+    <header className="w-full lg:w-5/6 mx-auto bg-white h-20 p-2 px-24 fixed top-0 z-10">
+      <div className="flex justify-between items-center h-full">
+        <div className="font-medium">Student</div>
+        <div className="account">
+          <Link
+            to="/account"
+            className="accountim"
+            onClick={controlDropdown}
+            title="profile"
+          >
             <img
               className="account__img w-14 h-14 rounded-full"
               src={userInfo.image ? userInfo.image : avatar}

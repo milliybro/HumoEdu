@@ -1,5 +1,5 @@
 import "./datapicker.scss";
-import { DateObject } from "react-multi-date-picker";
+// import { DateObject } from "react-multi-date-picker";
 import DatePicker from "react-multi-date-picker";
 import InputIcon from "react-multi-date-picker/components/input_icon";
 

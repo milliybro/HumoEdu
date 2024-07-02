@@ -48,7 +48,7 @@ import BranchSchedule from "./pages/branch-admin/schedule/AdminSchedule";
 import BranchStudents from "./pages/branch-admin/students/AdminStudents";
 import UsersPageBranch from "./pages/branch-admin/users/AdminUsers";
 
-
+import GroupStudentsList from "./pages/admin-page/groups/GroupStudentsList";
 function App() {
   const { isAuthenticated, role } = useAuth();
 
@@ -86,6 +86,7 @@ function App() {
           <Route path="/adminPayments" element={<AdminPayments />} />
           <Route path="/adminGroup" element={<AdminGroups />} />
           <Route path="/adminGroup/:scheduleId" element={<AdminSchedule />} />
+          <Route path="/adminGroup/students/:groupId" element={<GroupStudentsList />} />
           <Route path="/adminStudents" element={<AdminStudents />} />
         </Route>
 
