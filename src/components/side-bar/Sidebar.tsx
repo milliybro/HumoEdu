@@ -1,6 +1,6 @@
 import { useState, Fragment } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "antd";
+import { Menu, Button, Modal } from "antd";
 import exampleLogo from "../../assets/humo oquv markazi.png";
 import ConfirmationModal from "../confirmation/ConfirmationModal";
 import { useAuth } from "../../states/auth";
@@ -10,7 +10,6 @@ import groups from "../../assets/groups.png";
 import schedule from "../../assets/schedule.png";
 import settings from "../../assets/settings.png";
 import logoutIcon from "../../assets/logout.png";
-import { Button, Modal } from "antd";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -22,8 +21,8 @@ const Sidebar = () => {
 
   const navigationLinks = [
     { path: "/home", label: "Home", icon: dashboard },
-    { path: "/skills", label: "Dars jadvali", icon: schedule },
-    { path: "/my-groups", label: "Guruhlarim", icon: groups },
+    { path: "/skilss", label: "Dars jadvali", icon: schedule },
+    { path: "/my-group", label: "Guruhlarim", icon: groups },
     { path: "/payments", label: "To'lovlar", icon: payment },
   ];
 
@@ -34,7 +33,6 @@ const Sidebar = () => {
       navigate("/login");
     } catch (err) {
       console.error("Could not log out", err);
-      // Handle error if necessary
     } finally {
       setIsModalOpen(false);
     }
@@ -104,8 +102,8 @@ const Sidebar = () => {
               icon={<img src={logoutIcon} alt="" className="h-6 w-6" />}
               onClick={() =>
                 Modal.confirm({
-                  onOk: () => logout(navigate),
-                  title: "Chiqasizmi ?",
+                  onOk: handleConfirmLogout,
+                  title: "Chiqasizmi?",
                 })
               }
               className={`${

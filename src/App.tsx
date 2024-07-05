@@ -43,14 +43,25 @@ import BranchAdminLayout from "./layouts/branch-admin/AdminLayout";
 import BranchDashboardPage from "./pages/branch-admin/dashboard/DashboardPage";
 import RoomsPageAdmin from "./pages/branch-admin/experience/AdminExperiencePage";
 import BranchGroups from "./pages/branch-admin/groups/AdminGroupsPage";
-import BranchPayments from "./pages/branch-admin/payments/AdminPaymentsPage";
+// import BranchPayments from "./pages/branch-admin/payments/AdminPaymentsPage";
 import BranchSchedule from "./pages/branch-admin/schedule/AdminSchedule";
 import BranchStudents from "./pages/branch-admin/students/AdminStudents";
 import UsersPageBranch from "./pages/branch-admin/users/AdminUsers";
-
+import BranchGoupsStudents from './pages/branch-admin/groups/BranchGroupsStudents'
 import GroupStudentsList from "./pages/admin-page/groups/GroupStudentsList";
+import DebtorStudents from "./pages/admin-page/debtor/DebtorStudents";
+import { ensureTokenValidity } from './states/auth';
+import { useEffect } from 'react';
+import BranchStudentsPayments from "./pages/branch-admin/payments/BranchStudentsPayments";
+import BranchTeachersPayments from "./pages/branch-admin/payments/BranchTeachersPayments";
+import SuperStudentsPayments from "./pages/admin-page/payments/SuperStudentsPayments";
+import SuperTeachersPayments from "./pages/admin-page/payments/SuperTeachersPayments";
 function App() {
   const { isAuthenticated, role } = useAuth();
+
+  useEffect(()=>{
+    ensureTokenValidity();
+  })
 
   return (
     <BrowserRouter>
@@ -84,10 +95,16 @@ function App() {
           />
           <Route path="/adminScience" element={<AdminSkillsPage />} />
           <Route path="/adminPayments" element={<AdminPayments />} />
+          <Route path="/superPayments/student" element={<SuperStudentsPayments />} />
+          <Route path="/superPayments/teachers" element={<SuperTeachersPayments />} />
           <Route path="/adminGroup" element={<AdminGroups />} />
           <Route path="/adminGroup/:scheduleId" element={<AdminSchedule />} />
-          <Route path="/adminGroup/students/:groupId" element={<GroupStudentsList />} />
+          <Route
+            path="/adminGroup/students/:groupId"
+            element={<GroupStudentsList />}
+          />
           <Route path="/adminStudents" element={<AdminStudents />} />
+          <Route path="/adminDebtorStudents" element={<DebtorStudents />} />
         </Route>
 
         <Route
@@ -110,11 +127,18 @@ function App() {
             element={<ExperiencePageAdmin />}
           />
           <Route path="/adminScience" element={<AdminSkillsPage />} />
-          <Route path="/branchPayments" element={<BranchPayments />} />
+          {/* <Route path="/branchPayments" element={<BranchPayments />} /> */}
+          <Route path="/adminPayments/student" element={<BranchStudentsPayments />} />
+          <Route path="/adminPayments/teachers" element={<BranchTeachersPayments />} />
           <Route path="/branchGroup" element={<BranchGroups />} />
+          <Route
+            path="/branchGroup/students/:groupId"
+            element={<BranchGoupsStudents />}
+          />
           <Route path="/branchGroup/:scheduleId" element={<BranchSchedule />} />
           <Route path="/branchStudents" element={<BranchStudents />} />
           <Route path="/adminprofile" element={<AdminProfile />} />
+          <Route path="/branchDebtorStudents" element={<DebtorStudents />} />
         </Route>
 
         <Route

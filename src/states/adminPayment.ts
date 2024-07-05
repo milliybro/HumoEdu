@@ -15,6 +15,6 @@ interface payments {
 
 }
 
-const usePayments = getData<payments>("account/payments/")
+const usePayments = getData<payments>("account/payments/?is_student=true");
 
 export default usePayments

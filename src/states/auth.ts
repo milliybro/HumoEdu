@@ -2,7 +2,15 @@ import { NavigateFunction } from "react-router-dom";
 import { create } from "zustand";
 import Cookies from "js-cookie";
 import { userLogin, userRegister } from "../types";
-import { ROLE, TOKEN, USERID, USERNAME, BRANCHID ,TEACHERID} from "../constants";
+import {
+  ROLE,
+  TOKEN,
+  USERID,
+  USERNAME,
+  BRANCHID,
+  TEACHERID,
+  REFRESH_TOKEN,
+} from "../constants";
 import { request } from "../request";
 import { toast } from "react-toastify";
 
@@ -11,40 +19,43 @@ type AuthTypes = {
   login: (data: userLogin, navigate: NavigateFunction) => void;
   logout: (navigate: NavigateFunction) => void;
   register: (data: userRegister, navigate: NavigateFunction) => void;
+  refreshAccessToken: () => void;
   userId: string;
   role: string | null;
-  username:string | null;
-  branchId:string | null;
-  teacherId:string | null;
+  username: string | null;
+  branchId: string | null;
+  teacherId: string | null;
 };
 
 export const useAuth = create<AuthTypes>((set, get) => ({
   isAuthenticated: Cookies.get(TOKEN) ? true : false,
   userId: Cookies.get(USERID) || "",
   role: Cookies.get(ROLE) || "",
-  username:Cookies.get(USERNAME) || "",
-  branchId:Cookies.get(BRANCHID) || "",
-  teacherId:Cookies.get(TEACHERID) || "",
+  username: Cookies.get(USERNAME) || "",
+  branchId: Cookies.get(BRANCHID) || "",
+  teacherId: Cookies.get(TEACHERID) || "",
+
   login: async (data, navigate) => {
     function isTokenExpired(accessToken: string) {
       const arrayToken = accessToken.split(".");
       const tokenPayload = JSON.parse(atob(arrayToken[1]));
       return tokenPayload;
     }
+
     try {
       const res = await request.post("account/login/", data);
       toast.success("Hisobga muvaffaqiyatli kirildi");
-      isTokenExpired(res.data.access);
+
       const tokenUser = isTokenExpired(res.data.access);
 
-      console.log(tokenUser.roles, "auth role");
-
       Cookies.set(TOKEN, res.data.access);
+      Cookies.set(REFRESH_TOKEN, res.data.refresh);
       Cookies.set(USERID, tokenUser.user_id);
       Cookies.set(ROLE, tokenUser.roles);
       Cookies.set(USERNAME, tokenUser.username);
       Cookies.set(BRANCHID, tokenUser.branch);
       Cookies.set(TEACHERID, tokenUser.profile);
+
       set({
         isAuthenticated: true,
         role: tokenUser.roles,
@@ -67,24 +78,51 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       toast.error("Parol yoki username xato!");
       console.log(err);
     }
-
   },
- logout: (navigate) => {
-    // Barcha cookie nomlarini olish
-    const allCookies = document.cookie.split(';');
-    
-    // Har bir cookie'ni o'chirish
-    allCookies.forEach(cookie => {
-        const cookieName = cookie.split('=')[0].trim();
-        Cookies.remove(cookieName, { path: '/' });
+
+  refreshAccessToken: async () => {
+    try {
+      const refresh = Cookies.get(REFRESH_TOKEN);
+      if (refresh) {
+        const res = await request.post("account/refresh/", { refresh });
+        const AccessToken = res.data.access;
+        // const allCookies = document.cookie.split(";");
+        //  allCookies.forEach((cookie) => {
+        //   const cookieName = cookie.split("=")[0].trim();
+        //   Cookies.remove(cookieName, { path: "/" });
+        // });
+        
+        Cookies.set(TOKEN, AccessToken);
+
+        set({ isAuthenticated: true });
+        // window.location.reload();
+
+      } else {
+         const allCookies = document.cookie.split(";");
+         allCookies.forEach((cookie) => {
+           const cookieName = cookie.split("=")[0].trim();
+           Cookies.remove(cookieName, { path: "/" });
+         });
+      }
+
+    } catch (err) {
+      toast.error("Session expired. Please login again.");
+      set({ isAuthenticated: false });
+      console.log(err);
+    }
+  },
+
+  logout: (navigate) => {
+    const allCookies = document.cookie.split(";");
+    allCookies.forEach((cookie) => {
+      const cookieName = cookie.split("=")[0].trim();
+      Cookies.remove(cookieName, { path: "/" });
     });
 
-    // Auth state yangilash
     set({ isAuthenticated: false });
-
-    // Navigatsiya qilish
     navigate("/");
   },
+
   register: async (data, navigate) => {
     try {
       const res = await request.post("auth/register", data);
@@ -96,3 +134,21 @@ export const useAuth = create<AuthTypes>((set, get) => ({
     }
   },
 }));
+
+export const ensureTokenValidity = () => {
+  const accessToken = Cookies.get(TOKEN);
+  if (accessToken) {
+    const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
+    const expTime = tokenPayload.exp * 1000;
+    const currentTime = Date.now();
+        // window.location.reload();
+    
+    if (expTime < currentTime) {
+
+      useAuth.getState().refreshAccessToken();
+
+    }
+  }
+};
+
+  

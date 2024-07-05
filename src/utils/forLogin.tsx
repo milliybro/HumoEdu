@@ -1,3 +1,4 @@
+
 import { NavigateFunction } from "react-router-dom";
 
 import { FormInstance } from "antd";
@@ -57,6 +58,7 @@ const useLoginStore = create<LoginStoreType>()(
       isAuthenticated: false,
       token: null,
       role: null,
+      
       login: async (form, navigate) => {
         try {
           set((state) => ({ ...state, loading: true }));

@@ -1,4 +1,5 @@
 export const TOKEN = "PORTFOLIO_TOKEN";
+export const REFRESH_TOKEN = "REFRESH_TOKEN";
 export const USERID = 'USERID';
 export const USERNAME = 'USERNAME';
 export const BRANCHID = "BRANCHID";

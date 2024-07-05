@@ -1,5 +1,5 @@
 import  { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Space, Input, Modal, Select, Table, Pagination, Checkbox } from "antd";
+import { Form, Button, Space, Input, Modal, Select, Table, Pagination, Checkbox , Row, Col} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useNavigate } from "react-router-dom";
 import useGroup from "../../../states/adminGroups";
@@ -104,23 +104,23 @@ const BranchGroups = () => {
     {
       title: "O'qituvchi",
       render: (record) =>
-        record.teacher.first_name + " " + record.teacher.last_name,
+        record?.teacher?.first_name + " " + record?.teacher?.last_name,
       key: "teacher",
     },
     {
       title: "Yordamchi o'qituvchi",
       render: (record) =>
-        record.sub_teacher ? record.sub_teacher.first_name + " " + record.sub_teacher.last_name : " ",
+        record.sub_teacher ? record?.sub_teacher?.first_name + " " + record?.sub_teacher?.last_name : " ",
       key: "sub_teacher",
     },
     {
       title: "O'quvchilar soni",
-      render: (record) => record.student.length,
+      render: (record) => record?.student?.length,
       key: "students",
     },
     {
       title: "Fillial",
-      render: (record) => record.branch.name,
+      render: (record) => record?.branch?.name,
       key: "branch",
     },
     {
@@ -189,7 +189,7 @@ const BranchGroups = () => {
     const deleteGroup = useCallback(
       async (id: number) => {
         try {
-          await request.delete(`account/staff-profile-delete/${id}/`);
+          await request.delete(`group/group-delete/${id}/`);
           getData();
         } catch (err) {
           console.error(err);
@@ -203,52 +203,72 @@ const BranchGroups = () => {
 
   const filteredData = selectedGroupName ? data.filter((group) => group.name.toLowerCase().includes(selectedGroupName.toLowerCase())) : data;
 
-  const editGroup = useCallback(
-    async (id) => {
-      try {
-        const { data } = await request.get(`group/group/${id}/`);
-        console.log(data);
-        const formattedData = {
-          id: data.id,
-          price: data.price,
-          name: data.name,
-          science: data.science.id,
-          branch: data.branch.id,
-          teacher: data.teacher.id,
-          sub_teacher:data.sub_teacher.map((st)=>st?.id),
-          student: data.student.map((studentMember) => studentMember),
-          status: data.status,
-        };
-        setEditId(formattedData.id);
-        form.setFieldsValue(formattedData);
-        showModal();
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [form, showModal]
-  );
+   const editGroup = useCallback(
+     async (id: number) => {
+       try {
+         const { data } = await request.get(`group/group/${id}/`);
+         console.log(data);
+         const formattedData = {
+           id: data.id,
+           price: data.price,
+           name: data.name,
+           science: data.science.id,
+           branch: data.branch.id,
+           teacher: data?.teacher?.id, // Sending teacher id instead of full name
+           sub_teacher:
+             typeof data.sub_teacher === "object" && data.sub_teacher !== null
+               ? data.sub_teacher.id
+               : undefined, // Sending sub_teacher id if exists
+           student: data.student.map((s) => s.id),
+           status: data.status,
+         };
+         setEditId(formattedData.id);
+         form.setFieldsValue(formattedData);
+       } catch (err) {
+         console.error(err);
+       }
+     },
+     [form]
+   );
 
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
+  const handleOk = (values) => {
+     console.log(values);
+
+    //  const clonedValues = structuredClone(values);
+
+    //  console.log(clonedValues);
+
+    //  if (editId) {
+    //    request.put(`group/group-update/${editId}/`, clonedValues).then(() => {
+    //      setEditId(null);
+    //      handleCancel();
+    //      getData();
+    //    });
+    //  } else {
+    //    request.post("group/group-create/", clonedValues).then(() => {
+    //      setEditId(null);
+    //      handleCancel();
+    //      getData();
+    //    });
+     
+      const clonedValues = structuredClone(values);
       const branch = branchId;
-      const updateValues = {...values, branch}
+      const updateValues = {...clonedValues, branch}
       if (editId) {
-        values.id = editId;
-        await request.put(`group/group-update/${editId}/`, updateValues);
+         request.put(`group/group-update/${editId}/`, updateValues).then(()=>{
+          setEditId(null);
+          handleCancel();
+          getData();
+          form.resetFields();
+        })
       } else {
-        await request.post("group/group-create/", updateValues);
-      }
-
-      setEditId(null);
-      handleCancel();
-      getData();
-      form.resetFields();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+         request.post("group/group-create/", updateValues).then(()=>{
+          setEditId(null);
+          handleCancel();
+          getData();
+          form.resetFields();
+        });
+     }};
 
   const [options, setOptions] = useState([]);
   const [teacherOptions, setTeacherOptions] = useState([]);
@@ -292,14 +312,14 @@ const BranchGroups = () => {
   }, [getData, selectedBranch, selectedScience, selectedStaff]);
 
  
-
+  
   const nextStudent = (id) => {
-    navigate(`/adminBranch/${id}`);
+    navigate(`/branchGroup/students/${id}`);
   };
 
   const nextSchedule = (id) => {
     localStorage.setItem("scheduleId", String(id));
-    navigate(`/adminGroup/${id}`);
+    navigate(`/branchGroup/${id}`);
   };
 
   const handleChangeStatus = (value) => {
@@ -309,54 +329,148 @@ const BranchGroups = () => {
 
   return (
     <Fragment>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
         <h3 style={{ fontWeight: 700, fontSize: 20 }}>Guruhlar boshqaruvi</h3>
-        <Button onClick={() => showModal(form)} type="primary" style={{ backgroundColor: "#264653", borderRadius: 5 }}>
+        <Button
+          onClick={() => showModal(form)}
+          type="primary"
+          style={{ backgroundColor: "#264653", borderRadius: 5 }}
+        >
           Guruh yaratish
         </Button>
       </div>
 
-      <Modal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} width={1000}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Guruh nomi" rules={[{ required: true, message: "Iltimos, guruh nomini kiriting" }]}>
-            <Input size="large" placeholder="Guruh nomini kiriting" />
-          </Form.Item>
-          <Form.Item name="price" label="Kurs narxi" rules={[{ required: true, message: "Iltimos, kurs narxini kiriting" }]}>
-            <Input type="number" size="large" placeholder="Kurs narxini kiriting" />
-          </Form.Item>
-          <Form.Item name="science" label="Fanlar" rules={[{ required: true, message: "Iltimos, fanni tanlang" }]}>
-            <Select size="large" placeholder="Fan tanlang" onChange={handleChangeScience}>
-              {science.map((value) => (
-                <Select.Option key={value.id} value={value.id}>
-                  {value.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        
-          <Form.Item name="teacher" label="O'qituvchi" rules={[{ required: true, message: "Iltimos, o'qituvchini tanlang" }]}>
-            <Select  size="large" placeholder="O'qituvchi tanlang" onChange={handleChangeStaff}>
-              {teacher.map((teacher) => (
-                <Select.Option key={teacher.id} value={teacher.id}>
-                  {teacher.first_name  + teacher.last_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-           <Form.Item name="sub_teacher" label="Yordamchi o'qituvchi " rules={[{ required: false, message: "Iltimos, o'qituvchini tanlang" }]}>
-            <Select mode="multiple" size="large" placeholder="Yordamchi o'qituvchi tanlang" onChange={handleChangeBranch}>
-              {teacher.map((teacher) => (
-               <Select.Option key={teacher.id} value={teacher.id}>
-                  {teacher.first_name  + teacher.last_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item name="student" label="O'quvchi" rules={[{ required: true, message: "Iltimos, o'quvchilarni tanlang" }]}>
-            <Select mode="multiple" size="large" placeholder="O'quvchilarni tanlang" onChange={handleChange}>
-              {student.map((student) => (
-                <Select.Option key={student.id} value={student.id}>
-                  {student.first_name + student.last_name}
+      <Modal
+        open={isModalOpen}
+        onOk={() => {
+          form.submit();
+        }}
+        okButtonProps={{ form: "group-update" }}
+        onCancel={handleCancel}
+        width={1000}
+      >
+        <Form
+          id="group-update"
+          form={form}
+          layout="vertical"
+          onFinish={handleOk}
+        >
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                name="name"
+                label="Guruh nomi"
+                rules={[
+                  { required: true, message: "Iltimos, guruh nomini kiriting" },
+                ]}
+              >
+                <Input size="large" placeholder="Guruh nomini kiriting" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="price"
+                label="Kurs narxi"
+                rules={[
+                  { required: true, message: "Iltimos, kurs narxini kiriting" },
+                ]}
+              >
+                <Input
+                  type="number"
+                  size="large"
+                  placeholder="Kurs narxini kiriting"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="science"
+                label="Fanlar"
+                rules={[{ required: true, message: "Iltimos, fanni tanlang" }]}
+              >
+                <Select
+                  size="large"
+                  placeholder="Fan tanlang"
+                  onChange={handleChangeScience}
+                >
+                  {science.map((value) => (
+                    <Select.Option key={value.id} value={value.id}>
+                      {value.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            
+            <Col span={8}>
+              <Form.Item
+                name="teacher"
+                label="O'qituvchi"
+                rules={[
+                  { required: true, message: "Iltimos, o'qituvchini tanlang" },
+                ]}
+              >
+                <Select
+                  size="large"
+                  placeholder="O'qituvchi tanlang"
+                  onChange={handleChangeStaff} // O'zgartirilgan
+                  allowClear
+                >
+                  {teacherOptions.map((teacher) => (
+                    <Select.Option key={teacher.value} value={teacher.value}>
+                      {teacher.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="sub_teacher"
+                label="Yordamchi o'quvchi"
+                rules={[
+                  { required: false, message: "Iltimos, o'qituvchini tanlang" },
+                ]}
+              >
+                <Select
+                  size="large"
+                  placeholder="Yordamchi o'qituvchini tanlang"
+                  onChange={handleChangeBranch}
+                  allowClear
+                >
+                  {teacherOptions.map((value) => (
+                    <Select.Option key={value.value} value={value.value}>
+                      {value.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            name="student"
+            label="O'quvchi"
+            rules={[
+              { required: true, message: "Iltimos, o'quvchilarni tanlang" },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              size="large"
+              placeholder="O'quvchilarni tanlang"
+              onChange={handleChange}
+            >
+              {options.map((student) => (
+                <Select.Option key={student.value} value={student.value}>
+                  {student.label}
                 </Select.Option>
               ))}
             </Select>
@@ -368,7 +482,13 @@ const BranchGroups = () => {
       </Modal>
 
       <Space style={{ margin: "15px 0" }}>
-        <Input placeholder="Search by group name" value={selectedGroupName} onChange={(e) => handleGroupSelectChange(e.target.value)} style={{ width: 200 }} suffix={<SearchOutlined />} />
+        <Input
+          placeholder="Search by group name"
+          value={selectedGroupName}
+          onChange={(e) => handleGroupSelectChange(e.target.value)}
+          style={{ width: 200 }}
+          suffix={<SearchOutlined />}
+        />
         {/* <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
           {branch.map((value) => (
             <Select.Option key={value.id} value={value.id}>
@@ -376,30 +496,57 @@ const BranchGroups = () => {
             </Select.Option>
           ))}
         </Select> */}
-        <Select placeholder="Fan tanlang" onChange={handleChangeScience} allowClear>
+        {/* <Select
+          placeholder="Fan tanlang"
+          onChange={handleChangeScience}
+          allowClear
+        >
           {science.map((value) => (
             <Select.Option key={value.id} value={value.id}>
               {value.name}
             </Select.Option>
           ))}
         </Select>
-        <Select placeholder="O'qituvchi tanlang" onChange={handleChangeStaff} allowClear>
+        <Select
+          placeholder="O'qituvchi tanlang"
+          onChange={handleChangeStaff}
+          allowClear
+        >
           {teacherOptions.map((teacher) => (
             <Select.Option key={teacher.value} value={teacher.value}>
               {teacher.label}
             </Select.Option>
           ))}
         </Select>
-        <Select placeholder="Status tanlang" onChange={handleChangeStatus} allowClear>
+        <Select
+          placeholder="Status tanlang"
+          onChange={handleChangeStatus}
+          allowClear
+        >
           <Select.Option value="active">Active</Select.Option>
           <Select.Option value="inactive">Inactive</Select.Option>
-        </Select>
-        <Button onClick={toggleSearch}>{isSearchOpen ? "Yopish" : "Izlash"}</Button>
+        </Select> */}
+        {/* <Button onClick={toggleSearch}>
+          {isSearchOpen ? "Yopish" : "Izlash"}
+        </Button> */}
       </Space>
 
-      <Table columns={columns} dataSource={filteredData} rowKey="id" pagination={false} loading={loading} />
+      <Table
+        style={{ width: "1300px" }}
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="id"
+        pagination={false}
+        loading={loading}
+      />
 
-      <Pagination current={page} total={total} onChange={handlePage} pageSize={10} style={{ marginTop: 20, textAlign: "center" }} />
+      <Pagination
+        current={page}
+        total={total}
+        onChange={handlePage}
+        pageSize={10}
+        style={{ marginTop: 20, textAlign: "center" }}
+      />
     </Fragment>
   );
 };

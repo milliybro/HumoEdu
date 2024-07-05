@@ -10,7 +10,8 @@ import {
   BranchesOutlined,
   UsergroupAddOutlined,
   WalletOutlined,
-  BookFilled
+  BookFilled,
+  UserDeleteOutlined,
 } from "@ant-design/icons";
 
 import { Layout, Menu, Button, Modal, Flex } from "antd";
@@ -61,7 +62,8 @@ const AdminLayout = () => {
               icon: <TeamOutlined />,
               label: (
                 <Link to="/adminUsers">
-                  Xodimlar {role !== "superadmin" ? <LockOutlined color="red" /> : null}
+                  Xodimlar{" "}
+                  {role !== "superadmin" ? <LockOutlined color="red" /> : null}
                 </Link>
               ),
             },
@@ -70,7 +72,9 @@ const AdminLayout = () => {
               key: "/portfolios",
               icon: <BranchesOutlined />,
               label: (
-                <Link to={role !== "superadmin" ? "/dashboard" : "/adminBranch"}>
+                <Link
+                  to={role !== "superadmin" ? "/dashboard" : "/adminBranch"}
+                >
                   Filial {role !== "superadmin" ? <LockOutlined /> : ""}
                 </Link>
               ),
@@ -87,17 +91,27 @@ const AdminLayout = () => {
             {
               key: "/adminPayments",
               icon: <WalletOutlined />,
-              label: (
-                <Link to={role!== "superadmin" ? "/dashboard" : "/adminPayments"}>
-                  To'lovlar {role !== "superadmin" ? <LockOutlined /> : ""}
-                </Link>
-              ),
+              label: "To'lovlar",
+              children: [
+                {
+                  key: "/superPayments/student",
+                  label: <Link to="/superPayments/student">O'quvchilar</Link>,
+                },
+                {
+                  key: "/superPayments/teachers",
+                  label: (
+                    <Link to="/superPayments/teachers">O'qituvchilar</Link>
+                  ),
+                },
+              ],
             },
             {
               key: "/adminStudents",
               icon: <DatabaseOutlined />,
               label: (
-                <Link to={role !== "superadmin" ? "/dashboard" : "/adminStudents"}>
+                <Link
+                  to={role !== "superadmin" ? "/dashboard" : "/adminStudents"}
+                >
                   O'quvchilar {role !== "superadmin" ? <LockOutlined /> : ""}
                 </Link>
               ),
@@ -106,8 +120,25 @@ const AdminLayout = () => {
               key: "/adminSciences",
               icon: <BookFilled />,
               label: (
-                <Link to={role !== "superadmin" ? "/dashboard" : "/adminScience"}>
+                <Link
+                  to={role !== "superadmin" ? "/dashboard" : "/adminScience"}
+                >
                   Fanlar {role !== "superadmin" ? <LockOutlined /> : ""}
+                </Link>
+              ),
+            },
+            {
+              key: "/adminDebtorStudents",
+              icon: <UserDeleteOutlined />,
+              label: (
+                <Link
+                  to={
+                    role !== "superadmin"
+                      ? "/dashboard"
+                      : "/adminDebtorStudents"
+                  }
+                >
+                  Qarzdorlar {role !== "superadmin" ? <LockOutlined /> : ""}
                 </Link>
               ),
             },
@@ -139,8 +170,6 @@ const AdminLayout = () => {
             //     </Link>
             //   ),
             // },
-            
-           
           ]}
         />
       </Sider>
@@ -185,17 +214,17 @@ const AdminLayout = () => {
               </Badge>
             </Link> */}
             <Button
-                  className="LogOut"
-                  onClick={() =>
-                    Modal.confirm({
-                      title: "Do you want to log out ?",
-                      onOk: () => logout(navigate),
-                    })
-                  }
-                >
-                  <img src={logoutImage} alt="" />
-                  Chiqish
-                </Button>
+              className="LogOut"
+              onClick={() =>
+                Modal.confirm({
+                  title: "Do you want to log out ?",
+                  onOk: () => logout(navigate),
+                })
+              }
+            >
+              <img src={logoutImage} alt="" />
+              Chiqish
+            </Button>
           </Flex>
         </Header>
         <Content

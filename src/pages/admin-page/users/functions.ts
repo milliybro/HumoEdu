@@ -6,6 +6,9 @@ export const patchChanges = (originalData, newData) => {
   const patchedData = {};
 
   Object.keys(newData).forEach((key) => {
+    if (Array.isArray(newData[key])) {
+      patchedData[key] = newData[key];
+    }
     if (typeof newData[key] === "object" && newData[key] !== null) {
       // Recursively compare nested objects
       const nestedChanges = patchChanges(originalData[key], newData[key]);
@@ -24,7 +27,11 @@ export const removeNullish = (obj) => {
   const newObj = {};
 
   Object.keys(obj).forEach((key) => {
-    if (obj[key] != null) {
+    if (Array.isArray(obj[key])) {
+      newObj[key] = obj[key].map(({value}) => value);
+      console.log(obj[key], newObj);
+    }
+    else if (obj[key] != null) {
       // Check for both null and undefined
       newObj[key] = obj[key];
     }

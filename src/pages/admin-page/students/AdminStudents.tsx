@@ -22,7 +22,7 @@ import { LIMIT } from "../../../constants";
 import { request } from "../../../request";
 import useStudent from "../../../states/adminStudents";
 import { patchChanges, removeNullish } from "../../../utils/functions";
-
+import useDebotStudent from "../../../states/debtorStudent";
 
 const { confirm } = Modal;
 
@@ -43,8 +43,8 @@ const AdminStudents = () => {
     handleOk,
     handlePage,
   } = useStudent();
-
-  const { branchId } = useParams();
+   
+  // const { branchId } = useParams();
   const [form] = useForm();
   const navigate = useNavigate();
   const [branches, setBranches] = useState([]);
@@ -327,7 +327,7 @@ console.log(originalData, "originalData");
         />
       ) : null}
       <Modal
-        visible={isModalOpen}
+        open={isModalOpen}
         title={editId ? "Edit Student" : "Create Student"}
         onCancel={handleCancel}
         footer={null}

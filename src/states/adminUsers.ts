@@ -1,6 +1,6 @@
-import { userInteface } from "../types";
+// import { userInteface } from "../types";
 import getData from "./data";
-
+// import { useAuth } from "./auth";
 interface users {
   _id: string;
   last_name: string;
@@ -10,8 +10,8 @@ interface users {
   salary: string;
 
 }
-
-const useUsers = getData<users>("account/staff-profiles/")
+// const  { branchId } = useAuth();
+const useUsers = getData<users>(`account/staff-profiles/`);
 
 export default useUsers
 

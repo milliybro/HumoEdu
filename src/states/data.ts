@@ -3,7 +3,7 @@ import { FormInstance, message } from "antd";
 import { request } from "../request";
 import { NavigateFunction } from "react-router-dom";
 
-function getData<T>(url: string) {
+ function getData<T>(url: string) {
   const params = new URLSearchParams(window.location.search);
 
   const page = params.get("offset") || 10;

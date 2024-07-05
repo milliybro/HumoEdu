@@ -22,16 +22,9 @@ import moment from "moment";
 const AdminPayments = () => {
   const {
     total,
-    loading,
     isModalOpen,
-    page,
-    getData,
-    editData,
-    deleteData,
-    SearchSkills,
     showModal,
     handleCancel,
-    handleOk,
     handlePage,
   } = usePayments();
 
@@ -39,42 +32,32 @@ const AdminPayments = () => {
   console.log(branchId, "branchId");
 
   const [form] = useForm();
-  const navigate = useNavigate();
   const [student, setStudent] = useState([]);
   const [mygroup, setMyGroup] = useState([]);
-  const [editId, setEditId] = useState(null); // State variable to hold the id
-  // const [branch, setBranch] = useState([]);
-  const [teacher, setTeacher] = useState([]);
-  // const [isSearchOpen, setIsSearchOpen] = useState(false);
-  // const [selectedGroupName, setSelectedGroupName] = useState("");
-  // const [selectedStatus, setSelectedStatus] = useState("");
+  const [editId, setEditId] = useState(null); 
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
-  const [data, setData] = useState([])
+  const [data, setData] = useState([]);
   const [groupId, setGroupId] = useState(null);
-  const { confirm } = Modal;
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [activeButton, setActiveButton] = useState<"student" | "teacher">(
-    "student"
-  ); // Added state for active button
+  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(false)
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await request.get(
+        `account/payments/?is_student=true`
+      );
+      const responseData = res.data;
+      setData(responseData.results);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false)
+  }, [branchId]);
 
-  // getData funksiyasini o'zgartiramiz
-   const fetchData = useCallback(async (isStudent, offset = 0) => {
-     try {
-       const res = await request.get(
-         `account/payments/?is_student=${isStudent}&limit=10&offset=${offset}`
-       );
-       const responseData = res.data;
-       setData(responseData.results);
-     } catch (err) {
-       console.error(err);
-     }
-   }, []);
-
-   useEffect(() => {
-     const offset = activeButton === "student" ? 0 : 0; // Adjust offset based on activeButton
-     fetchData(activeButton === "student", offset);
-   }, [fetchData, activeButton]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const columns = [
     {
@@ -85,10 +68,7 @@ const AdminPayments = () => {
     },
     {
       title: "Ism Familiya",
-      render: (text) =>
-        activeButton === "teacher"
-          ? text?.teacher?.first_name + text?.teacher?.last_name
-          : text?.student?.first_name + " " + text?.student?.last_name,
+      render: (text) =>text?.student?.first_name + " " + text?.student?.last_name,
       key: "student",
     },
     {
@@ -114,16 +94,7 @@ const AdminPayments = () => {
       render: (text) => text.from_date,
       key: "from_date",
     },
-    {
-      title: "Kunlik",
-      render: (text) => {
-        const fromDate = moment(text.from_date);
-        const toDate = moment(text.to_date);
-        const differenceInDays = toDate.diff(fromDate, "days");
-        return differenceInDays + " kun";
-      },
-      key: "date",
-    },
+    
     {
       title: "sanagacha",
       render: (text) => text.to_date,
@@ -146,15 +117,7 @@ const AdminPayments = () => {
           >
             Edit
           </Button>
-          <Button
-            onClick={() => showDeleteConfirm(id)}
-            type="primary"
-            style={{
-              backgroundColor: "#f54949",
-            }}
-          >
-            Delete
-          </Button>
+          
         </Space>
       ),
     },
@@ -167,13 +130,12 @@ const AdminPayments = () => {
         const formattedData = {
           id: data.id,
           price_sum: data.price_sum,
-          student: data.student
-            ? data.student.first_name + " " + data.student.last_name
-            : null,
-          teacher: data.teacher
-            ? data.teacher.first_name + " " + data.teacher.last_name
-            : null,
-          group: data.group.name,
+          student: {
+              label: `${data?.student?.first_name} ${data?.student?.last_name}`,
+              value: data?.student?.id,
+          },
+          
+          group: data.group.id,
           date: [
             moment(data.date.from_date).format("MM/DD/YYYY HH:mm:ss"),
             moment(data.date.to_date).format("MM/DD/YYYY HH:mm:ss"),
@@ -200,16 +162,23 @@ const AdminPayments = () => {
         moment(values.date.from_date).valueOf(),
         moment(values.date.to_date).valueOf(),
       ];
-
+        if (values.student && typeof values.student === "object") {
+          values.student = values.student.value; // Use the value (ID) of the student object
+        }
       if (editId) {
         values.id = editId;
+
         await request.patch(`account/payment-update/${editId}/`, values);
+        setEditId(null);
+        handleCancel();
+        fetchData();
       } else {
         await request.post("account/payment-create/", values);
+        setEditId(null);
+        handleCancel();
+        fetchData(); 
       }
-      setEditId(null);
-      handleCancel();
-      fetchData(activeButton === "student"); // Refresh data after adding new staff or editing existing one
+      // Refresh data after adding new staff or editing existing one
     } catch (err) {
       console.error(err);
     }
@@ -226,23 +195,23 @@ const AdminPayments = () => {
     } catch (error) {
       console.log();
     }
-  }, []);
-
-   
+  }, [groupId]);
 
   const getGroup = useCallback(async () => {
     try {
       const res = await request.get(`group/groups/`);
       const data = res.data.results;
       setMyGroup(data);
-      console.log(data)
+      console.log(data);
     } catch (err) {
       console.log(err);
     }
   }, []);
 
   useEffect(() => {
-    getStudent();
+    if (groupId !== null) {
+      getStudent(groupId);
+    }
     getGroup();
   }, [getStudent, getGroup]);
 
@@ -263,34 +232,7 @@ const AdminPayments = () => {
   };
 
   ///// delete modal  ///////
-  const showDeleteConfirm = (id: number) => {
-    confirm({
-      title: "Bu to'lovni ro'yhatdan o'chirishni hohlaysizmi?",
-      icon: <ExclamationCircleOutlined />,
-      content: "Bu amalni ortga qaytarib bo‘lmaydi.",
-      okText: "ha",
-      okType: "danger",
-      cancelText: "ortga",
-      onOk() {
-        deletePayment(id);
-      },
-      onCancel() {
-        setDeleteModal(false);
-      },
-    });
-  };
-
-  const deletePayment = useCallback(
-    async (id) => {
-      try {
-        await request.delete(`account/payment-delete/${id}/`);
-        fetchData(activeButton === "student");
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [fetchData, activeButton]
-  );
+ 
 
   const handleChangeBranch = (value) => {
     setSelectedBranch(value);
@@ -304,34 +246,39 @@ const AdminPayments = () => {
     fetchData(selectedBranch, selectedStaff);
   }, [fetchData, selectedBranch, selectedStaff]);
 
-  const [teacherOptions, setTeacherOptions] = useState([]);
-  useEffect(() => {
-    const teacherOptions = teacher
-      .filter((value) => value?.user.roles === "teacher")
-      .map((value) => ({
-        label: `${value?.first_name} ${value?.last_name}`,
-        value: value.id,
-      }));
-    setTeacherOptions(teacherOptions);
-  }, [teacher]);
+  // const [teacherOptions, setTeacherOptions] = useState([]);
+  // useEffect(() => {
+  //   const teacherOptions = teacher
+  //     .filter((value) => value?.user.roles === "teacher")
+  //     .map((value) => ({
+  //       label: `${value?.first_name} ${value?.last_name}`,
+  //       value: value.id,
+  //     }));
+  //   setTeacherOptions(teacherOptions);
+  // }, [teacher]);
+
+
+  //////// search input  /////////////
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  const filteredData = data.filter((item) =>
+    `${item.student.first_name} ${item.student.last_name}`
+      .toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
 
   return (
     <Fragment>
-      <div className="flex items-center justify-between mb-4">
-        <div className="space-x-4">
-          <Button
-            type={activeButton === "student" ? "primary" : "default"}
-            onClick={() => setActiveButton("student")}
-          >
-            Studentlar
-          </Button>
-          <Button
-            type={activeButton === "teacher" ? "primary" : "default"}
-            onClick={() => setActiveButton("teacher")}
-          >
-            O'qituvchilar
-          </Button>
-        </div>
+      <div className="flex items-center justify-between my-4">
+        <h1 className="font-medium">O'quvchilar to'lovlari</h1>
+        <Input
+          placeholder="Search by student name"
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
+          style={{ width: 200 }}
+        />
         <Button
           onClick={() => showModal(form)}
           style={{ backgroundColor: "#264653", color: "white" }}
@@ -342,9 +289,9 @@ const AdminPayments = () => {
 
       <Table
         rowKey="id"
-        loading={loading}
-        dataSource={data}
+        dataSource={filteredData}
         columns={columns}
+        loading={loading}
         pagination={{
           total: total,
           pageSize: 10,
@@ -364,7 +311,6 @@ const AdminPayments = () => {
           <Button
             key="submit"
             type="primary"
-            loading={loading}
             onClick={() => handleForm(form)}
           >
             Saqlash
@@ -386,28 +332,18 @@ const AdminPayments = () => {
               }))}
             />
           </Form.Item>
-          <Form.Item
-            name={activeButton === "student" ? "student" : "teacher"}
-            label={activeButton === "student" ? "Student" : "Teacher"}
-          >
+          <Form.Item name="student" label="student">
             <Select
               showSearch
-              placeholder={activeButton === "student" ? "Student" : "Teacher"}
+              placeholder="student"
               optionFilterProp="children"
               onChange={onChange}
               onSearch={onSearch}
               filterOption={filterOption}
-              options={
-                activeButton === "teacher"
-                  ? teacher.map((t) => ({
-                      label: `${t?.first_name} ${t?.last_name}`,
-                      value: t?.id,
-                    }))
-                  : student.map((item) => ({
-                      label: `${item?.first_name} ${item?.last_name}`,
-                      value: item?.id,
-                    }))
-              }
+              options={student.map((item) => ({
+                label: `${item?.first_name} ${item?.last_name}`,
+                value: item?.id,
+              }))}
             />
           </Form.Item>
 

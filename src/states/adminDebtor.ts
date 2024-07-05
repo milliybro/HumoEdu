@@ -9,9 +9,8 @@ interface students {
   endDate: string;
   user: null | userInteface;
   __v: number;
-
 }
 
-const useStudent = getData<students>("account/student-profiles/")
+const useDebtorStudent = getData<students>("account/debtor-student-profiles/");
 
-export default useStudent;
+export default useDebtorStudent;

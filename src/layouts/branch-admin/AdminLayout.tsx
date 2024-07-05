@@ -10,7 +10,7 @@ import {
   BranchesOutlined,
   UsergroupAddOutlined,
   WalletOutlined,
-  BookFilled,
+  UserDeleteOutlined,
 } from "@ant-design/icons";
 
 import { Layout, Menu, Button, Modal, Badge } from "antd";
@@ -91,11 +91,17 @@ const BranchAdminLayout = () => {
     {
       key: "/adminPayments",
       icon: <WalletOutlined />,
-      label: (
-        <Link to={role!== "admin" ? "/branchDashboard" : "/branchPayments"}>
-          To'lovlar {role !== "admin" ? <LockOutlined /> : ""}
-        </Link>
-      ),
+      label: "To'lovlar",
+      children: [
+        {
+          key: "/adminPayments/student",
+          label: <Link to="/adminPayments/student">O'quvchilar</Link>,
+        },
+        {
+          key: "/adminPayments/teachers",
+          label: <Link to="/adminPayments/teachers">O'qituvchilar</Link>,
+        },
+      ],
     },
     {
       key: "/adminStudents",
@@ -105,7 +111,20 @@ const BranchAdminLayout = () => {
           O'quvchilar {role !== "admin" ? <LockOutlined /> : ""}
         </Link>
       ),
-    }
+    },
+    {
+      key: "/branchDebtorStudents",
+      icon: <UserDeleteOutlined />,
+      label: (
+        <Link
+          to={
+            role !== "admin" ? "/branchDebtorStudents" : "/branchDebtorStudents"
+          }
+        >
+          Qarzdorlar {role !== "admin" ? <LockOutlined /> : ""}
+        </Link>
+      ),
+    },
   ];
 
   return (

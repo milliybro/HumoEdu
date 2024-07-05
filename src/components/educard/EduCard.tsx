@@ -1,8 +1,7 @@
 import { Button } from "antd";
 import "./educard.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 import Loading from '../authLoading/Loading';
-
 export interface EduCardProps {
   _id: string;
   id: string;
@@ -22,11 +21,12 @@ const EduCard = ({
   name,
   price,
   teacher,
-  student,
   science,
-  start_at,
-  end_at,
 }: EduCardProps) => {
+  const navigate = useNavigate();
+  const handleNavigate = (groupId) =>{
+     navigate(`${groupId}`);
+  }
   return (
     <div className="eduCard" id={_id}>
       <div className="main">
@@ -50,10 +50,8 @@ const EduCard = ({
             </h4>
           </div>
           <div className="card-btn">
-            <Button>
-              <Link to={`/my-group/${id}`} type="primary">
+          <Button onClick={()=>handleNavigate(id)}>
                   guruh yo'qlamalari
-              </Link>
           </Button>
           </div>
         </div>

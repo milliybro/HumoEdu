@@ -23,15 +23,15 @@ const UsersPageBranch = () => {
   const navigate = useNavigate();
   const [editId, setEditId] = useState(null);
   const [user, setUser] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState(null);
+  // const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [position, setPosition] = useState([]);
   const [deleteStaff, setDeleteStaff] = useState(false)
 
   useEffect(() => {
-    getData(selectedBranch); // Fetch data based on the selected branch
-  }, [getData, selectedBranch]);
+    getData(); // Fetch data based on the selected branch
+  }, [getData,]);
 
   
 
@@ -192,7 +192,7 @@ const UsersPageBranch = () => {
   const deleteStaffFunc = useCallback(
     async (id:number) => {
       try {
-        await request.delete(`group/group-delete/${id}/`);
+        await request.delete(`account/staff-profile-delete/${id}/`);
         getData();
       } catch (err) {
         console.error(err);
@@ -254,8 +254,8 @@ const UsersPageBranch = () => {
   };
 
   useEffect(() => {
-    getData(selectedBranch, selectedRole, selectedUser); // Fetch data based on the selected role
-  }, [getData, selectedBranch, selectedRole, selectedUser]);
+    getData(branchId, selectedRole, selectedUser); // Fetch data based on the selected role
+  }, [getData, branchId, selectedRole, selectedUser]);
 
   const [positionOptions, setPositionOptions] = useState([]);
 

@@ -121,7 +121,7 @@ const AdminGroups = () => {
     },
     {
       title: "Yordamchi o'qituvchi",
-      render: (record) => record.sub_teacher?.first_name + " " + record.sub_teacher?.last_name,
+      render: (record) => record.sub_teacher ? record.sub_teacher?.first_name + " " + record.sub_teacher?.last_name : "-",
       key: "teacher",
     },
     {
@@ -185,8 +185,8 @@ const AdminGroups = () => {
           science: data.science.id,
           branch: data.branch.id,
           teacher: data.teacher.id, // Sending teacher id instead of full name
-          sub_teacher: data.sub_teacher ? data.sub_teacher.id : "", // Sending sub_teacher id if exists
-          student: data.student.map((studentMember) => studentMember),
+          sub_teacher: typeof data.sub_teacher === 'object' && data.sub_teacher !== null ? data.sub_teacher.id : undefined, // Sending sub_teacher id if exists
+          student: data.student.map((s) => s.id),
           status: data.status,
         };
         setEditId(formattedData.id);
@@ -198,40 +198,65 @@ const AdminGroups = () => {
     [form]
   );
 
- const handleOk = async () => {
-   try {
-     const values = await form.validateFields();
+ const handleOk = (values) => {
+  console.log(values);
 
-     // Remove nullish values from the form data
-     const cleanedValues = removeNullish(values);
+  const clonedValues = structuredClone(values);
 
-     if (editId) {
-       cleanedValues.id = editId;
-       const changes = patchChanges(values, cleanedValues);
+  console.log(clonedValues);
 
-       // Replace the required fields with their new values if changed
-       if (changes.branch) {
-         cleanedValues.branch = changes.branch;
-       }
-       if (changes.name) {
-         cleanedValues.name = changes.name;
-       }
-       if (changes.student) {
-         cleanedValues.student = changes.student;
-       }
+  if (editId) {
+    request.put(`group/group-update/${editId}/`, clonedValues).then(() => {
+      setEditId(null);
+      handleCancel();
+      getData();
+    });
+  } else {
+    request.post("group/group-create/", clonedValues).then(() => {
+      setEditId(null);
+      handleCancel();
+      getData();
+    });
+  }
 
-       await request.put(`group/group-update/${editId}/`, cleanedValues);
-     } else {
-       await request.post("group/group-create/", cleanedValues);
-     }
+  
+  // form.resetFields();
 
-     setEditId(null);
-     handleCancel();
-     getData();
-     form.resetFields();
-   } catch (err) {
-     console.error(err);
-   }
+  //  try {
+
+  //    // Remove nullish values from the form data
+  //   //  const cleanedValues = removeNullish(values);
+  //   const cleanedValues = values;
+  //   //  console.log(cleanedValues, values)
+
+  //    if (editId) {
+  //      cleanedValues.id = editId;
+  //      const changes = patchChanges(values, cleanedValues);
+
+  //      // Replace the required fields with their new values if changed
+  //      if (changes.branch) {
+  //        cleanedValues.branch = changes.branch;
+  //      }
+  //      if (changes.name) {
+  //        cleanedValues.name = changes.name;
+  //      }
+  //      cleanedValues.student = changes.student.map(({value}) => value);
+       
+
+  //      await request.put(`group/group-update/${editId}/`, cleanedValues);
+  //    } else {
+  //    cleanedValues.student = cleanedValues.student.map(({value}) => value);
+
+  //      await request.post("group/group-create/", cleanedValues);
+  //    }
+
+    //  setEditId(null);
+    //  handleCancel();
+    //  getData();
+    //  form.resetFields();
+  //  } catch (err) {
+  //    console.error(err);
+  //  }
  };
 
   const [options, setOptions] = useState([]);
@@ -373,11 +398,17 @@ const AdminGroups = () => {
 
       <Modal
         open={isModalOpen}
-        onOk={handleOk}
+        onOk={() => {form.submit()}}
+        okButtonProps={{ form: "group-update" }}
         onCancel={handleCancel}
         width={1000}
       >
-        <Form form={form} layout="vertical">
+        <Form
+          id="group-update"
+          form={form}
+          layout="vertical"
+          onFinish={handleOk}
+        >
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
@@ -459,6 +490,7 @@ const AdminGroups = () => {
                   size="large"
                   placeholder="O'qituvchi tanlang"
                   onChange={handleChangeStaff} // O'zgartirilgan
+                  allowClear
                 >
                   {teacherOptions.map((teacher) => (
                     <Select.Option key={teacher.value} value={teacher.value}>
@@ -480,6 +512,7 @@ const AdminGroups = () => {
                   size="large"
                   placeholder="Yordamchi o'qituvchini tanlang"
                   onChange={handleChangeBranch}
+                  allowClear
                 >
                   {teacherOptions.map((value) => (
                     <Select.Option key={value.value} value={value.value}>
@@ -504,7 +537,7 @@ const AdminGroups = () => {
               onChange={handleChange}
             >
               {options.map((student) => (
-                <Select.Option key={student.value} value={student.id}>
+                <Select.Option key={student.value} value={student.value}>
                   {student.label}
                 </Select.Option>
               ))}
@@ -535,7 +568,7 @@ const AdminGroups = () => {
             </Select.Option>
           ))}
         </Select>
-        <Select
+        {/* <Select
           placeholder="Fan tanlang"
           onChange={handleChangeScience}
           allowClear
@@ -545,8 +578,8 @@ const AdminGroups = () => {
               {value.name}
             </Select.Option>
           ))}
-        </Select>
-        <Select
+        </Select> */}
+        {/* <Select
           placeholder="O'qituvchi tanlang"
           onChange={handleChangeStaff}
           allowClear
@@ -556,7 +589,7 @@ const AdminGroups = () => {
               {teacher.label}
             </Select.Option>
           ))}
-        </Select>
+        </Select> */}
         <Select
           placeholder="Status tanlang"
           onChange={handleChangeStatus}
