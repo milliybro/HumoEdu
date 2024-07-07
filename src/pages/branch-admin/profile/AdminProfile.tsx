@@ -1,29 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Input, Button, Form, DatePicker, Space, Row, Col } from "antd";
+import React, { useState, useEffect  } from "react";
+import { Button, Modal , Input, Space, Row, Col} from "antd";
 import { Profile } from "../types";
 import { request } from "../../../request";
 import { useAuth } from "../../../states/auth";
 import LoadingContents from "../../../components/loading/LoadingContents";
 import moment from "moment";
-import './profile.scss'
-// import { useNumberStore } from "../../../states/adminProfile";
+import "./profile.scss";
+
 const AdminProfile: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [editing, setEditing] = useState<boolean>(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const { userId } = useAuth();
-  //////// branchidni storega saqlash /////////
-  // const  setNumber  = useNumberStore((state)=>state.setNumber);
-  // useEffect(()=>{
-  //     if(profile?.branch?.id){
-  //       setNumber(profile?.branch?.id);
-  //     }
-  // },[profile?.branch?.id])
- 
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await request.get(`account/staff-profiles/?user=${userId}`);
+        const { data } = await request.get(
+          `account/staff-profiles/?user=${userId}`
+        );
         setProfile(data.results[0]);
         console.log(data.results[0]);
       } catch (error) {
@@ -36,129 +30,87 @@ const AdminProfile: React.FC = () => {
     }
   }, [userId]);
 
-  const handleEdit = () => {
-    setEditing(true);
+  const handleModalOpen = () => {
+    setModalVisible(true);
   };
 
-   const handleSave = async () => {
-    //  try {
-    //    const formData = new FormData();
-    //    formData.append("last_name", profile?.last_name || "");
-    //    formData.append("first_name", profile?.first_name || "");
-    //    formData.append("birthday", profile?.birthday || "");
-    //    formData.append("start_at", profile?.start_at || "");
-    //    formData.append("end_at", profile?.end_at || "");
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
 
-    //    await request.put(`account/student-profile-update/${userId}/`, formData);
-    //    setEditing(false);
-    //    console.log("Profil ma'lumotlari saqlandi");
-    //  } catch (error) {
-    //    console.error("Profil ma'lumotlarini saqlashda xatolik:", error);
-    //  }
-       setEditing(false);
-   };
+  const handleModalSave = async () => {
+    try {
+      await request.put(`account/student-profile-update/${userId}/`, {
+        
+      });
+      console.log("Profile updated successfully");
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
 
   if (!profile) {
-    return (
-      <div>
-        <LoadingContents />
-      </div>
-    );
+    return <LoadingContents />;
   }
-  
-  console.log(profile?.branch?.id);
-  
 
   return (
-    <div>
-      <div className="wrapper-user">
-        <h1>Admin Profile</h1>
-        <div>
-          <img src={profile.image} alt="user image" width={50} height={50} />
-        </div>
+    <div className="mx-auto max-w-4xl p-6 bg-white rounded shadow-md">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Admin Profile</h1>
+        <img
+          src={profile.image}
+          alt="user image"
+          className="w-12 h-12 rounded-full"
+        />
       </div>
-      <Space>
-        <Form layout="vertical">
-          <Row gutter={24}>
-            <Col span={8}>
-              <Form.Item label="ID">
-                <Input value={profile.id} disabled />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Familiya">
-                <Input
-                  value={profile.last_name}
-                  disabled={!editing}
-                  onChange={(e) =>
-                    setProfile({ ...profile, last_name: e.target.value })
-                  }
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Ism">
-                <Input
-                  value={profile.first_name}
-                  disabled={!editing}
-                  onChange={(e) =>
-                    setProfile({ ...profile, first_name: e.target.value })
-                  }
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Foydalanuvchi nomi">
-                <Input value={profile.user?.username} disabled={!editing} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Rol">
-                <Input value={profile.user?.roles} disabled />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Filial nomi">
-                <Input value={profile.branch?.name} disabled={!editing} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Filial manzili">
-                <Input value={profile.branch?.address} disabled={!editing} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Telefon raqami">
-                <Input value={profile.phone_number} disabled={!editing} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Maosh">
-                <Input value={profile.salary} disabled />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Tug'ilgan kun">
-                <DatePicker
-                  value={moment(profile.birthday)}
-                  format="YYYY-MM-DD"
-                  disabled={!editing}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col span={8}>
-              <Button
-                style={{ marginTop: 30 }}
-                type="primary"
-                onClick={editing ? handleSave : handleEdit}
-              >
-                {editing ? "Saqlash" : "Tahrirlash"}
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-      </Space>
+      <div className="space-y-4">
+        <p>
+          <strong>ID:</strong> {profile.id}
+        </p>
+        <p>
+          <strong>Familiya:</strong> {profile.last_name}
+        </p>
+        <p>
+          <strong>Ism:</strong> {profile.first_name}
+        </p>
+        <p>
+          <strong>Foydalanuvchi nomi:</strong> {profile.user?.username}
+        </p>
+        <p>
+          <strong>Rol:</strong> {profile.user?.roles}
+        </p>
+        <p>
+          <strong>Filial nomi:</strong> {profile.branch?.name}
+        </p>
+        <p>
+          <strong>Filial manzili:</strong> {profile.branch?.address}
+        </p>
+        <p>
+          <strong>Telefon raqami:</strong> {profile.phone_number}
+        </p>
+        <p>
+          <strong>Maosh:</strong> {profile.salary}
+        </p>
+        <p>
+          <strong>Tug'ilgan kun:</strong>{" "}
+          {moment(profile.birthday).format("YYYY-MM-DD")}
+        </p>
+      </div>
+      <div className="mt-6">
+        <Button type="primary" onClick={handleModalOpen}>
+          Tahrirlash
+        </Button>
+      </div>
+      <Modal
+        open={modalVisible}
+        onCancel={handleModalClose}
+        onOk={handleModalSave}
+      >
+        <Input value={profile?.first_name}   />
+        <Input value={profile?.last_name} />
+        <Input value={profile?.phone_number} />
+      </Modal>
     </div>
   );
 };

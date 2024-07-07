@@ -31,7 +31,6 @@ const AdminSchedule = () => {
     showModal,
     handleCancel,
     handlePage,
-    SearchSkills,
   } = useSchedule();
   const { scheduleId } = useParams();
   const [form] = useForm();
@@ -41,20 +40,22 @@ const AdminSchedule = () => {
   const [selectedScience, setSelectedScience] = useState<string | null>(null);
   const [originalData, setOriginalData] = useState(null);
   const [rooms, setRooms] = useState([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // Yangi holat (state) qo'shildi
 
   const getSchedule = useCallback(async () => {
     try {
       const { data } = await request.get(
         `group/lessonschedules/?group=${scheduleId}`
       );
-      if (Array.isArray(data)) {
-        setSchedule(data);
-      } else {
-        console.error("Data received is not an array:", data);
-        setSchedule([]);
-      }
+      setSchedule(data);
+      setOriginalData(data); // Asl ma'lumotlarni saqlaymiz
     } catch (err) {
       console.error("Failed to fetch schedule:", err);
+      setSchedule([]); // Optionally reset schedule on error
     }
   }, [scheduleId]);
 
@@ -75,14 +76,34 @@ const AdminSchedule = () => {
         end_time: values.end_time || null,
       };
 
-      await request.post("group/lessonschedule-create/", formattedValues);
+      if (currentRecord) {
+        await request.patch(
+          `group/lessonschedule-update/${currentRecord.id}/`,
+          formattedValues
+        );
+      } else {
+        await request.post("group/lessonschedule-create/", formattedValues);
+      }
 
       getData();
       getSchedule();
       handleCancel();
       form.resetFields();
+      setEditModalVisible(false);
+      setCurrentRecord(null);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await request.delete(`group/lessonschedule-delete/${deleteItemId}/`);
+      setDeleteModalVisible(false);
+      getData();
+      getSchedule();
+    } catch (err) {
+      console.error("Failed to delete schedule:", err);
     }
   };
 
@@ -95,10 +116,48 @@ const AdminSchedule = () => {
     }
   }, []);
 
+  const getRooms = useCallback(async () => {
+    try {
+      const res = await request.get(`branch/rooms/`);
+      setRooms(res.data.results);
+    } catch (err) {
+      console.error("Failed to fetch rooms:", err);
+    }
+  }, []);
+
   useEffect(() => {
     getSchedule();
     getScience();
-  }, [getSchedule, getScience]);
+    getRooms();
+  }, [getSchedule, getScience, getRooms]);
+
+  const handleEdit = (record) => {
+    setCurrentRecord(record);
+    form.setFieldsValue({
+      room: record.room.id,
+      group: record.group.id,
+      days: record.days,
+      start_time: record.start_time,
+      end_time: record.end_time,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleCreateSchedule = () => {
+    setCurrentRecord(null);
+    form.resetFields();
+    setEditModalVisible(true);
+  };
+
+  const handleConfirmDelete = (record) => {
+    setDeleteItemId(record.id);
+    setDeleteModalVisible(true);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalVisible(false);
+    setDeleteItemId(null);
+  };
 
   const columns = [
     {
@@ -135,6 +194,24 @@ const AdminSchedule = () => {
       dataIndex: "end_time",
       key: "end_time",
     },
+    {
+      title: "Actions",
+      render: (record) => (
+        <Space size="middle">
+          <Button type="primary" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
+          <Button
+            type="primary"
+            danger
+            onClick={() => handleConfirmDelete(record)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+      key: "actions",
+    },
   ];
 
   const handleChangeScience = (value) => {
@@ -145,6 +222,17 @@ const AdminSchedule = () => {
     getData(selectedScience);
   }, [getData, selectedScience]);
 
+  useEffect(() => {
+    if (searchTerm === "") {
+      setSchedule(originalData);
+    } else {
+      const filteredSchedule = originalData.filter((item) =>
+        item.room.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSchedule(filteredSchedule);
+    }
+  }, [searchTerm, originalData]);
+
   const options = [
     { label: "Dushanba", value: "Dushanba" },
     { label: "Seshanba", value: "Seshanba" },
@@ -153,7 +241,6 @@ const AdminSchedule = () => {
     { label: "Juma", value: "Juma" },
     { label: "Shanba", value: "Shanba" },
   ];
-
   return (
     <Fragment>
       <section id="search">
@@ -173,7 +260,7 @@ const AdminSchedule = () => {
               style={{ marginBottom: 20 }}
             >
               <Col>
-                <h1>Dars jadvali ({schedule.length})</h1>
+                <h1>Dars jadvali ({schedule ? schedule.length : 0})</h1>
               </Col>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "70px" }}
@@ -181,7 +268,7 @@ const AdminSchedule = () => {
                 <Col>
                   <div className="search-box">
                     <Input
-                      onChange={(e) => SearchSkills(e)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       className={
                         isSearchOpen ? "searchInput open" : "searchInput"
                       }
@@ -195,6 +282,11 @@ const AdminSchedule = () => {
                       )}
                     </a>
                   </div>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={handleCreateSchedule}>
+                    Dars jadvali yaratish
+                  </Button>
                 </Col>
               </div>
             </Row>
@@ -210,31 +302,32 @@ const AdminSchedule = () => {
         dataSource={schedule}
         columns={columns}
       />
-      {total > LIMIT && (
-        <Pagination
-          className="pagination"
-          total={total}
-          pageSize={LIMIT}
-          current={page}
-          onChange={handlePage}
-        />
-      )}
+      <Pagination
+        style={{ paddingTop: "20px", float: "right" }}
+        onChange={handlePage}
+        current={page}
+        total={total}
+        pageSize={LIMIT}
+      />
       <Modal
-        open={isModalOpen}
-        title="Dars jadvali qo'shish"
-        onCancel={handleCancel}
-        footer={null}
+        title={currentRecord ? "Edit Schedule" : "Create Schedule"}
+        open={editModalVisible}
+        onOk={handleOk}
+        onCancel={() => setEditModalVisible(false)}
+        okText={currentRecord ? "Save Changes" : "Create"}
+        cancelText="Cancel"
+        width={600}
       >
-        <Form form={form} layout="vertical" onFinish={handleOk}>
+        <Form form={form} layout="vertical">
           <Form.Item
             label="Xona"
             name="room"
-            rules={[{ required: true, message: "Please fill!" }]}
+            rules={[{ required: true, message: "Iltimos xonani tanlang" }]}
           >
-            <Select placeholder="Xona tanlang" allowClear>
+            <Select placeholder="Xonani tanlang">
               {rooms.map((room) => (
                 <Select.Option key={room.id} value={room.id}>
-                  {room.name}
+                  {room.number} - {room.name}
                 </Select.Option>
               ))}
             </Select>
@@ -242,47 +335,53 @@ const AdminSchedule = () => {
           <Form.Item
             label="Guruh"
             name="group"
-            rules={[{ required: true, message: "Please fill!" }]}
+            rules={[{ required: true, message: "Iltimos guruhni tanlang" }]}
           >
-            <Select
-              placeholder="Fan tanlang"
-              onChange={handleChangeScience}
-              allowClear
-            >
-              {science.map((value) => (
-                <Select.Option key={value.id} value={value.id}>
-                  {value.name}
+            <Select placeholder="Guruhni tanlang">
+              {science.map((group) => (
+                <Select.Option key={group.id} value={group.id}>
+                  {group.name}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
           <Form.Item
-            label="Hafta kunlari"
+            label="Kunlar"
             name="days"
-            rules={[{ required: true, message: "Please fill!" }]}
+            rules={[{ required: true, message: "Iltimos kunlarni tanlang" }]}
           >
             <Checkbox.Group options={options} />
           </Form.Item>
           <Form.Item
             label="Boshlanish vaqti"
             name="start_time"
-            rules={[{ required: true, message: "Please input start time!" }]}
+            rules={[
+              { required: true, message: "Iltimos boshlanish vaqtini tanlang" },
+            ]}
           >
             <Input type="time" />
           </Form.Item>
           <Form.Item
             label="Tugash vaqti"
             name="end_time"
-            rules={[{ required: true, message: "Please input end time!" }]}
+            rules={[
+              { required: true, message: "Iltimos tugash vaqtini tanlang" },
+            ]}
           >
             <Input type="time" />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-              Add
-            </Button>
-          </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Confirm Deletion"
+        open={deleteModalVisible}
+        onOk={handleDelete}
+        onCancel={handleCancelDelete}
+        okText="Delete"
+        cancelText="Cancel"
+        width={600}
+      >
+        <p>Are you sure you want to delete this schedule?</p>
       </Modal>
     </Fragment>
   );

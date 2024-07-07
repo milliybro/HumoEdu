@@ -1,4 +1,4 @@
-import React, { useEffect, useState , useCallback} from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Modal, Form, Input, Button, Select, Space } from "antd";
 import moment from "moment";
 import { request } from "../../../request";
@@ -13,33 +13,25 @@ const SuperTeachersPayments: React.FC = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState<any | null>(null);
-  const [branches, setBranches] = useState([]);
+
   const [form] = Form.useForm();
 
   useEffect(() => {
     fetchPayments();
     fetchGroups();
-    fetchBranches();
   }, []);
 
-    
-    const branchData = selectedBranch ? `&branch=${selectedBranch}` : "";
-    
-    const fetchPayments = useCallback(async () => {
-      setLoading(true);
-      try {
-        const res = await request.get(
-          `account/payments/?is_student=true${branchData}`
-        );
-        const responseData = res.data;
-        setPayments(responseData.results);
-        setSelectedBranch("");
-      } catch (err) {
-        console.error(err);
-      }
+  const fetchPayments = async () => {
+    setLoading(true);
+    try {
+      const response = await request.get("account/payments/?is_student=false");
+      setPayments(response.data.results);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
       setLoading(false);
-    }, [selectedBranch]);
+    }
+  };
 
   const fetchGroups = async () => {
     setLoading(true);
@@ -52,24 +44,6 @@ const SuperTeachersPayments: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const fetchBranches = async () => {
-    setLoading(true);
-    try {
-      const response = await request.get("branch/branches/");
-      setBranches(response.data.results);
-    } catch (error) {
-      console.error("Error fetching branches:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-    const handleBranchChange = (value: number) => {
-       setSelectedBranch(value);
-       fetchPayments();
-      
-    };
 
   const handleCreateOrUpdatePayment = async (values: any) => {
     try {
@@ -199,26 +173,12 @@ const SuperTeachersPayments: React.FC = () => {
         <h1 className="text-center mt-2 mb-2 font-medium">
           O'qituvchilar to'lovi
         </h1>
-        <Select
-          style={{ width: 200, marginRight: 10 }}
-          placeholder="Select Branch"
-          onChange={handleBranchChange}
-          allowClear
-        >
-          {branches.map((branch: any) => (
-            <Select.Option key={branch.id} value={branch.id}>
-              {branch.name}
-            </Select.Option>
-          ))}
-        </Select>
-
         <Input
           placeholder="Search by teacher name"
           value={searchText}
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: 200 }}
         />
-
         <Button
           type="primary"
           className="mb-2"

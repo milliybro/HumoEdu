@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import {
   DatabaseOutlined,
@@ -13,34 +13,39 @@ import {
   UserDeleteOutlined,
 } from "@ant-design/icons";
 
-import { Layout, Menu, Button, Modal, Badge } from "antd";
+import { Layout, Menu, Button, Modal } from "antd";
 import logo from "../../assets/logo.jpg";
-import logoutImage from "../../assets/logout.png";
 import { useAuth } from "../../states/auth";
-import { ROLE } from "../../constants";
+// import { ROLE } from "../../constants";
 
 import "./style.scss";
 
 const { Sider, Header, Content } = Layout;
 
 const BranchAdminLayout = () => {
-  const { role, logout , username} = useAuth();
+  const { role, logout, username } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
+  const [selectedKey, setSelectedKey] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.user-dropdown')) {
+      if (!event.target.closest(".user-dropdown")) {
         setDropdownVisible(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    setSelectedKey(location.pathname);
+  }, [location.pathname]);
 
   const handleDropdownToggle = () => {
     setDropdownVisible(!dropdownVisible);
@@ -52,16 +57,15 @@ const BranchAdminLayout = () => {
       onOk: () => logout(navigate),
     });
   };
- 
 
   const menuItems = [
     {
-      key: "/dashboard",
+      key: "/branchDashboard",
       icon: <UserOutlined />,
       label: <Link to="/branchDashboard">Dashboard</Link>,
     },
     {
-      key: "/users",
+      key: "/branchUsers",
       icon: <TeamOutlined />,
       label: (
         <Link to="/branchUsers">
@@ -69,9 +73,8 @@ const BranchAdminLayout = () => {
         </Link>
       ),
     },
-
     {
-      key: "/portfolios",
+      key: "/branchRooms",
       icon: <BranchesOutlined />,
       label: (
         <Link to={role !== "admin" ? "/branchDashboard" : "/branchRooms"}>
@@ -80,7 +83,7 @@ const BranchAdminLayout = () => {
       ),
     },
     {
-      key: "/adminGroup",
+      key: "/branchGroup",
       icon: <UsergroupAddOutlined />,
       label: (
         <Link to={role !== "admin" ? "/branchDashboard" : "/branchGroup"}>
@@ -104,7 +107,7 @@ const BranchAdminLayout = () => {
       ],
     },
     {
-      key: "/adminStudents",
+      key: "/branchStudents",
       icon: <DatabaseOutlined />,
       label: (
         <Link to={role !== "admin" ? "/branchDashboard" : "/branchStudents"}>
@@ -146,6 +149,8 @@ const BranchAdminLayout = () => {
           className="menu"
           theme="dark"
           mode="inline"
+          selectedKeys={[selectedKey]}
+          onClick={({ key }) => setSelectedKey(key)}
           items={menuItems}
         />
       </Sider>
@@ -157,25 +162,43 @@ const BranchAdminLayout = () => {
             icon={<MenuFoldOutlined />}
             style={{ fontSize: "18px", width: 64, height: 64 }}
           />
-          <div style={{ display: "flex", alignItems: "center" , paddingRight:'50px'}}>
-            <li className={`dropdown user-dropdown ${dropdownVisible ? "open" : ""}`}>
-              <a href="#" className="dropdown-toggle me-n1" onClick={handleDropdownToggle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "50px",
+            }}
+          >
+            <li
+              className={`dropdown user-dropdown ${
+                dropdownVisible ? "open" : ""
+              }`}
+            >
+              <a
+                href="#"
+                className="dropdown-toggle me-n1"
+                onClick={handleDropdownToggle}
+              >
                 <div className="user-toggle">
                   <div className="user-avatar sm">
                     {/* <img src="#" alt="JD" /> */}
                   </div>
                   <div className="user-info d-none d-xl-block">
-                    <div className="user-status user-status-active text-white">Administrator</div>
-                    <div className="user-name dropdown-indicator text-white">{username}</div>
+                    <div className="user-status user-status-active text-white">
+                      Administrator
+                    </div>
+                    <div className="user-name dropdown-indicator text-white">
+                      {username}
+                    </div>
                   </div>
                 </div>
               </a>
               {dropdownVisible && (
                 <div className="dropdown-menu dropdown-menu-md dropdown-menu-end ">
                   <div className="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
-                    <div className="user-card"> 
+                    <div className="user-card">
                       <div className="user-avatar">
-                        <span>{username.substring(0,2)}</span>
+                        {/* <span>{username.substring(0, 2)}</span> */}
                       </div>
                       <div className="user-info">
                         <span className="lead-text">{username}</span>
@@ -184,8 +207,11 @@ const BranchAdminLayout = () => {
                   </div>
                   <div className="dropdown-inner">
                     <ul className="link-list">
-                      <li className = "link-list__item" onClick={handleDropdownToggle}>
-                        <Link to={role == "admin" ? "/adminprofile" : " "}>
+                      <li
+                        className="link-list__item"
+                        onClick={handleDropdownToggle}
+                      >
+                        <Link to={role === "admin" ? "/adminprofile" : " "}>
                           <span>View Profile</span>
                         </Link>
                       </li>
@@ -193,7 +219,7 @@ const BranchAdminLayout = () => {
                   </div>
                   <div className="dropdown-inner">
                     <ul className="link-list">
-                      <li onClick={handleLogout} className = "link-list__item">
+                      <li onClick={handleLogout} className="link-list__item">
                         <a href="#">
                           <span>Logout</span>
                         </a>

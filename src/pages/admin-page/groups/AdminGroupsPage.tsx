@@ -179,15 +179,15 @@ const AdminGroups = () => {
         const { data } = await request.get(`group/group/${id}/`);
         console.log(data);
         const formattedData = {
-          id: data.id,
-          price: data.price,
-          name: data.name,
-          science: data.science.id,
-          branch: data.branch.id,
-          teacher: data.teacher.id, // Sending teacher id instead of full name
-          sub_teacher: typeof data.sub_teacher === 'object' && data.sub_teacher !== null ? data.sub_teacher.id : undefined, // Sending sub_teacher id if exists
-          student: data.student.map((s) => s.id),
-          status: data.status,
+          id: data?.id,
+          price: data?.price,
+          name: data?.name,
+          science: data?.science?.id,
+          branch: data?.branch?.id,
+          teacher: data?.teacher?.id, // Sending teacher id instead of full name
+          sub_teacher: typeof data?.sub_teacher === 'object' && data?.sub_teacher !== null ? data?.sub_teacher.id : undefined, // Sending sub_teacher id if exists
+          student: data?.student.map((s) => s.id),
+          status: data?.status,
         };
         setEditId(formattedData.id);
         form.setFieldsValue(formattedData);

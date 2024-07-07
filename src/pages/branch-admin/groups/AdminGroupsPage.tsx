@@ -532,7 +532,7 @@ const BranchGroups = () => {
       </Space>
 
       <Table
-        style={{ width: "1300px" }}
+        style={{ width: "1500px" }}
         columns={columns}
         dataSource={filteredData}
         rowKey="id"
