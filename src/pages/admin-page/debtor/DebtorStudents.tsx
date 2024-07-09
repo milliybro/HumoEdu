@@ -13,7 +13,6 @@ import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { request } from "../../../request";
 import moment from "moment";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-// import { message } from 'antd';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -57,6 +56,16 @@ interface Message {
   content: string;
 }
 
+interface Branch {
+  id: number;
+  name: string;
+}
+
+interface Group {
+  id: number;
+  name: string;
+}
+
 const DebtorStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
@@ -68,11 +77,20 @@ const DebtorStudents: React.FC = () => {
   const [newMessageVisible, setNewMessageVisible] = useState(false);
   const [newMessageContent, setNewMessageContent] = useState("");
   const [editMessageId, setEditMessageId] = useState<number | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
 
   const fetchDebtorStudents = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await request.get("/account/debtor-student-profiles/");
+      const response = await request.get("/account/debtor-student-profiles/", {
+        params: {
+          branch: selectedBranch,
+          group: selectedGroup,
+        },
+      });
       const data: Student[] = response.data.results;
       setStudents(data);
     } catch (error) {
@@ -80,7 +98,7 @@ const DebtorStudents: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedBranch, selectedGroup]);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -91,10 +109,30 @@ const DebtorStudents: React.FC = () => {
     }
   }, []);
 
+  const fetchBranches = useCallback(async () => {
+    try {
+      const response = await request.get("/branch/branches/");
+      setBranches(response.data.results);
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+    }
+  }, []);
+
+   const fetchGroups = useCallback(async (branchId: number | null = null) => {
+     try {
+       const response = await request.get(`/group/groups/?branch=${branchId}`);
+       setGroups(response.data.results);
+     } catch (error) {
+       console.error("Error fetching groups:", error);
+     }
+   }, []);
+
   useEffect(() => {
     fetchDebtorStudents();
     fetchMessages();
-  }, [fetchDebtorStudents, fetchMessages]);
+    fetchBranches();
+    fetchGroups();
+  }, [fetchDebtorStudents, fetchMessages, fetchBranches, fetchGroups]);
 
   const handleSelectAll = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
@@ -141,7 +179,6 @@ const DebtorStudents: React.FC = () => {
       });
       setMessages((prevMessages) => [...prevMessages, response.data]);
       setNewMessageContent("");
-      // setNewMessageVisible(false);
       message.success("Sms textni muvaffaqiyatli yaratildi.");
     } catch (error) {
       message.error("Sms jo'natishda muammo bor.");
@@ -174,7 +211,6 @@ const DebtorStudents: React.FC = () => {
         )
       );
       setNewMessageContent("");
-      // setNewMessageVisible(false);
       setEditMessageId(null);
       message.success("Text muvaffaqiyatli yangilandi");
     } catch (error) {
@@ -194,6 +230,16 @@ const DebtorStudents: React.FC = () => {
     }
   };
 
+   const handleBranchChange = (value: number) => {
+     setSelectedBranch(value);
+     console.log(value)
+     fetchGroups(value);
+   };
+
+  const handleGroupChange = (value: number) => {
+    setSelectedGroup(value);
+  };
+
   const columns = [
     {
       title: "Select",
@@ -205,6 +251,12 @@ const DebtorStudents: React.FC = () => {
           onChange={() => handleSelectStudent(record.id)}
         />
       ),
+    },
+    {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Name",
@@ -257,7 +309,7 @@ const DebtorStudents: React.FC = () => {
             disabled={selectedStudents.length === 0}
             className="ml-12"
           >
-            Sms
+            SMS yuborish
           </Button>
           <Button
             type="primary"
@@ -266,72 +318,97 @@ const DebtorStudents: React.FC = () => {
           >
             Text qo'shish
           </Button>
-        </div>
-        <Table
-          rowKey="id"
-          dataSource={students}
-          columns={columns}
-          pagination={false}
-        />
-        <Modal
-          title="Send SMS"
-          open={modalVisible}
-          onOk={handleSendSMS}
-          onCancel={() => setModalVisible(false)}
-        >
-          <p>Jo'natmoqchi bo'lgan habaringizni tanlang</p>
           <Select
-            className="w-full mb-4"
-            placeholder="Select a message"
+            placeholder="Filialni tanlang"
+            onChange={handleBranchChange}
             allowClear
-            onChange={(value: number) => setSelectedMessage(value)}
+            className="ml-4"
           >
-            {messages.map((msg) => (
-              <Option key={msg.id} value={msg.id}>
-                {msg.message}
+            {branches.map((branch) => (
+              <Option key={branch.id} value={branch.id}>
+                {branch.name}
               </Option>
             ))}
           </Select>
-        </Modal>
-        <Modal
-          title={editMessageId ? "Edit Message Text" : "Add Message Text"}
-          open={newMessageVisible}
-          onOk={editMessageId ? handleUpdateMessage : handleAddMessage}
-          onCancel={() => {
-            setNewMessageVisible(false);
-            setNewMessageContent("");
-            setEditMessageId(null);
-          }}
-        >
-          <TextArea
-            className="mb-2"
-            rows={4}
-            value={newMessageContent}
-            onChange={(e) => setNewMessageContent(e.target.value)}
-          />
-
-          <div>
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className="flex items-center justify-between mb-2"
-              >
-                <span>{msg.message}</span>
-                <div className="flex items-center">
-                  <EditOutlined
-                    onClick={() => handleEditMessage(msg.id)}
-                    className="text-blue-500 cursor-pointer mr-2"
-                  />
-                  <DeleteOutlined
-                    onClick={() => handleDeleteMessage(msg.id)}
-                    className="text-red-500 cursor-pointer"
-                  />
-                </div>
-              </div>
+          <Select
+            placeholder="Guruhni tanlang"
+            onChange={handleGroupChange}
+            allowClear
+            className="ml-4"
+          >
+            {groups.map((group) => (
+              <Option key={group.id} value={group.id}>
+                {group.name}
+              </Option>
             ))}
-          </div>
-        </Modal>
+          </Select>
+        </div>
+        <Table
+          dataSource={students}
+          columns={columns}
+          rowKey="id"
+          pagination={false}
+        />
       </Spin>
+      <Modal
+        title="Sms ni yuborish"
+        open={modalVisible}
+        onOk={handleSendSMS}
+        onCancel={() => setModalVisible(false)}
+        okText="Sms ni yuborish"
+        cancelText="Bekor qilish"
+      >
+        <Select
+          allowClear
+          placeholder="Sms textni tanlang"
+          onChange={(value) => setSelectedMessage(value)}
+          className="w-full mb-4"
+        >
+          {messages.map((message) => (
+            <Option key={message.id} value={message.id}>
+              {message.message}
+            </Option>
+          ))}
+        </Select>
+      </Modal>
+      <Modal
+        title={editMessageId ? "Textni tahrirlash" : "Yangi Textni yaratish"}
+        open={newMessageVisible}
+        onOk={editMessageId ? handleUpdateMessage : handleAddMessage}
+        onCancel={() => {
+          setNewMessageVisible(false);
+          setEditMessageId(null);
+          setNewMessageContent("");
+        }}
+        okText={editMessageId ? "Yangilash" : "Yaratish"}
+        cancelText="Bekor qilish"
+      >
+        <TextArea
+          rows={2}
+          value={newMessageContent}
+          onChange={(e) => setNewMessageContent(e.target.value)}
+        />
+        <div className="mt-3">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className="flex items-center justify-between mb-2 bg-blue-100 p-1 rounded px-2"
+            >
+              <span>{msg.message}</span>
+              <div className="flex items-center">
+                <EditOutlined
+                  onClick={() => handleEditMessage(msg.id)}
+                  className="text-blue-500 cursor-pointer mr-2"
+                />
+                <DeleteOutlined
+                  onClick={() => handleDeleteMessage(msg.id)}
+                  className="text-red-500 cursor-pointer"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 };

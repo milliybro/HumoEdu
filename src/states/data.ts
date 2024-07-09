@@ -67,7 +67,8 @@ import { NavigateFunction } from "react-router-dom";
     // },
 
     handlePage: (page, navigate) => {
-      const { search, status, getData, science, staff, student__branch, user } = get();
+      const { search, status, getData, science, staff, student__branch, user } =
+        get();
       const offset = (page - 1) * 10; // Calculate offset
       set({ page, offset }); // Update page and offset in state
       getData(); // Fetch data
@@ -82,24 +83,32 @@ import { NavigateFunction } from "react-router-dom";
       if (student__branch) query.append("student__branch", student__branch);
       if (user) query.append("user", user);
 
-
-
       navigate(`?${query.toString()}`);
     },
-    getData: async (branch, user__roles, staff, science, student__branch, user, status) => {
+    getData: async (
+      branch,
+      user__roles,
+      staff,
+      science,
+      student__branch,
+      user,
+      status,
+      group
+    ) => {
       const { search, page, offset } = get();
 
       try {
         const params = new URLSearchParams();
         if (search) params.append("search", search);
         if (offset) params.append("offset", offset);
-        if (status) params.append("status", status); 
+        if (status) params.append("status", status);
         if (branch) params.append("branch", branch);
         if (user) params.append("user", user);
         if (user__roles) params.append("user__roles", user__roles);
         if (science) params.append("science", science);
-        if (staff) params.append("staff", staff); 
+        if (staff) params.append("staff", staff);
         if (student__branch) params.append("student__branch", student__branch);
+        if (group) params.append("group", group); // Yangi parametr qo'shildi
 
         set({ loading: true });
         const { data } = await request.get(`${url}?${params.toString()}`);
@@ -109,7 +118,8 @@ import { NavigateFunction } from "react-router-dom";
       } finally {
         set({ loading: false });
       }
-    }
+    },
+
     // getData: async (branch, user__roles, status) => {
     //   const { search, page, offset } = get();
 
@@ -129,12 +139,15 @@ import { NavigateFunction } from "react-router-dom";
     //     set({ loading: false });
     //   }
     // },
-    ,
     handleOk: async (form) => {
       const { selected, getData } = get();
       const oldValues = await form.validateFields();
-      let values = get().photo ? { ...oldValues, photo: get().photo } : { ...oldValues };
-      values = get().portPhoto ? { ...values, photo: get().portPhoto } : { ...values };
+      let values = get().photo
+        ? { ...oldValues, photo: get().photo }
+        : { ...oldValues };
+      values = get().portPhoto
+        ? { ...values, photo: get().portPhoto }
+        : { ...values };
 
       try {
         if (selected === null) {
@@ -150,7 +163,13 @@ import { NavigateFunction } from "react-router-dom";
     },
     editData: async (id, form) => {
       const { data } = await request.get(`${url}/${id}`);
-      const values = data.endDate ? { ...data, endDate: data.endDate.split("T")[0], startDate: data.startDate.split("T")[0] } : { ...data };
+      const values = data.endDate
+        ? {
+            ...data,
+            endDate: data.endDate.split("T")[0],
+            startDate: data.startDate.split("T")[0],
+          }
+        : { ...data };
 
       form.setFieldsValue(values);
       set((state) => ({ ...state, selected: id, isModalOpen: true }));
@@ -168,7 +187,12 @@ import { NavigateFunction } from "react-router-dom";
     },
     showModal: (form) => {
       form.resetFields();
-      set((state) => ({ ...state, selected: null, photo: null, isModalOpen: true }));
+      set((state) => ({
+        ...state,
+        selected: null,
+        photo: null,
+        isModalOpen: true,
+      }));
     },
     handleCancel: () => {
       set((state) => ({ ...state, isModalOpen: false, selected: null }));
@@ -185,7 +209,11 @@ import { NavigateFunction } from "react-router-dom";
     handlePortfoliosPhoto: async (file) => {
       const { data: photo } = await request.post("upload", file);
       const userPhoto = `${photo._id}.${photo.name.split(".")[1]}`;
-      set({ portPhoto: photo._id, photo: userPhoto, portPhotoType: photo.name.split(".")[1] });
+      set({
+        portPhoto: photo._id,
+        photo: userPhoto,
+        portPhotoType: photo.name.split(".")[1],
+      });
     },
     handleStatusChange: (value: string) => {
       set({ status: value });

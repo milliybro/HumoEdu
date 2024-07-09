@@ -178,58 +178,41 @@ const EducationPageAdmin = () => {
               style={{ marginBottom: 20 }}
             >
               <Col>
-                <h1>Fanlar ({total})</h1>
+                <h1 className="font-medium text-2xl">
+                  Fanlar <span className="text-green-500">({total})</span>{" "}
+                </h1>
               </Col>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+                style={{ display: "flex", alignItems: "center", gap: "30px" }}
               >
                 <Col>
-                  <div className="search-box">
+                  <div className="relative flex items-center bg-blue-500 p-1 rounded-full px-2">
                     <Input
                       onChange={(e) => {
                         SearchSkills(e);
-                        console.log(e.target.value);
                       }}
-                      className={
-                        isSearchOpen ? "searchInput open" : "searchInput"
-                      } // Apply different class based on isSearchOpen state
+                      className={`transition-width duration-300 ease-in-out ${
+                        isSearchOpen ? "w-64 px-4 py-1" : "w-0 px-0 py-1"
+                      } bg-white rounded-md shadow-md outline-none`}
                       placeholder="Search..."
+                      style={{ opacity: isSearchOpen ? 1 : 0 }}
                     />
-                    <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? (
-                        <CloseOutlined style={{ color: "white" }} />
-                      ) : (
-                        <SearchOutlined />
-                      )}
+                    <a
+                      href="#"
+                      onClick={toggleSearch}
+                      className="ml-2 mr-2 text-white"
+                    >
+                      {isSearchOpen ? <CloseOutlined /> : <SearchOutlined />}
                     </a>
                   </div>
                 </Col>
                 <Col>
                   <Button
-                    className="Add"
+                    className="text-center"
                     type="primary"
                     onClick={() => showModal(form)}
                   >
-                    <div className="center">
-                      <button className="btn">
-                        <svg
-                          width="180px"
-                          height="60px"
-                          viewBox="0 0 180 60"
-                          className="border"
-                        >
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="bg-line"
-                          />
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="hl-line"
-                          />
-                        </svg>
-                        <span>Fan yaratish</span>
-                      </button>
-                    </div>
+                    Fan qo'shish
                   </Button>
                 </Col>
               </div>

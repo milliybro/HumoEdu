@@ -33,7 +33,7 @@ const SuperStudentsPayments = () => {
    try {
      const res = await request.get(
        `account/payments/?is_student=true${
-         selectedBranch ? `&branch=${selectedBranch}` : ""
+         selectedBranch ? `&student__branch=${selectedBranch}` : ""
        }${selectedGroup ? `&group=${selectedGroup}` : ""}`
      );
      const responseData = res.data;

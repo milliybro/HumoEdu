@@ -221,7 +221,9 @@ const PortfoliosPageAdmin = () => {
               style={{ marginBottom: 20 }}
             >
               <Col>
-                <h1>Filliallar ({total})</h1>
+                <h1 className="font-medium text-2xl">
+                  Filiallar <span className="text-green-500">({total})</span>{" "}
+                </h1>
               </Col>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "30px" }}

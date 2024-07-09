@@ -32,7 +32,7 @@ const SuperTeachersPayments: React.FC = () => {
     try {
       const response = await request.get(
         `account/payments/?is_student=false${
-          selectedBranch ? `&branch=${selectedBranch}` : ""
+          selectedBranch ? `&teacher__branch=${selectedBranch}` : ""
         }${selectedGroup ? `&group=${selectedGroup}` : ""}`
       );
       setPayments(response.data.results);
@@ -169,7 +169,7 @@ const SuperTeachersPayments: React.FC = () => {
             Edit
           </Button>
           <Button type="primary" danger onClick={() => showDeleteConfirm(id)}>
-            Edit
+            delete
           </Button>
         </Space>
       ),
@@ -237,12 +237,7 @@ const SuperTeachersPayments: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-center font-medium">O'qituvchilar to'lovi</h1>
-        <Input
-          placeholder="Search..."
-          value={searchText}
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ width: 200 }}
-        />
+
         <Select
           placeholder="Branch bo'yicha filtrlash"
           onChange={handleBranchChange}
@@ -267,6 +262,12 @@ const SuperTeachersPayments: React.FC = () => {
             </Option>
           ))}
         </Select>
+        <Input
+          placeholder="Search by teacher name"
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
+          style={{ width: 200 }}
+        />
         <Button
           type="primary"
           className="mb-2"

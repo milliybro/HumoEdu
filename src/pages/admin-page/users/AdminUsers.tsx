@@ -64,10 +64,7 @@ const UsersPageAdmin = () => {
           },
           branch: data.branch.id,
           salary: data.salary,
-          position: data.position.map((pos) => [{
-            value:  pos?.id,
-            label: pos?.name
-          }]),
+          position: data.position.map((pos) => pos.id),
           birthday: data.birthday,
           status: data.status,
         };
@@ -87,63 +84,89 @@ const UsersPageAdmin = () => {
       title: "N",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (
+        <span style={{ fontSize: "12px" }}>{index + 1}</span>
+      ),
+      width: 50,
     },
     {
       title: "Ism",
       dataIndex: "first_name",
       key: "first_name",
+      render: (text) => <span style={{ fontSize: "12px" }}>{text}</span>,
+      width: 150,
     },
     {
       title: "Familiya",
       dataIndex: "last_name",
       key: "last_name",
+      render: (text) => <span style={{ fontSize: "12px" }}>{text}</span>,
+      width: 150,
     },
     {
       title: "Username",
-      render: (record) => record?.user?.username,
+      render: (record) => (
+        <span style={{ fontSize: "12px" }}>{record?.user?.username}</span>
+      ),
       key: "username",
+      width: 150,
     },
     {
       title: "Tug'ilgan kun",
-      render: (record) => record?.birthday,
+      render: (record) => (
+        <span style={{ fontSize: "12px" }}>{record?.birthday}</span>
+      ),
       key: "birthday",
+      width: 200,
     },
     {
       title: "Telefon raqam",
       dataIndex: "phone_number",
       key: "phone_number",
+      render: (text) => <span style={{ fontSize: "12px" }}>{text}</span>,
+      width: 150,
     },
     {
       title: "Fillial",
-      render: (record) => record?.branch?.name,
+      render: (record) => (
+        <span style={{ fontSize: "12px" }}>{record?.branch?.name}</span>
+      ),
       key: "branch",
+      width: 150,
     },
     {
       title: "Lavozimi",
-      render: (record) => record.position[0]?.name,
+      render: (record) => (
+        <span style={{ fontSize: "12px" }}>{record.position[0]?.name}</span>
+      ),
       key: "position",
+      width: 150,
     },
     {
       title: "Oylik maosh",
       dataIndex: "salary",
       key: "salary",
+      render: (text) => <span style={{ fontSize: "12px" }}>{text}</span>,
+      width: 150,
     },
     {
       title: "Foydalanuvchi roli",
-      render: (record) => record?.user?.roles,
+      render: (record) => (
+        <span style={{ fontSize: "12px" }}>{record?.user?.roles}</span>
+      ),
       key: "user_roles",
+      width: 150,
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) =>
-        status ? (
-          <h5 style={{ color: "green" }}>Faoliyatda</h5>
-        ) : (
-          <h5 style={{ color: "red" }}>Faoliyatda emas</h5>
-        ),
+      render: (status) => (
+        <h5 style={{ fontSize: "12px", color: status ? "green" : "red" }}>
+          {status ? "Faoliyatda" : "Faoliyatda emas"}
+        </h5>
+      ),
+      width: 150,
     },
     {
       title: "Action",
@@ -152,7 +175,7 @@ const UsersPageAdmin = () => {
       render: (id) => (
         <Space size="middle">
           <Button
-            style={{ backgroundColor: "#264653" }}
+            style={{ backgroundColor: "#264653", fontSize: "12px" }}
             onClick={() => {
               showModal(form);
               setEditId(id);
@@ -162,32 +185,34 @@ const UsersPageAdmin = () => {
           >
             Tahrirlash
           </Button>
-
           <Button
             onClick={() => deleteStaff(id)}
             type="primary"
-            style={{ backgroundColor: "#f54949" }}
+            style={{ backgroundColor: "#f54949", fontSize: "12px" }}
           >
             O'chirish
           </Button>
         </Space>
       ),
+      width: 150,
     },
   ];
+
 
   const [branch, setBranch] = useState([]);
 
  const handleForm = async () => {
    try {
      const values = await form.validateFields();
-    //  const originalData = JSON.parse(localStorage.getItem("editData"));
-    //  const cleanedValues = removeNullish(values);
-    //  const payload = patchChanges(originalData, cleanedValues);
+     const changeData = {
+       ...values,
+       position: values?.position, // faqat id-larni jo'natish kerak
+     };
 
      if (editId) {
-       await request.put(`account/staff-profile-update/${editId}/`, values);
+       await request.put(`account/staff-profile-update/${editId}/`, changeData);
      } else {
-       await request.post("/account/staff-profile-create/", values);
+       await request.post("/account/staff-profile-create/", changeData);
      }
 
      setEditId(null);
@@ -229,8 +254,8 @@ const UsersPageAdmin = () => {
 
   useEffect(() => {
     const PosOption = position.map((data) => ({
-      label: data.name,
       value: data.id,
+      label: data.name,
     }));
     setPositionOption(PosOption);
   }, [position]);
@@ -279,16 +304,18 @@ const UsersPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
-        style={{ width: "1500px" }}
+        style={{ width: "100%", maxWidth: "1500px" }}
         title={() => (
           <>
             <Row
               justify="space-between"
               align="middle"
-              style={{ marginBottom: 20 }}
+              style={{ width: "100%", maxWidth: "1500px" }}
             >
               <Col>
-                <h1>Xodimlar ({total})</h1>
+                <h1 className="font-medium text-2xl mb-2">
+                  Xodimlar <span className="text-green-500">({total})</span>{" "}
+                </h1>
               </Col>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "30px" }}
@@ -335,7 +362,7 @@ const UsersPageAdmin = () => {
               <Select
                 size="middle"
                 defaultValue="Filliallar"
-                style={{ width: 250 }}
+                style={{ width: 150 }}
                 onChange={handleChangeBranch}
               >
                 <Select.Option key="" value="">
@@ -350,7 +377,7 @@ const UsersPageAdmin = () => {
               <Select
                 size="middle"
                 defaultValue=""
-                style={{ width: 250 }}
+                style={{ width: 150 }}
                 onChange={handleChange}
                 options={[
                   { value: "", label: "Rollar" },
@@ -362,7 +389,7 @@ const UsersPageAdmin = () => {
               <Select
                 size="middle"
                 defaultValue=""
-                style={{ width: "250px" }}
+                style={{ width: "150px" }}
                 onChange={handleChangeStatus}
                 options={[
                   { value: "", label: "Status" },
@@ -624,3 +651,4 @@ const UsersPageAdmin = () => {
 };
 
 export default UsersPageAdmin;
+
