@@ -86,17 +86,8 @@ export const useAuth = create<AuthTypes>((set, get) => ({
       if (refresh) {
         const res = await request.post("account/refresh/", { refresh });
         const AccessToken = res.data.access;
-        // const allCookies = document.cookie.split(";");
-        //  allCookies.forEach((cookie) => {
-        //   const cookieName = cookie.split("=")[0].trim();
-        //   Cookies.remove(cookieName, { path: "/" });
-        // });
-        
         Cookies.set(TOKEN, AccessToken);
-
         set({ isAuthenticated: true });
-        // window.location.reload();
-
       } else {
          const allCookies = document.cookie.split(";");
          allCookies.forEach((cookie) => {
@@ -135,20 +126,6 @@ export const useAuth = create<AuthTypes>((set, get) => ({
   },
 }));
 
-export const ensureTokenValidity = () => {
-  const accessToken = Cookies.get(TOKEN);
-  if (accessToken) {
-    const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
-    const expTime = tokenPayload.exp * 1000;
-    const currentTime = Date.now();
-        // window.location.reload();
-    
-    if (expTime < currentTime) {
 
-      useAuth.getState().refreshAccessToken();
-
-    }
-  }
-};
 
   

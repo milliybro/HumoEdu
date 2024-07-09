@@ -6,12 +6,12 @@ import { LIMIT } from "../../../constants";
 import { useNavigate } from "react-router-dom";
 import useUsers from "../../../states/adminUsers";
 import { request } from "../../../request";
-import { patchChanges, removeNullish } from "./functions";
+// import { patchChanges, removeNullish } from "./functions";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 
 const UsersPageAdmin = () => {
-  const { total, loading, isModalOpen, data, page, getData, SearchSkills, showModal, handleCancel, handleOk, handlePage } = useUsers();
+  const { total, loading, isModalOpen, data, page, getData, SearchSkills, showModal, handleCancel, handlePage } = useUsers();
 
   const [form] = useForm();
   const navigate = useNavigate();
@@ -20,10 +20,10 @@ const UsersPageAdmin = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [position, setPosition] = useState([]);
   const [positionOption, setPositionOption] = useState([]);
-
+  const [selectedStatus, setSelectedStatus] = useState(null)
   useEffect(() => {
-    getData(selectedBranch); // Fetch data based on the selected branch
-  }, [getData, selectedBranch]);
+    getData(selectedBranch,selectedRole, null, null, null, null, selectedStatus); // Fetch data based on the selected branch
+  }, [getData, selectedBranch, selectedRole, selectedStatus]);
 
   const deleteStaff = useCallback(
     async (id) => {
@@ -64,7 +64,10 @@ const UsersPageAdmin = () => {
           },
           branch: data.branch.id,
           salary: data.salary,
-          position: data.position.map((pos) => pos?.id),
+          position: data.position.map((pos) => [{
+            value:  pos?.id,
+            label: pos?.name
+          }]),
           birthday: data.birthday,
           status: data.status,
         };
@@ -80,6 +83,12 @@ const UsersPageAdmin = () => {
   );
 
   const columns = [
+    {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
     {
       title: "Ism",
       dataIndex: "first_name",
@@ -125,11 +134,16 @@ const UsersPageAdmin = () => {
       render: (record) => record?.user?.roles,
       key: "user_roles",
     },
-     {
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h5 style={{ color: "green" }}>Faoliyatda</h5> : <h5 style={{ color: "red" }}>Faoliyatda emas</h5>),
+      render: (status) =>
+        status ? (
+          <h5 style={{ color: "green" }}>Faoliyatda</h5>
+        ) : (
+          <h5 style={{ color: "red" }}>Faoliyatda emas</h5>
+        ),
     },
     {
       title: "Action",
@@ -166,14 +180,14 @@ const UsersPageAdmin = () => {
  const handleForm = async () => {
    try {
      const values = await form.validateFields();
-     const originalData = JSON.parse(localStorage.getItem("editData"));
-     const cleanedValues = removeNullish(values);
-     const payload = patchChanges(originalData, cleanedValues);
+    //  const originalData = JSON.parse(localStorage.getItem("editData"));
+    //  const cleanedValues = removeNullish(values);
+    //  const payload = patchChanges(originalData, cleanedValues);
 
      if (editId) {
-       await request.patch(`account/staff-profile-update/${editId}/`, payload);
+       await request.put(`account/staff-profile-update/${editId}/`, values);
      } else {
-       await request.post("/account/staff-profile-create/", cleanedValues);
+       await request.post("/account/staff-profile-create/", values);
      }
 
      setEditId(null);
@@ -235,10 +249,13 @@ const UsersPageAdmin = () => {
   const handleChange = (value) => {
     setSelectedRole(value); // Update the selected role state
   };
+  const handleChangeStatus = (value) => {
+    setSelectedStatus(value); 
+  };
 
   useEffect(() => {
-    getData(selectedBranch, selectedRole); // Fetch data based on the selected role
-  }, [getData, selectedBranch, selectedRole]);
+    getData(selectedBranch, selectedRole, null, null, null, null, selectedStatus); // Fetch data based on the selected role
+  }, [getData, selectedBranch, selectedRole, selectedStatus]);
 
   const [positionOptions, setPositionOptions] = useState([]);
 
@@ -262,6 +279,7 @@ const UsersPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
+        style={{ width: "1500px" }}
         title={() => (
           <>
             <Row
@@ -273,55 +291,37 @@ const UsersPageAdmin = () => {
                 <h1>Xodimlar ({total})</h1>
               </Col>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+                style={{ display: "flex", alignItems: "center", gap: "30px" }}
               >
                 <Col>
-                  <div className="search-box">
+                  <div className="relative flex items-center bg-blue-500 p-1 rounded-full px-2">
                     <Input
                       onChange={(e) => {
                         SearchSkills(e);
                         console.log(e.target.value);
                       }}
-                      className={
-                        isSearchOpen ? "searchInput open" : "searchInput"
-                      } // Apply different class based on isSearchOpen state
+                      className={`transition-width duration-300 ease-in-out ${
+                        isSearchOpen ? "w-64 px-4 py-1" : "w-0 px-0 py-1"
+                      } bg-white rounded-md shadow-md outline-none`}
                       placeholder="Search..."
+                      style={{ opacity: isSearchOpen ? 1 : 0 }}
                     />
-                    <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? (
-                        <CloseOutlined style={{ color: "white" }} />
-                      ) : (
-                        <SearchOutlined />
-                      )}
+                    <a
+                      href="#"
+                      onClick={toggleSearch}
+                      className="ml-2 mr-2 text-white"
+                    >
+                      {isSearchOpen ? <CloseOutlined /> : <SearchOutlined />}
                     </a>
                   </div>
                 </Col>
                 <Col>
                   <Button
-                    className="Add"
+                    className="text-center"
                     type="primary"
                     onClick={() => showModal(form)}
                   >
-                    <div className="center">
-                      <button className="btn">
-                        <svg
-                          width="180px"
-                          height="60px"
-                          viewBox="0 0 180 60"
-                          className="border"
-                        >
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="bg-line"
-                          />
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="hl-line"
-                          />
-                        </svg>
-                        <span>Xodim qo'shish</span>
-                      </button>
-                    </div>
+                    Xodim qo'shish
                   </Button>
                 </Col>
               </div>
@@ -333,7 +333,7 @@ const UsersPageAdmin = () => {
               className="filtrTable"
             >
               <Select
-                size="large"
+                size="middle"
                 defaultValue="Filliallar"
                 style={{ width: 250 }}
                 onChange={handleChangeBranch}
@@ -348,7 +348,7 @@ const UsersPageAdmin = () => {
                 ))}
               </Select>
               <Select
-                size="large"
+                size="middle"
                 defaultValue=""
                 style={{ width: 250 }}
                 onChange={handleChange}
@@ -357,6 +357,17 @@ const UsersPageAdmin = () => {
                   { value: "superadmin", label: "Superadmin" },
                   { value: "admin", label: "Admin" },
                   { value: "teacher", label: "Teacher" },
+                ]}
+              />
+              <Select
+                size="middle"
+                defaultValue=""
+                style={{ width: "250px" }}
+                onChange={handleChangeStatus}
+                options={[
+                  { value: "", label: "Status" },
+                  { value: "true", label: "Faoliyatda" },
+                  { value: "false", label: "Faoliyatda emas" },
                 ]}
               />
             </Row>

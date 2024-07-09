@@ -1,30 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Table, Modal, Form, Input, Button, Select, Space } from "antd";
 import moment from "moment";
 import { request } from "../../../request";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import CRangePicker from "../../../utils/datapicker";
 const { Option } = Select;
-
+const {confirm } = Modal;
 const SuperTeachersPayments: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<any | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [branches, setBranches] = useState([]); // State for branches
 
   const [form] = Form.useForm();
+ 
 
+
+   
   useEffect(() => {
     fetchPayments();
     fetchGroups();
-  }, []);
+  }, [selectedBranch, selectedGroup]);
 
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await request.get("account/payments/?is_student=false");
+      const response = await request.get(
+        `account/payments/?is_student=false${
+          selectedBranch ? `&branch=${selectedBranch}` : ""
+        }${selectedGroup ? `&group=${selectedGroup}` : ""}`
+      );
       setPayments(response.data.results);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -36,7 +46,7 @@ const SuperTeachersPayments: React.FC = () => {
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const response = await request.get("group/groups/?branch=8");
+      const response = await request.get("group/groups/");
       setGroups(response.data.results);
     } catch (error) {
       console.error("Error fetching groups:", error);
@@ -44,6 +54,7 @@ const SuperTeachersPayments: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   const handleCreateOrUpdatePayment = async (values: any) => {
     try {
@@ -94,14 +105,19 @@ const SuperTeachersPayments: React.FC = () => {
     }
   };
 
-  const handleGroupChange = (value: number) => {
-    const selectedGroup = groups.find((group) => group.id === value);
 
-    if (selectedGroup) {
-      setSelectedGroup(selectedGroup);
-    }
+  
+
+
+
+  const handleGroupChange = (value: number) => {
+    setSelectedGroup(value);
   };
 
+  const handleBranchChange = (value: number) => {
+    setSelectedBranch(value);
+  };
+  console.log(selectedGroup)
   const columns = [
     {
       title: "N",
@@ -152,12 +168,61 @@ const SuperTeachersPayments: React.FC = () => {
           <Button type="primary" onClick={() => handleEdit(id)}>
             Edit
           </Button>
+          <Button type="primary" danger onClick={() => showDeleteConfirm(id)}>
+            Edit
+          </Button>
         </Space>
       ),
     },
   ];
 
-  /////////////search input  ////////////
+
+
+   const showDeleteConfirm = (id: number) => {
+     confirm({
+       title: "Bu to'lovni ro'yhatdan o'chirishni hohlaysizmi?",
+       icon: <ExclamationCircleOutlined />,
+       content: "Bu amalni ortga qaytarib bo‘lmaydi.",
+       okText: "ha",
+       okType: "danger",
+       cancelText: "ortga",
+       onOk() {
+         deletePayment(id);
+       },
+       onCancel() {
+         setDeleteModal(false);
+       },
+     });
+   };
+
+   const deletePayment = useCallback(
+     async (id) => {
+       try {
+         await request.delete(`account/payment-delete/${id}/`);
+         fetchPayments();
+       } catch (err) {
+         console.log(err);
+       }
+     },
+     [fetchPayments]
+   );
+
+
+
+  const getBranches = useCallback(async () => {
+    try {
+      const res = await request.get(`branch/branches/`);
+      const datas = res.data.results;
+      console.log(datas);
+      setBranches(datas);
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+  useEffect(() => {
+    getBranches();
+  }, [getBranches]);
+
   const handleSearch = (value) => {
     setSearchText(value);
   };
@@ -167,18 +232,41 @@ const SuperTeachersPayments: React.FC = () => {
       .toLowerCase()
       .includes(searchText.toLowerCase())
   );
+
   return (
     <div>
-      <div className="flex items-center justify-between my-4">
-        <h1 className="text-center mt-2 mb-2 font-medium">
-          O'qituvchilar to'lovi
-        </h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-center font-medium">O'qituvchilar to'lovi</h1>
         <Input
-          placeholder="Search by teacher name"
+          placeholder="Search..."
           value={searchText}
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: 200 }}
         />
+        <Select
+          placeholder="Branch bo'yicha filtrlash"
+          onChange={handleBranchChange}
+          style={{ width: 200 }}
+          allowClear
+        >
+          {branches.map((branch) => (
+            <Option key={branch.id} value={branch.id}>
+              {branch.name}
+            </Option>
+          ))}
+        </Select>
+        <Select
+          placeholder="Guruh bo'yicha filtrlash"
+          onChange={handleGroupChange}
+          style={{ width: 200 }}
+          allowClear
+        >
+          {groups.map((group) => (
+            <Option key={group.id} value={group.id}>
+              {group.name}
+            </Option>
+          ))}
+        </Select>
         <Button
           type="primary"
           className="mb-2"

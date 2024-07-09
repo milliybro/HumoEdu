@@ -260,7 +260,7 @@ console.log(originalData, "originalData");
       <Table
         loading={loading}
         className="table"
-        style={{width:'1300px'}}
+        style={{width:'1500px'}}
         title={() => (
           <>
             <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>

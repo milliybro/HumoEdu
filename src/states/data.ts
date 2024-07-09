@@ -86,19 +86,19 @@ import { NavigateFunction } from "react-router-dom";
 
       navigate(`?${query.toString()}`);
     },
-    getData: async (branch, user__roles, staff, science, student__branch, user) => {
-      const { search, page, offset, status } = get();
+    getData: async (branch, user__roles, staff, science, student__branch, user, status) => {
+      const { search, page, offset } = get();
 
       try {
         const params = new URLSearchParams();
         if (search) params.append("search", search);
         if (offset) params.append("offset", offset);
-        if (status) params.append("status", status);
+        if (status) params.append("status", status); 
         if (branch) params.append("branch", branch);
         if (user) params.append("user", user);
         if (user__roles) params.append("user__roles", user__roles);
         if (science) params.append("science", science);
-        if (staff) params.append("staff", staff);
+        if (staff) params.append("staff", staff); 
         if (student__branch) params.append("student__branch", student__branch);
 
         set({ loading: true });
@@ -109,7 +109,7 @@ import { NavigateFunction } from "react-router-dom";
       } finally {
         set({ loading: false });
       }
-    },
+    }
     // getData: async (branch, user__roles, status) => {
     //   const { search, page, offset } = get();
 
@@ -129,6 +129,7 @@ import { NavigateFunction } from "react-router-dom";
     //     set({ loading: false });
     //   }
     // },
+    ,
     handleOk: async (form) => {
       const { selected, getData } = get();
       const oldValues = await form.validateFields();

@@ -134,6 +134,12 @@ const PortfoliosPageAdmin = () => {
 
   const columns = [
     {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
+    {
       title: "Fillial nomi",
       dataIndex: "name",
       key: "name",
@@ -152,13 +158,19 @@ const PortfoliosPageAdmin = () => {
       title: "Ishga tushirilgan vaqti",
       dataIndex: "start_at",
       key: "start_at",
-      render: (startAt) => (startAt !== null ? formatDateTime(startAt) : "Ishga tushirilmagan"),
+      render: (startAt) =>
+        startAt !== null ? formatDateTime(startAt) : "Ishga tushirilmagan",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h3 style={{ color: "green" }}>Faoliyatda</h3> : <h3 style={{ color: "red" }}>Faoliyatda emas</h3>),
+      render: (status) =>
+        status ? (
+          <h3 style={{ color: "green" }}>Faoliyatda</h3>
+        ) : (
+          <h3 style={{ color: "red" }}>Faoliyatda emas</h3>
+        ),
     },
     {
       title: "Action",
@@ -177,7 +189,11 @@ const PortfoliosPageAdmin = () => {
           >
             Edit
           </Button>
-          <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button
+            onClick={() => showDeleteConfirm(id)}
+            type="primary"
+            style={{ backgroundColor: "#f54949" }}
+          >
             Delete
           </Button>
           <Button onClick={() => nextRoom(id)}>Xonalarni ko'rish</Button>
@@ -196,45 +212,59 @@ const PortfoliosPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
-        style={{width:'1300px'}}
+        style={{ width: "1500px" }}
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 20 }}
+            >
               <Col>
                 <h1>Filliallar ({total})</h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "30px" }}
+              >
                 <Col>
-                  <div className="search-box">
+                  <div className="relative flex items-center bg-blue-500 p-1 rounded-full px-2">
                     <Input
                       onChange={(e) => {
                         SearchSkills(e);
-                        // console.log(e.target.value);
+                        console.log(e.target.value);
                       }}
-                      className={isSearchOpen ? "searchInput open" : "searchInput"}
+                      className={`transition-width duration-300 ease-in-out ${
+                        isSearchOpen ? "w-64 px-4 py-1" : "w-0 px-0 py-1"
+                      } bg-white rounded-md shadow-md outline-none`}
                       placeholder="Search..."
+                      style={{ opacity: isSearchOpen ? 1 : 0 }}
                     />
-                    <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                    <a
+                      href="#"
+                      onClick={toggleSearch}
+                      className="ml-2 mr-2 text-white"
+                    >
+                      {isSearchOpen ? <CloseOutlined /> : <SearchOutlined />}
                     </a>
                   </div>
                 </Col>
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
-                    <div className="center">
-                      <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
-                        </svg>
-                        <span>Fillial qo'shish</span>
-                      </button>
-                    </div>
+                  <Button
+                    className="text-center"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
+                    Xodim qo'shish
                   </Button>
                 </Col>
               </div>
             </Row>
-            <Row justify="start" align="middle" style={{ gap: "20px" }} className="filtrTable">
+            <Row
+              justify="start"
+              align="middle"
+              style={{ gap: "20px" }}
+              className="filtrTable"
+            >
               <Select
                 size="large"
                 defaultValue=""
@@ -262,7 +292,12 @@ const PortfoliosPageAdmin = () => {
           onChange={(page) => handlePage(page, navigate)}
         />
       )}
-      <Modal visible={isModalOpen} title="Fillial " onCancel={handleCancel} footer={null}>
+      <Modal
+        visible={isModalOpen}
+        title="Fillial "
+        onCancel={handleCancel}
+        footer={null}
+      >
         <Form
           name="basic"
           labelCol={{ span: 24 }}
@@ -273,10 +308,18 @@ const PortfoliosPageAdmin = () => {
           autoComplete="off"
           form={form}
         >
-          <Form.Item label="Fillial" name="name" rules={[{ required: true, message: "Please input skill name!" }]}>
+          <Form.Item
+            label="Fillial"
+            name="name"
+            rules={[{ required: true, message: "Please input skill name!" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Manzil" name="address" rules={[{ required: true, message: "Please fill!" }]}>
+          <Form.Item
+            label="Manzil"
+            name="address"
+            rules={[{ required: true, message: "Please fill!" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Ishga tushirilgan vaqti" name="start_at">

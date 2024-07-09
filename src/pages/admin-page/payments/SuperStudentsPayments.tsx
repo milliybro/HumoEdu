@@ -5,38 +5,44 @@ import { request } from "../../../request";
 import usePayments from "../../../states/adminPayment";
 import CRangePicker from "../../../utils/datapicker";
 import moment from "moment";
-import {ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+
 const SuperStudentsPayments = () => {
-  const { total,  isModalOpen, showModal, handleCancel, handlePage } =
-    usePayments();
+  const { total, isModalOpen, showModal, handleCancel, handlePage } = usePayments();
 
   const [form] = useForm();
   const [student, setStudent] = useState([]);
   const [mygroup, setMyGroup] = useState([]);
   const [editId, setEditId] = useState(null);
   const [searchText, setSearchText] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [groupId, setGroupId] = useState(null);
-  
+
   const [branches, setBranches] = useState([]); // State for branches
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
-  const branchData = selectedBranch ? `&branch=${selectedBranch}` : ""
+  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
+
+  // const branchData = selectedBranch ?`&branch=${selectedBranch}` : "";
+  // const groupData = selectedGroup ? `&group=${selectedGroup}` : "";
+
   const { confirm } = Modal;
 
-  const fetchData = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await request.get(
-        `account/payments/?is_student=true${branchData}`
-      );
-      const responseData = res.data;
-      setData(responseData.results);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false)
-  }, [selectedBranch]);
+ const fetchData = useCallback(async () => {
+   setLoading(true);
+   try {
+     const res = await request.get(
+       `account/payments/?is_student=true${
+         selectedBranch ? `&branch=${selectedBranch}` : ""
+       }${selectedGroup ? `&group=${selectedGroup}` : ""}`
+     );
+     const responseData = res.data;
+     setData(responseData.results);
+   } catch (err) {
+     console.error(err);
+   }
+   setLoading(false);
+ }, [selectedBranch, selectedGroup]);
 
   useEffect(() => {
     fetchData();
@@ -51,18 +57,17 @@ const SuperStudentsPayments = () => {
     },
     {
       title: "Ism Familiya",
-      render: (text) =>
-        text?.student?.first_name + " " + text?.student?.last_name,
+      render: (text) => `${text?.student?.first_name} ${text?.student?.last_name}`,
       key: "student",
     },
     {
       title: "Guruh nomi",
-      render: (data: any) => data.group?.name,
+      render: (data) => data.group?.name,
       key: "name",
     },
     {
       title: "To'lov miqdori",
-      render: (text) => text.price_sum + "/" + text.group?.price,
+      render: (text) => `${text.price_sum}/${text.group?.price}`,
       key: "price_sum",
     },
     {
@@ -84,7 +89,7 @@ const SuperStudentsPayments = () => {
       title: "Action",
       dataIndex: "id",
       key: "id",
-      render: (id: any) => (
+      render: (id) => (
         <Space size="middle">
           <Button
             style={{ backgroundColor: "#264653" }}
@@ -163,6 +168,7 @@ const SuperStudentsPayments = () => {
       console.error(err);
     }
   };
+
   const showDeleteConfirm = (id: number) => {
     confirm({
       title: "Bu to'lovni ro'yhatdan o'chirishni hohlaysizmi?",
@@ -179,6 +185,7 @@ const SuperStudentsPayments = () => {
       },
     });
   };
+
   const deletePayment = useCallback(
     async (id) => {
       try {
@@ -190,11 +197,10 @@ const SuperStudentsPayments = () => {
     },
     [fetchData]
   );
+
   const getStudent = useCallback(async (groupId: number) => {
     try {
-      const res = await request.get(
-        `account/student-profiles/?group=${groupId}`
-      );
+      const res = await request.get(`account/student-profiles/?group=${groupId}`);
       const data = res.data.results;
       setStudent(data);
     } catch (error) {
@@ -225,8 +231,8 @@ const SuperStudentsPayments = () => {
   useEffect(() => {
     getGroup();
     getBranches();
-  }, [getGroup, getBranches]);
-
+    getStudent();
+  }, [getGroup, getBranches, getStudent]);
   const onChange = (value: number) => {
     console.log(`selected ${value}`);
     getStudent(value);
@@ -234,19 +240,24 @@ const SuperStudentsPayments = () => {
     setGroupId(value);
   };
 
-  const filterOption = (
-    input: string,
-    option?: { label: string; value: string }
-  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
-
   const onChangeBranch = (value: string) => {
     setSelectedBranch(value);
-    fetchData();
   };
+
+  const onChangeGroup = (value: number) => {
+    setSelectedGroup(value);
+  };
+
+  useEffect(() => {
+    fetchData(); // fetchData funksiyasini o'zgargan
+  }, [selectedBranch, selectedGroup]); 
 
   const handleSearch = (value) => {
     setSearchText(value);
   };
+
+  const filterOption = (input: string, option?: { label: string; value: string }) =>
+    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const filteredData = data.filter((item) =>
     `${item.student.first_name} ${item.student.last_name}`
@@ -257,6 +268,8 @@ const SuperStudentsPayments = () => {
   return (
     <Fragment>
       <div className="flex items-center justify-between mb-4">
+        <h1 className="text-center font-medium">O'quvchilar to'lovi</h1>
+
         <Select
           style={{ width: 200, marginRight: 10 }}
           placeholder="Select Branch"
@@ -266,6 +279,18 @@ const SuperStudentsPayments = () => {
           {branches.map((branch: any) => (
             <Select.Option key={branch.id} value={branch.id}>
               {branch.name}
+            </Select.Option>
+          ))}
+        </Select>
+        <Select
+          style={{ width: 200, marginRight: 10 }}
+          placeholder="Select Group"
+          onChange={onChangeGroup}
+          allowClear
+        >
+          {mygroup.map((group: any) => (
+            <Select.Option key={group.id} value={group.id}>
+              {group.name}
             </Select.Option>
           ))}
         </Select>

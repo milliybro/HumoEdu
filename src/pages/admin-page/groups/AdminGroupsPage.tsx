@@ -100,6 +100,12 @@ const AdminGroups = () => {
   }, [getData, getRooms]);
   const columns = [
     {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
+    {
       title: "Guruh nomi",
       dataIndex: "name",
       key: "name",
@@ -116,12 +122,16 @@ const AdminGroups = () => {
     },
     {
       title: "O'qituvchi",
-      render: (record) => record.teacher?.first_name + " " + record.teacher?.last_name,
+      render: (record) =>
+        record.teacher?.first_name + " " + record.teacher?.last_name,
       key: "teacher",
     },
     {
       title: "Yordamchi o'qituvchi",
-      render: (record) => record.sub_teacher ? record.sub_teacher?.first_name + " " + record.sub_teacher?.last_name : "-",
+      render: (record) =>
+        record.sub_teacher
+          ? record.sub_teacher?.first_name + " " + record.sub_teacher?.last_name
+          : "-",
       key: "teacher",
     },
     {
@@ -138,13 +148,18 @@ const AdminGroups = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h5 style={{ color: "green" }}>Faoliyatda</h5> : <h5 style={{ color: "red" }}>Faoliyatda emas</h5>),
+      render: (status) =>
+        status ? (
+          <h5 style={{ color: "green" }}>Faoliyatda</h5>
+        ) : (
+          <h5 style={{ color: "red" }}>Faoliyatda emas</h5>
+        ),
     },
     {
       title: "Action",
       dataIndex: "id",
       key: "action",
-      render: (id:number) => (
+      render: (id: number) => (
         <Space size="middle">
           <Button
             onClick={() => {
@@ -157,7 +172,11 @@ const AdminGroups = () => {
           >
             Edit
           </Button>
-          <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button
+            onClick={() => showDeleteConfirm(id)}
+            type="primary"
+            style={{ backgroundColor: "#f54949" }}
+          >
             Delete
           </Button>
           <Button onClick={() => nextStudent(id)}>O'quvchilar</Button>
@@ -298,15 +317,22 @@ const AdminGroups = () => {
   };
 
    useEffect(() => {
-     getData(selectedBranch, selectedScience, selectedStaff, selectedStatus);
+     getData(
+       selectedBranch,
+       selectedStaff,
+       null,
+       selectedScience,
+       null,
+       selectedStatus,
+     );
      getRooms();
    }, [
      getData,
      getRooms,
      selectedBranch,
-     selectedScience,
      selectedStaff,
      selectedStatus,
+     selectedScience,
    ]);
 
    ///// delete modal  ///////
@@ -348,8 +374,8 @@ const AdminGroups = () => {
   };
 
   const handleChangeStatus = (value) => {
-    // setSelectedStatus(value);
-    handleStatusChange(value);
+    setSelectedStatus(value);
+    // handleStatusChange(value);
   };
 
 
@@ -367,6 +393,12 @@ const AdminGroups = () => {
     console.log("Clicked cancel button");
     setOpen(false);
   };
+ 
+
+  const handleChangeFilterScience = (value) => {
+    setSelectedScience(value);
+  };
+  
 
   return (
     <Fragment>
@@ -398,7 +430,9 @@ const AdminGroups = () => {
 
       <Modal
         open={isModalOpen}
-        onOk={() => {form.submit()}}
+        onOk={() => {
+          form.submit();
+        }}
         okButtonProps={{ form: "group-update" }}
         onCancel={handleCancel}
         width={1000}
@@ -568,9 +602,9 @@ const AdminGroups = () => {
             </Select.Option>
           ))}
         </Select>
-        {/* <Select
+        <Select
           placeholder="Fan tanlang"
-          onChange={handleChangeScience}
+          onChange={handleChangeFilterScience}
           allowClear
         >
           {science.map((value) => (
@@ -578,29 +612,17 @@ const AdminGroups = () => {
               {value.name}
             </Select.Option>
           ))}
-        </Select> */}
-        {/* <Select
-          placeholder="O'qituvchi tanlang"
-          onChange={handleChangeStaff}
-          allowClear
-        >
-          {teacherOptions.map((teacher) => (
-            <Select.Option key={teacher.value} value={teacher.value}>
-              {teacher.label}
-            </Select.Option>
-          ))}
-        </Select> */}
+        </Select>
+
         <Select
           placeholder="Status tanlang"
           onChange={handleChangeStatus}
           allowClear
         >
-          <Select.Option value="1">Active</Select.Option>
-          <Select.Option value="0">Inactive</Select.Option>
+          <Select.Option value=" "> Status </Select.Option>
+          <Select.Option value="true">Faol</Select.Option>
+          <Select.Option value="false">Faol emas</Select.Option>
         </Select>
-        <Button onClick={toggleSearch}>
-          {isSearchOpen ? "Yopish" : "Izlash"}
-        </Button>
       </Space>
 
       <Table

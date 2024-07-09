@@ -1,16 +1,19 @@
 import { userInteface } from "../types";
 import getData from "./data";
-interface students {
-  _id: number;
+
+interface payments {
+  id: string;
   name: string;
   level: string;
   description: string;
   startDate: string;
   endDate: string;
+  url: string;
   user: null | userInteface;
   __v: number;
+  date: string;
 }
 
-const useDebtorStudent = getData<students>("account/debtor-student-profiles/");
+const usePaymentsStudents = getData<payments>("account/payments/?is_student=true");
 
-export default useDebtorStudent;
+export default usePaymentsStudents;

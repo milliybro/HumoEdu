@@ -50,19 +50,12 @@ import UsersPageBranch from "./pages/branch-admin/users/AdminUsers";
 import BranchGoupsStudents from './pages/branch-admin/groups/BranchGroupsStudents'
 import GroupStudentsList from "./pages/admin-page/groups/GroupStudentsList";
 import DebtorStudents from "./pages/admin-page/debtor/DebtorStudents";
-import { ensureTokenValidity } from './states/auth';
-import { useEffect } from 'react';
 import BranchStudentsPayments from "./pages/branch-admin/payments/BranchStudentsPayments";
 import BranchTeachersPayments from "./pages/branch-admin/payments/BranchTeachersPayments";
 import SuperStudentsPayments from "./pages/admin-page/payments/SuperStudentsPayments";
 import SuperTeachersPayments from "./pages/admin-page/payments/SuperTeachersPayments";
 function App() {
   const { isAuthenticated, role } = useAuth();
-
-  useEffect(()=>{
-    ensureTokenValidity();
-  })
-
   return (
     <BrowserRouter>
       <Routes>

@@ -39,6 +39,12 @@ const EducationPageAdmin = () => {
 
   const columns = [
     {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
+    {
       title: "Fan nomi",
       dataIndex: "name",
       key: "name",
@@ -163,7 +169,7 @@ const EducationPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
-        style={{ width: "1300px" }}
+        style={{ width: "1500px" }}
         title={() => (
           <>
             <Row
