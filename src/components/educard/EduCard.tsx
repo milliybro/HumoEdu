@@ -22,6 +22,7 @@ const EduCard = ({
   price,
   teacher,
   science,
+  groupname
 }: EduCardProps) => {
   const navigate = useNavigate();
   const handleNavigate = (groupId) =>{
@@ -51,7 +52,7 @@ const EduCard = ({
           </div>
           <div className="card-btn">
           <Button onClick={()=>handleNavigate(id)}>
-                  guruh yo'qlamalari
+                {groupname}
           </Button>
           </div>
         </div>

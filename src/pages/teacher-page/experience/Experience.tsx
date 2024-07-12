@@ -5,7 +5,7 @@ import { AccordionSectionProps } from "../../../types";
 import "../../../components/accordion/accordion.scss";
 import "./experience.scss";
 import { useParams } from "react-router-dom";
-import { Table } from "antd";
+import { Table, Image } from "antd";
 
 const TeacherExperience = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -31,7 +31,7 @@ const TeacherExperience = () => {
     getData();
   }, [getData]);
 
-  const students = experience?.students || [];
+  const students = experience?.student || [];
   // const sciences = experience?.sciences || [];
   // const branches = experience?.branches || [];
 
@@ -47,17 +47,18 @@ const TeacherExperience = () => {
 
   const columns = [
     {
-      title: "T/r",
-      dataIndex: "id",
-      key: "id",
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Image",
       dataIndex: "image",
       render: (image: string) => (
-        <img
-          style={{ width: "50px" }}
-          className="antd-img"
+        <Image
+          style={{ width: "40px", height:"40px" }}
+          className="antd-img rounded-full"
           alt="student"
           src={image}
         />
@@ -105,7 +106,7 @@ const TeacherExperience = () => {
           loading={loading}
         />
       </div>
-      {/* <div className="group-in-info shadow-lg rounded-lg p-6">
+      <div className="group-in-info shadow-lg rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-4 text-white">
           Guruh ma'lumotlari
         </h1>
@@ -122,18 +123,13 @@ const TeacherExperience = () => {
               {experience?.teacher?.first_name} {experience?.teacher?.last_name}
             </span>
           </h3>
-          <h3 className="text-xl font-medium">
+          {/* <h3 className="text-xl font-medium">
             Fan:{" "}
             <span className="font-normal text-gray-700">
               {sciences.map((science) => science?.name).join(", ")}
             </span>
-          </h3>
-          <h3 className="text-xl font-medium">
-            Fillial:{" "}
-            <span className="font-normal text-gray-700">
-              {branches.map((branch) => branch?.name).join(", ")}
-            </span>
-          </h3>
+          </h3> */}
+         
           <h3 className="text-xl font-medium">
             Yordamchi o'qituvchi:{" "}
             <span className="font-normal text-gray-700">
@@ -143,7 +139,7 @@ const TeacherExperience = () => {
             </span>
           </h3>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

@@ -121,6 +121,14 @@ const RoomsPageAdmin = () => {
 
   const columns = [
     {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => (
+        <span style={{ fontSize: "12px" }}>{index + 1}</span>
+      ),
+    },
+    {
       title: "Xona nomi",
       dataIndex: "name",
       key: "name",
@@ -205,45 +213,72 @@ const RoomsPageAdmin = () => {
       <Table
         loading={loading}
         className="table"
-        style={{width:'1500px'}}
+        style={{ width: "1500px" }}
         title={() => (
           <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ width: "100%", maxWidth: "1500px" }}
+            >
               <Col>
-                <h1>{branchName} / Xonalar ({total})</h1>
+                <h1 className="font-medium text-2xl mb-2">
+                  Xodimlar <span className="text-green-500">({total})</span>{" "}
+                </h1>
               </Col>
-              <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "30px" }}
+              >
                 <Col>
-                  <div className="search-box">
-                    <Input onChange={(e) => SearchSkills(e)} className={isSearchOpen ? "searchInput open" : "searchInput"} placeholder="Search..." />
-                    <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? <CloseOutlined style={{ color: "white" }} /> : <SearchOutlined />}
+                  <div className="relative flex items-center bg-blue-500 p-1 rounded-full px-2">
+                    <Input
+                      onChange={(e) => {
+                        SearchSkills(e);
+                        console.log(e.target.value);
+                      }}
+                      className={`transition-width duration-300 ease-in-out ${
+                        isSearchOpen ? "w-64 px-4 py-1" : "w-0 px-0 py-1"
+                      } bg-white rounded-md shadow-md outline-none`}
+                      placeholder="Search..."
+                      style={{ opacity: isSearchOpen ? 1 : 0 }}
+                    />
+                    <a
+                      href="#"
+                      onClick={toggleSearch}
+                      className="ml-2 mr-2 text-white"
+                    >
+                      {isSearchOpen ? <CloseOutlined /> : <SearchOutlined />}
                     </a>
                   </div>
                 </Col>
+
                 <Col>
-                  <Button className="Add" type="primary" onClick={() => showModal(form)}>
-                    <div className="center">
-                      <button className="btn">
-                        <svg width="180px" height="60px" viewBox="0 0 180 60" className="border">
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="bg-line" />
-                          <polyline points="179,1 179,59 1,59 1,1 179,1" className="hl-line" />
-                        </svg>
-                        <span>Xona qo'shish</span>
-                      </button>
-                    </div>
+                  <Button
+                    className="text-center"
+                    type="primary"
+                    onClick={() => showModal(form)}
+                  >
+                    Xodim qo'shish
                   </Button>
                 </Col>
               </div>
             </Row>
-            
           </>
         )}
         pagination={false}
         dataSource={data}
         columns={columns}
       />
-      {total > LIMIT ? <Pagination className="pagination" total={total} pageSize={LIMIT} current={page} onChange={(page) => handlePage(page, navigate)} /> : null}
+      {total > LIMIT ? (
+        <Pagination
+          className="pagination"
+          total={total}
+          pageSize={LIMIT}
+          current={page}
+          onChange={(page) => handlePage(page, navigate)}
+        />
+      ) : null}
       <Modal
         visible={isModalOpen}
         title="Title"
@@ -285,7 +320,7 @@ const RoomsPageAdmin = () => {
               },
             ]}
           >
-            <Input />
+            <Input type="text"/>
           </Form.Item>
           <Form.Item
             label="Xona raqami"
@@ -297,7 +332,7 @@ const RoomsPageAdmin = () => {
               },
             ]}
           >
-            <Input />
+            <Input type="number" min={1}/>
           </Form.Item>
           <Form.Item
             label="Xona sig'imi"
@@ -309,7 +344,7 @@ const RoomsPageAdmin = () => {
               },
             ]}
           >
-            <Input />
+            <Input type="number" min={1}/>
           </Form.Item>
 
           {/* <Form.Item

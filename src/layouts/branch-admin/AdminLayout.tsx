@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useCallback } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -17,19 +17,33 @@ import { Layout, Menu, Button, Modal } from "antd";
 import logo from "../../assets/logo.jpg";
 import { useAuth } from "../../states/auth";
 // import { ROLE } from "../../constants";
-
+import { request } from "../../request";
 import "./style.scss";
 
 const { Sider, Header, Content } = Layout;
 
 const BranchAdminLayout = () => {
-  const { role, logout, username } = useAuth();
+  const { role, logout, username, teacherId } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
+  const [profile, setProfile] = useState([])
   const navigate = useNavigate();
   const location = useLocation();
+  // console.log(userId)
 
+  const getProfile = useCallback(async () => {
+    try {
+      const res = await request.get(`account/staff-profile/${teacherId}/`);
+      setProfile(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+  useEffect(()=>{
+    getProfile();
+  },[teacherId])
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".user-dropdown")) {
@@ -181,7 +195,12 @@ const BranchAdminLayout = () => {
               >
                 <div className="user-toggle">
                   <div className="user-avatar sm">
-                    {/* <img src="#" alt="JD" /> */}
+                    <img
+                      src={profile?.image}
+                      alt="profile"
+                      className="w-12 h-11 rounded-full shadow-lg object-cover"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="user-info d-none d-xl-block">
                     <div className="user-status user-status-active text-white">
@@ -197,9 +216,6 @@ const BranchAdminLayout = () => {
                 <div className="dropdown-menu dropdown-menu-md dropdown-menu-end ">
                   <div className="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
                     <div className="user-card">
-                      <div className="user-avatar">
-                        {/* <span>{username.substring(0, 2)}</span> */}
-                      </div>
                       <div className="user-info">
                         <span className="lead-text">{username}</span>
                       </div>

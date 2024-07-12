@@ -54,6 +54,7 @@ import BranchStudentsPayments from "./pages/branch-admin/payments/BranchStudents
 import BranchTeachersPayments from "./pages/branch-admin/payments/BranchTeachersPayments";
 import SuperStudentsPayments from "./pages/admin-page/payments/SuperStudentsPayments";
 import SuperTeachersPayments from "./pages/admin-page/payments/SuperTeachersPayments";
+import BrnachDebtorStudents from './pages/branch-admin/students/BranchDebtorStudents';
 function App() {
   const { isAuthenticated, role } = useAuth();
   return (
@@ -131,7 +132,7 @@ function App() {
           <Route path="/branchGroup/:scheduleId" element={<BranchSchedule />} />
           <Route path="/branchStudents" element={<BranchStudents />} />
           <Route path="/adminprofile" element={<AdminProfile />} />
-          <Route path="/branchDebtorStudents" element={<DebtorStudents />} />
+          <Route path="/branchDebtorStudents" element={<BrnachDebtorStudents />} />
         </Route>
 
         <Route

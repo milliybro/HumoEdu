@@ -11,11 +11,11 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 
-import { LIMIT } from "../../../constants";
-import { useNavigate, useParams } from "react-router-dom";
+// import { LIMIT } from "../../../constants";
+import {  useParams } from "react-router-dom";
 import { request } from "../../../request";
 import usePayments from "../../../states/adminPayment";
-import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+// import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import CRangePicker from "../../../utils/datapicker";
 import moment from "moment";
 
@@ -35,25 +35,27 @@ const AdminPayments = () => {
   const [student, setStudent] = useState([]);
   const [mygroup, setMyGroup] = useState([]);
   const [editId, setEditId] = useState(null); 
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  // const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [data, setData] = useState([]);
   const [groupId, setGroupId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await request.get(
-        `account/payments/?is_student=true`
+        `account/payments/?is_student=true${selectedGroup ? `&group=${selectedGroup}` : ""}`
       );
       const responseData = res.data;
       setData(responseData.results);
     } catch (err) {
       console.error(err);
     }
-    setLoading(false)
-  }, [branchId]);
+    setLoading(false);
+  }, [ selectedGroup]);
 
   useEffect(() => {
     fetchData();
@@ -107,7 +109,6 @@ const AdminPayments = () => {
       render: (id: any) => (
         <Space size="middle">
           <Button
-            style={{ backgroundColor: "#264653" }}
             onClick={() => {
               showModal(form);
               setEditId(id); // Set the id when Edit button is clicked
@@ -234,17 +235,20 @@ const AdminPayments = () => {
   ///// delete modal  ///////
  
 
-  const handleChangeBranch = (value) => {
-    setSelectedBranch(value);
-  };
+  // const handleChangeBranch = (value) => {
+  //   setSelectedBranch(value);
+  // };
 
-  const handleChangeStaff = (value) => {
-    setSelectedStaff(value);
+  // const handleChangeStaff = (value) => {
+  //   setSelectedStaff(value);
+  // };
+  const onChangeGroup = (value: number) => {
+    setSelectedGroup(value);
   };
 
   useEffect(() => {
-    fetchData(selectedBranch, selectedStaff);
-  }, [fetchData, selectedBranch, selectedStaff]);
+    fetchData(); // fetchData funksiyasini o'zgargan
+  }, [ selectedGroup]); 
 
   // const [teacherOptions, setTeacherOptions] = useState([]);
   // useEffect(() => {
@@ -279,9 +283,21 @@ const AdminPayments = () => {
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: 200 }}
         />
+        <Select
+          style={{ width: 200, marginRight: 10 }}
+          placeholder="Select Group"
+          onChange={onChangeGroup}
+          allowClear
+        >
+          {mygroup.map((group: any) => (
+            <Select.Option key={group.id} value={group.id}>
+              {group.name}
+            </Select.Option>
+          ))}
+        </Select>
         <Button
           onClick={() => showModal(form)}
-          style={{ backgroundColor: "#264653", color: "white" }}
+          type="primary"
         >
           To'lov qo'shish
         </Button>
@@ -308,11 +324,7 @@ const AdminPayments = () => {
           <Button key="back" onClick={handleCancel}>
             Bekor qilish
           </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => handleForm(form)}
-          >
+          <Button key="submit" type="primary" onClick={() => handleForm(form)}>
             Saqlash
           </Button>,
         ]}

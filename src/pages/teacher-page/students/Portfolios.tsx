@@ -107,6 +107,7 @@ const TeacherPortfolios: React.FC = () => {
             placeholder="Guruhni tanlang"
             onChange={handleGroupChange}
             style={{ width: 200 }}
+            allowClear
           >
             {groups.map((group) => (
               <Option key={group.id} value={group.id}>

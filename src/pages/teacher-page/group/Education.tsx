@@ -55,6 +55,7 @@ const TeacherEducation = () => {
               branch={res.branch}
               start_at={res.start_at}
               end_at={res.end_at}
+              groupname={'guruh talabalari'}
             />
           ))}
         </div>

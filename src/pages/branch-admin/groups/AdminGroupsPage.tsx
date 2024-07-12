@@ -9,7 +9,7 @@ import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
 const { confirm } = Modal;
 const BranchGroups = () => {
-  const { total, loading, isModalOpen, data, page, handleStatusChange, getData, showModal, handleCancel, handlePage } = useGroup();
+  const { total, loading, isModalOpen, data, page, getData, showModal, handleCancel, handlePage } = useGroup();
   const { branchId } = useAuth();
   const [form] = useForm();
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ const BranchGroups = () => {
     {
       title: "Yordamchi o'qituvchi",
       render: (record) =>
-        record.sub_teacher ? record?.sub_teacher?.first_name + " " + record?.sub_teacher?.last_name : " ",
+        record.sub_teacher ? record?.sub_teacher?.first_name + " " + record?.sub_teacher?.last_name : "-",
       key: "sub_teacher",
     },
     {
@@ -308,8 +308,8 @@ const BranchGroups = () => {
   };
 
   useEffect(() => {
-    getData(selectedBranch, selectedScience, selectedStaff);
-  }, [getData, selectedBranch, selectedScience, selectedStaff]);
+    getData(null, selectedStaff, null, selectedScience, null,null, selectedStatus);
+  }, [getData, selectedScience, selectedStaff, selectedStatus]);
 
  
   
@@ -324,7 +324,11 @@ const BranchGroups = () => {
 
   const handleChangeStatus = (value) => {
     setSelectedStatus(value);
-    handleStatusChange(value);
+    // handleStatusChange(value);
+  };
+
+  const handleChangeFilterScience = (value) => {
+    setSelectedScience(value);
   };
 
   return (
@@ -409,7 +413,6 @@ const BranchGroups = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-            
             <Col span={8}>
               <Form.Item
                 name="teacher"
@@ -423,6 +426,10 @@ const BranchGroups = () => {
                   placeholder="O'qituvchi tanlang"
                   onChange={handleChangeStaff} // O'zgartirilgan
                   allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
                 >
                   {teacherOptions.map((teacher) => (
                     <Select.Option key={teacher.value} value={teacher.value}>
@@ -435,9 +442,12 @@ const BranchGroups = () => {
             <Col span={8}>
               <Form.Item
                 name="sub_teacher"
-                label="Yordamchi o'quvchi"
+                label="Yordamchi o'qituvchi"
                 rules={[
-                  { required: false, message: "Iltimos, o'qituvchini tanlang" },
+                  {
+                    required: false,
+                    message: "Iltimos, yordamchi o'qituvchini tanlang",
+                  },
                 ]}
               >
                 <Select
@@ -445,6 +455,10 @@ const BranchGroups = () => {
                   placeholder="Yordamchi o'qituvchini tanlang"
                   onChange={handleChangeBranch}
                   allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
                 >
                   {teacherOptions.map((value) => (
                     <Select.Option key={value.value} value={value.value}>
@@ -467,6 +481,10 @@ const BranchGroups = () => {
               size="large"
               placeholder="O'quvchilarni tanlang"
               onChange={handleChange}
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
             >
               {options.map((student) => (
                 <Select.Option key={student.value} value={student.value}>
@@ -489,16 +507,9 @@ const BranchGroups = () => {
           style={{ width: 200 }}
           suffix={<SearchOutlined />}
         />
-        {/* <Select placeholder="Fillial tanlang" onChange={handleChangeBranch} allowClear>
-          {branch.map((value) => (
-            <Select.Option key={value.id} value={value.id}>
-              {value.name}
-            </Select.Option>
-          ))}
-        </Select> */}
-        {/* <Select
+        <Select
           placeholder="Fan tanlang"
-          onChange={handleChangeScience}
+          onChange={handleChangeFilterScience}
           allowClear
         >
           {science.map((value) => (
@@ -507,28 +518,16 @@ const BranchGroups = () => {
             </Select.Option>
           ))}
         </Select>
-        <Select
-          placeholder="O'qituvchi tanlang"
-          onChange={handleChangeStaff}
-          allowClear
-        >
-          {teacherOptions.map((teacher) => (
-            <Select.Option key={teacher.value} value={teacher.value}>
-              {teacher.label}
-            </Select.Option>
-          ))}
-        </Select>
+
         <Select
           placeholder="Status tanlang"
           onChange={handleChangeStatus}
           allowClear
         >
-          <Select.Option value="active">Active</Select.Option>
-          <Select.Option value="inactive">Inactive</Select.Option>
-        </Select> */}
-        {/* <Button onClick={toggleSearch}>
-          {isSearchOpen ? "Yopish" : "Izlash"}
-        </Button> */}
+          <Select.Option value=" "> Status </Select.Option>
+          <Select.Option value="true">Faol</Select.Option>
+          <Select.Option value="false">Faol emas</Select.Option>
+        </Select>
       </Space>
 
       <Table

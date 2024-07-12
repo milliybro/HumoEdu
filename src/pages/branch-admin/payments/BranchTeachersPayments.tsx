@@ -3,6 +3,7 @@ import { Table, Modal, Form, Input, Button, Select, Space } from "antd";
 import moment from "moment";
 import { request } from "../../../request";
 import CRangePicker from "../../../utils/datapicker";
+import { useAuth } from "../../../states/auth";
 const { Option } = Select;
 
 const BranchTeachersPayments: React.FC = () => {
@@ -13,18 +14,20 @@ const BranchTeachersPayments: React.FC = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const { branchId } = useAuth();
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    fetchPayments();
-    fetchGroups();
-  }, []);
+    useEffect(() => {
+      fetchPayments();
+      fetchGroups();
+    }, [selectedGroup]);
 
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await request.get("account/payments/?is_student=false");
+      const response = await request.get(
+        `account/payments/?is_student=false${selectedGroup ? `&group=${selectedGroup}` : ""}`
+      );
       setPayments(response.data.results);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -36,7 +39,7 @@ const BranchTeachersPayments: React.FC = () => {
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const response = await request.get("group/groups/?branch=8");
+      const response = await request.get(`group/groups/?branch=${branchId}`);
       setGroups(response.data.results);
     } catch (error) {
       console.error("Error fetching groups:", error);
@@ -89,11 +92,7 @@ const BranchTeachersPayments: React.FC = () => {
   };
 
   const handleGroupChange = (value: number) => {
-    const selectedGroup = groups.find((group) => group.id === value);
-
-    if (selectedGroup) {
-      setSelectedGroup(selectedGroup);
-    }
+    setSelectedGroup(value);
   };
 
   const columns = [
@@ -176,6 +175,18 @@ const BranchTeachersPayments: React.FC = () => {
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: 200 }}
         />
+        <Select
+          placeholder="Select group"
+          onChange={handleGroupChange}
+          style={{ width: 200 }}
+          allowClear
+        >
+          {groups.map((group) => (
+            <Option key={group.id} value={group.id}>
+              {group.name}
+            </Option>
+          ))}
+        </Select>
         <Button
           type="primary"
           className="mb-2"

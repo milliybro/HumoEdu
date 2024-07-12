@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Button, Table, Modal, Spin, message, List, Checkbox,Radio } from "antd";
+import { Button, Table, Modal, Spin, message, List, Checkbox,Radio, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import { request } from "../../../request";
 import { Student, Schedule } from "../types";
@@ -14,6 +14,7 @@ const TeacherAttendance: React.FC = () => {
   const [lessonId, setLessonId] = useState<number | null>(null);
   const [withReasonMap, setWithReasonMap] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchGroups();
@@ -197,6 +198,12 @@ const TeacherAttendance: React.FC = () => {
     endTime: group.end_time,
   }));
 
+
+   const filteredStudents = students.filter(
+    (student) =>
+      student.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <div className="p-4">
       <h2 className="text-medium text-2xl mb-3">
@@ -218,8 +225,14 @@ const TeacherAttendance: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
+        <Input
+          placeholder="Ism yoki familiya bo'yicha qidirish"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ marginBottom: 16 }}
+        />
         <List
-          dataSource={students}
+          dataSource={filteredStudents}
           renderItem={(student: Student) => (
             <List.Item
               className="cursor-pointer"
@@ -234,10 +247,10 @@ const TeacherAttendance: React.FC = () => {
               {selectedStudents.includes(student.id) && (
                 <Radio
                   onChange={(e) => {
-                    const checked = e.target.checked; 
+                    const checked = e.target.checked;
                     setWithReasonMap((prevMap) => ({
                       ...prevMap,
-                      [student.id]: checked, 
+                      [student.id]: checked,
                     }));
                   }}
                   checked={withReasonMap[student.id] || false}

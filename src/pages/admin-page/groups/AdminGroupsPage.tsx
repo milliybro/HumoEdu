@@ -323,6 +323,7 @@ const AdminGroups = () => {
        null,
        selectedScience,
        null,
+       null,
        selectedStatus,
      );
      getRooms();
@@ -525,6 +526,10 @@ const AdminGroups = () => {
                   placeholder="O'qituvchi tanlang"
                   onChange={handleChangeStaff} // O'zgartirilgan
                   allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
                 >
                   {teacherOptions.map((teacher) => (
                     <Select.Option key={teacher.value} value={teacher.value}>
@@ -537,9 +542,12 @@ const AdminGroups = () => {
             <Col span={8}>
               <Form.Item
                 name="sub_teacher"
-                label="Yordamchi o'quvchi"
+                label="Yordamchi o'qituvchi"
                 rules={[
-                  { required: false, message: "Iltimos, o'qituvchini tanlang" },
+                  {
+                    required: false,
+                    message: "Iltimos, yordamchi o'qituvchini tanlang",
+                  },
                 ]}
               >
                 <Select
@@ -547,6 +555,10 @@ const AdminGroups = () => {
                   placeholder="Yordamchi o'qituvchini tanlang"
                   onChange={handleChangeBranch}
                   allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
                 >
                   {teacherOptions.map((value) => (
                     <Select.Option key={value.value} value={value.value}>
@@ -569,6 +581,10 @@ const AdminGroups = () => {
               size="large"
               placeholder="O'quvchilarni tanlang"
               onChange={handleChange}
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
             >
               {options.map((student) => (
                 <Select.Option key={student.value} value={student.value}>

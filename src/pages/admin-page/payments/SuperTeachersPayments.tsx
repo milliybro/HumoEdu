@@ -28,20 +28,20 @@ const SuperTeachersPayments: React.FC = () => {
   }, [selectedBranch, selectedGroup]);
 
   const fetchPayments = async () => {
-    setLoading(true);
-    try {
-      const response = await request.get(
-        `account/payments/?is_student=false${
-          selectedBranch ? `&teacher__branch=${selectedBranch}` : ""
-        }${selectedGroup ? `&group=${selectedGroup}` : ""}`
-      );
-      setPayments(response.data.results);
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setLoading(true);
+        try {
+          const response = await request.get(
+            `account/payments/?is_student=false${
+              selectedBranch ? `&teacher__branch=${selectedBranch}` : ""
+            }${selectedGroup ? `&group=${selectedGroup}` : ""}`
+          );
+          setPayments(response.data.results);
+        } catch (error) {
+          console.error("Error fetching payments:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
   const fetchGroups = async () => {
     setLoading(true);

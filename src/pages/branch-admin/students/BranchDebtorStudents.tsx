@@ -13,7 +13,7 @@ import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { request } from "../../../request";
 import moment from "moment";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-
+import { useAuth } from "../../../states/auth";
 const { Option } = Select;
 const { TextArea } = Input;
 
@@ -56,17 +56,12 @@ interface Message {
   content: string;
 }
 
-interface Branch {
-  id: number;
-  name: string;
-}
-
 interface Group {
   id: number;
   name: string;
 }
 
-const DebtorStudents: React.FC = () => {
+const BranchDebtorStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -74,20 +69,17 @@ const DebtorStudents: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessageVisible, setNewMessageVisible] = useState(false);
-  const [newMessageContent, setNewMessageContent] = useState("");
-  const [editMessageId, setEditMessageId] = useState<number | null>(null);
-  const [branches, setBranches] = useState<Branch[]>([]);
+
   const [groups, setGroups] = useState<Group[]>([]);
-  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
+  const { branchId } = useAuth();
 
   const fetchDebtorStudents = useCallback(async () => {
     setLoading(true);
     try {
       const response = await request.get("/account/debtor-student-profiles/", {
         params: {
-          branch: selectedBranch,
+          branch: branchId,
           group: selectedGroup,
         },
       });
@@ -98,8 +90,9 @@ const DebtorStudents: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedBranch, selectedGroup]);
-
+  }, [selectedGroup]);
+      console.log(students);
+ 
   const fetchMessages = useCallback(async () => {
     try {
       const response = await request.get("/account/payments-messages/");
@@ -109,30 +102,20 @@ const DebtorStudents: React.FC = () => {
     }
   }, []);
 
-  const fetchBranches = useCallback(async () => {
+  const fetchGroups = useCallback(async (branchId: number | null = null) => {
     try {
-      const response = await request.get("/branch/branches/");
-      setBranches(response.data.results);
+      const response = await request.get(`/group/groups/?branch=${branchId}`);
+      setGroups(response.data.results);
     } catch (error) {
-      console.error("Error fetching branches:", error);
+      console.error("Error fetching groups:", error);
     }
   }, []);
-
-   const fetchGroups = useCallback(async (branchId: number | null = null) => {
-     try {
-       const response = await request.get(`/group/groups/?branch=${branchId}`);
-       setGroups(response.data.results);
-     } catch (error) {
-       console.error("Error fetching groups:", error);
-     }
-   }, []);
 
   useEffect(() => {
     fetchDebtorStudents();
     fetchMessages();
-    fetchBranches();
-    fetchGroups();
-  }, [fetchDebtorStudents, fetchMessages, fetchBranches, fetchGroups]);
+    fetchGroups(branchId);
+  }, [fetchDebtorStudents, fetchMessages, fetchGroups]);
 
   const handleSelectAll = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
@@ -171,70 +154,6 @@ const DebtorStudents: React.FC = () => {
       message.error(error.message || "Sms jo'natishda muammo bor");
     }
   };
-
-  const handleAddMessage = async () => {
-    try {
-      const response = await request.post("/account/payments-messages/", {
-        message: newMessageContent,
-      });
-      setMessages((prevMessages) => [...prevMessages, response.data]);
-      setNewMessageContent("");
-      message.success("Sms textni muvaffaqiyatli yaratildi.");
-    } catch (error) {
-      message.error("Sms jo'natishda muammo bor.");
-    }
-  };
-
-  const handleEditMessage = async (id: number) => {
-    try {
-      const response = await request.get(`/account/payments-messages/${id}/`);
-      setNewMessageContent(response.data.message);
-      setEditMessageId(id);
-      setNewMessageVisible(true);
-    } catch (error) {
-      message.error("Message ni tahrirlashda muammo bor. ");
-    }
-  };
-
-  const handleUpdateMessage = async () => {
-    if (editMessageId === null) return;
-
-    try {
-      await request.put(`/account/payments-messages/${editMessageId}/`, {
-        message: newMessageContent,
-      });
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === editMessageId
-            ? { ...msg, message: newMessageContent }
-            : msg
-        )
-      );
-      setNewMessageContent("");
-      setEditMessageId(null);
-      message.success("Text muvaffaqiyatli yangilandi");
-    } catch (error) {
-      message.error("Textni yangilashda xatolik bor");
-    }
-  };
-
-  const handleDeleteMessage = async (id: number) => {
-    try {
-      await request.delete(`/account/payments-messages/${id}/`);
-      setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg.id !== id)
-      );
-      message.success("Messsage o'chirildi.");
-    } catch (error) {
-      message.error("Messageni o'chirishda muammo bor.");
-    }
-  };
-
-   const handleBranchChange = (value: number) => {
-     setSelectedBranch(value);
-     console.log(value)
-     fetchGroups(value);
-   };
 
   const handleGroupChange = (value: number) => {
     setSelectedGroup(value);
@@ -292,10 +211,11 @@ const DebtorStudents: React.FC = () => {
           : "guruh biriktirilmagan",
     },
     {
-      title: "kechikkan kun",
+      title:"kechikkan kun",
       dataIndex: "debtor_days",
-      key: "debtor_days",
-    },
+      key:"debtor_days",
+
+    }
   ];
 
   return (
@@ -316,25 +236,7 @@ const DebtorStudents: React.FC = () => {
           >
             SMS yuborish
           </Button>
-          <Button
-            type="primary"
-            onClick={() => setNewMessageVisible(true)}
-            className="ml-4"
-          >
-            Text qo'shish
-          </Button>
-          <Select
-            placeholder="Filialni tanlang"
-            onChange={handleBranchChange}
-            allowClear
-            className="ml-4"
-          >
-            {branches.map((branch) => (
-              <Option key={branch.id} value={branch.id}>
-                {branch.name}
-              </Option>
-            ))}
-          </Select>
+
           <Select
             placeholder="Guruhni tanlang"
             onChange={handleGroupChange}
@@ -376,46 +278,8 @@ const DebtorStudents: React.FC = () => {
           ))}
         </Select>
       </Modal>
-      <Modal
-        title={editMessageId ? "Textni tahrirlash" : "Yangi Textni yaratish"}
-        open={newMessageVisible}
-        onOk={editMessageId ? handleUpdateMessage : handleAddMessage}
-        onCancel={() => {
-          setNewMessageVisible(false);
-          setEditMessageId(null);
-          setNewMessageContent("");
-        }}
-        okText={editMessageId ? "Yangilash" : "Yaratish"}
-        cancelText="Bekor qilish"
-      >
-        <TextArea
-          rows={2}
-          value={newMessageContent}
-          onChange={(e) => setNewMessageContent(e.target.value)}
-        />
-        <div className="mt-3">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className="flex items-center justify-between mb-2 bg-blue-100 p-1 rounded px-2"
-            >
-              <span>{msg.message}</span>
-              <div className="flex items-center">
-                <EditOutlined
-                  onClick={() => handleEditMessage(msg.id)}
-                  className="text-blue-500 cursor-pointer mr-2"
-                />
-                <DeleteOutlined
-                  onClick={() => handleDeleteMessage(msg.id)}
-                  className="text-red-500 cursor-pointer"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </Modal>
     </div>
   );
 };
 
-export default DebtorStudents;
+export default BranchDebtorStudents;

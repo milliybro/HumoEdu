@@ -5,125 +5,99 @@ import { useAuth } from "../../../states/auth";
 import { AccountType } from "../../../types";
 import avatar from "../../../assets/avatar-svgrepo-com.svg";
 import { IMG_URL } from "../../../constants";
-import { Button, Form, Input, Modal, Upload , Spin} from "antd";
+import { Button, Form, Input, Modal, Upload , Spin,message, Row, Col, DatePicker, Image} from "antd";
+import type { UploadProps } from "antd/lib";
 import { UploadOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const Account = () => {
   const [userData, setUserData] = useState<AccountType | null>(null);
-  const { teacherId, branchId } = useAuth();
+  const { teacherId, branchId} = useAuth();
   const [form] = Form.useForm();
   const [updateForm] = Form.useForm();
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
+  
   const getAccount = useCallback(async () => {
     try {
       const res = await request.get(`account/student-profile/${teacherId}/`);
       setUserData(res.data);
+      form.setFieldsValue({
+        ...res.data,
+        birthday: res.data.birthday ? dayjs(res.data.birthday) : null,
+        end_at: res.data.end_at ? dayjs(res.data.end_at) : null,
+      });
     } catch (err) {
       toast.error("Ma'lumot olishda xatolik");
     }
   }, [teacherId]);
 
-  const handleSubmit = async (values: any) => {
-    console.log(values, "val");
-    try {
-      await request.put(`account/user-password-update/${teacherId}/`, {
-        password: values.newpassword,
-      });
-      setPasswordModalOpen(false);
-      toast.success("Parol muvaffaqiyatli yangilandi!");
-    } catch (err) {
-      toast.error("Parolni yangilashda xatolik");
-    }
-  };
+ const handleUpload = async (options: any) => {
+   const { onSuccess, onError, file } = options;
 
-  // const handleUpdate = async (values: any) => {
-  //   console.log(values, "update");
-  //   try {
-  //     const branch  =  branchId;
-  //     const UpdateData = {...values, branch}
-  //     await request.put(`account/student-profile-update/${teacherId}/`, UpdateData);
-  //     getAccount();
-  //     setUpdateModalOpen(false);
-  //     toast.success("Profil muvaffaqiyatli yangilandi!");
-  //   } catch (err) {
-  //     toast.error("Profilni yangilashda xatolik");
-  //   }
-  // };
+   const formData = new FormData();
+   formData.append("image", file);
 
-  const handleImage = async (info) => {
-    console.log(info, "info");
+   try {
+     const { data } = await request.put(
+       `account/student-profile-update-image/${teacherId}/`,
+       formData
+     );
+     onSuccess(data);
+     message.success(` Rasm muvaffaqiyatli yukladi `);
+     getAccount();
+   } catch (error) {
+     onError(error);
+     message.error(`Rasmni yuklashda xatolik`);
+   }
+ };
 
-    try {
-      if (info.file && info.file.status === "uploading") {
-        toast.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
-        const imageUrl = info.file.response?.url;
-        await request.put(
-          `account/student-profile-update-image/${teacherId}/`,
-          {
-            image: imageUrl,
-          }
-        );
-        getAccount(); // Profil rasmini yangilash
-        setUpdateModalOpen(false);
-      } else if (info.file && info.file.status === "error") {
-        toast.error(`${info.file.name} faylni yuklashda xatolik.`);
-      }
-    } catch (err) {
-      console.error("Profil rasmini yangilashda xatolik:", err);
-      toast.error("Profil rasmini yangilashda xatolik");
-    }
-  };
-
-  const props = {
-    name: "file",
-    action: `${IMG_URL}student-profile-update-image/${teacherId}`,
-    headers: {
-      authorization: "authorization-text",
-    },
-    onChange: handleImage,
-    accept: ".jpg,.jpeg,.png,.gif,.bmp,.svg,.webp,.ico,.tif,.tiff",
-  };
-
-  const validatePassword = (_, value) => {
-    const newPassword = form.getFieldValue("newpassword");
-    if (value && value !== newPassword) {
-      return Promise.reject(new Error("Qiymatlar mos emas!"));
-    }
-    return Promise.resolve();
-  };
+ const uploadProps: UploadProps = {
+   customRequest: handleUpload,
+   onChange(info) {
+     if (info.file.status !== "uploading") {
+       console.log(info.file, info.fileList);
+     }
+   },
+ };
 
   useEffect(() => {
     getAccount();
   }, [getAccount]);
 
-  const [loading, setLoading] = useState(false);
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+   const handleEditProfile = () => {
+     setIsModalVisible(true);
+   };
 
-  const showPasswordModal = () => {
-    form.resetFields();
-    setPasswordModalOpen(true);
-  };
+   const handleUpdateProfile = async () => {
+     try {
+       const values = form.getFieldsValue();
+       const updatedValues = {
+         ...values,
+         birthday: values.birthday
+           ? dayjs(values.birthday).format("YYYY-MM-DD")
+           : null,
+         user: {
+           ...values.user,
+           roles: "student",
+         },
+         branch: branchId,
+        //  position: [userData?.position[0].id],
+       };
+       await request.put(
+         `account/student-profile-update/${teacherId}/`,
+         updatedValues
+       );
+       setIsModalVisible(false);
+       getAccount();
+     } catch (error) {
+       console.error("Error updating profile:", error);
+     }
+   };
 
- 
-
-  const handleOk = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setPasswordModalOpen(false);
-    }, 3000);
-  };
-
-  const handleCancel = () => {
-    setPasswordModalOpen(false);
-    form.resetFields();
-  };
-
-  const handleUpdateCancel = () => {
-    setUpdateModalOpen(false);
-    updateForm.resetFields();
-  };
+   const toggleShowPasswords = () => {
+     setShowPasswords(!showPasswords);
+   };
 
   if (!userData) {
     return <Spin size="small" className="flex flex-column  justify-center mt-72" />;
@@ -146,10 +120,13 @@ const Account = () => {
   return (
     <section className="px-6 md:px-12 mt-6 py-6 min-h-[30vh] md:h-[75%] flex flex-col justify-center items-center">
       <div className="flex justify-center items-center">
-        <img
-          src={image ? image : avatar}
-          alt="Avatar"
-          className="w-32 h-32 rounded-full border-4 border-white"
+        <Image
+          src={userData?.image}
+          alt="user image"
+          width={80}
+          height={80}
+          style={{ objectFit: "cover", borderRadius: "50%" }}
+          className="shadow-lg"
         />
       </div>
       <div className="mt-4 text-center">
@@ -185,73 +162,78 @@ const Account = () => {
         </p>
       </div>
       <div className="mt-8 flex justify-center items-center flex-wrap">
-        <Button
-          type="primary"
-          onClick={showPasswordModal}
-          className="mb-4 md:mb-0 md:mr-4"
-        >
-          Parolni o'zgartirish
+        <Button type="primary" className="mr-3" onClick={handleEditProfile}>
+          Profilni tahrirlash
         </Button>
-        <Modal
-          title="Parolni o'zgartirish"
-          open={passwordModalOpen}
-          onOk={handleOk}
-          onCancel={handleCancel}
-          footer={[
-            <Button key="back" onClick={handleCancel}>
-              Bekor qilish
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              loading={loading}
-              onClick={() => form.submit()}
-            >
-              Saqlash
-            </Button>,
-          ]}
-        >
-          <Form form={form} onFinish={handleSubmit}>
-            <Form.Item
-              name="newpassword"
-              label="Yangi parol"
-              rules={[
-                {
-                  required: true,
-                  message: "Iltimos, yangi parolni kiriting!",
-                },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item
-              name="confirm"
-              label="Parolni tasdiqlang"
-              dependencies={["newpassword"]}
-              rules={[
-                {
-                  required: true,
-                  message: "Iltimos, parolni qayta kiriting!",
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("newpassword") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("Kiritilgan parollar mos kelmadi!")
-                    );
-                  },
-                }),
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-          </Form>
-        </Modal>
-        <Upload {...props}>
-          <Button className="mb-4" icon={<UploadOutlined />}>Rasmni yangilash</Button>
+        <Upload {...uploadProps} className="w-24">
+          <Button icon={<UploadOutlined />}>Rasm yuklash</Button>
         </Upload>
+        <Modal
+          title="Profilni tahrirlash"
+          open={isModalVisible}
+          onOk={handleUpdateProfile}
+          onCancel={() => setIsModalVisible(false)}
+          width={1000}
+        >
+          <Form form={form} layout="vertical">
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item name="last_name" label="Familiya">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="first_name" label="Ism">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name={["user", "username"]} label="Username">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              {showPasswords && (
+                <>
+                  <Col span={8}>
+                    <Form.Item name={["user", "password1"]} label="Parol">
+                      <Input.Password />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item
+                      name={["user", "password2"]}
+                      label="Parolni tasdiqlash"
+                    >
+                      <Input.Password />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+              <Col span={4}>
+                <Form.Item name="phone_number1" label="Telefon raqam1">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item name="phone_number2" label="Telefon raqam2">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item name="birthday" label="Tug'ilgan sana">
+                  <DatePicker />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+          <Button type="primary" onClick={toggleShowPasswords}>
+            {showPasswords ? "ortga" : "Parolni yangilash"}
+          </Button>
+        </Modal>
       </div>
     </section>
   );

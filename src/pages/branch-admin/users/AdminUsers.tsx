@@ -1,7 +1,8 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { Form, Button, Input, Modal, Space, Table, Pagination, Select, Row, Col, message, Checkbox } from "antd";
+import { Form, Button, Input, Modal, Space, Table, Pagination, Select, Row, Col, message,DatePicker, Checkbox } from "antd";
 import { useForm } from "antd/es/form/Form";
 import "./style.scss";
+import moment from "moment";
 import { LIMIT, USERID } from "../../../constants";
 import { useNavigate } from "react-router-dom";
 import useUsers from "../../../states/adminUsers";
@@ -23,15 +24,26 @@ const UsersPageBranch = () => {
   const navigate = useNavigate();
   const [editId, setEditId] = useState(null);
   const [user, setUser] = useState("");
-  // const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [position, setPosition] = useState([]);
   const [deleteStaff, setDeleteStaff] = useState(false)
-
-  useEffect(() => {
-    getData(); // Fetch data based on the selected branch
-  }, [getData,]);
+  //  const [branch, setBranch] = useState([]);
+  const [positionOption, setPositionOption] = useState([]);
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  
+   useEffect(() => {
+     getData(
+       null,
+       selectedRole,
+       null,
+       null,
+       null,
+       null,
+       selectedStatus
+     ); // Fetch data based on the selected branch
+   }, [getData,  selectedRole, selectedStatus]);
 
   
 
@@ -53,6 +65,7 @@ const UsersPageBranch = () => {
           salary: data.salary,
           position: data.position[0].id,
           birthday: data.birthday,
+          status: data.status,
           branch: branchId,
         };
         setEditId(formattedData.id);
@@ -66,6 +79,14 @@ const UsersPageBranch = () => {
   );
 
   const columns = [
+    {
+      title: "N",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => (
+        <span style={{ fontSize: "12px" }}>{index + 1}</span>
+      ),
+    },
     {
       title: "Ism",
       dataIndex: "first_name",
@@ -106,12 +127,17 @@ const UsersPageBranch = () => {
       dataIndex: "salary",
       key: "salary",
     },
-    
+
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status ? <h3 style={{ color: "green" }}>Faoliyatda</h3> : <h3 style={{ color: "red" }}>Faoliyatda emas</h3>),
+      render: (status) =>
+        status ? (
+          <h3 style={{ color: "green" }}>Faoliyatda</h3>
+        ) : (
+          <h3 style={{ color: "red" }}>Faoliyatda emas</h3>
+        ),
     },
     {
       title: "Action",
@@ -131,7 +157,11 @@ const UsersPageBranch = () => {
             Tahrirlash
           </Button>
 
-          <Button onClick={() => showDeleteConfirm(id)} type="primary" style={{ backgroundColor: "#f54949" }}>
+          <Button
+            onClick={() => showDeleteConfirm(id)}
+            type="primary"
+            style={{ backgroundColor: "#f54949" }}
+          >
             O'chirish
           </Button>
         </Space>
@@ -146,9 +176,18 @@ const UsersPageBranch = () => {
       const values = await form.validateFields();
       let originalData = JSON.parse(localStorage.getItem("editData"));
 
-      // Add branchId to formData
-      const branch = branchId; // Replace with the actual branchId value
-      const updatedFormData = { ...formData, branch };
+      
+      const branch = branchId;
+      const updatedFormData = {
+        ...formData,
+        branch,
+        start_at: values.start_at
+          ? moment(values.start_at).format("YYYY-MM-DD HH:mm:ss")
+          : null,
+        end_at: values.end_at
+          ? moment(values.end_at).format("YYYY-MM-DD HH:mm:ss")
+          : null,
+      };
 
       const payload = patchChanges(
         originalData,
@@ -200,15 +239,6 @@ const UsersPageBranch = () => {
     },
     [getData]
   );
-  const getBranches = useCallback(async () => {
-    try {
-      const res = await request.get(`branch/branches/${8}`);
-      const data = res.data;
-      setBranch(data.results);
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
   const getPosition = useCallback(async () => {
     try {
       const res = await request.get(`account/positions/`);
@@ -232,12 +262,18 @@ const UsersPageBranch = () => {
 
 
   // console.log(position, "position");
+   useEffect(() => {
+     const PosOption = position.map((data) => ({
+       value: data.id,
+       label: data.name,
+     }));
+     setPositionOption(PosOption);
+   }, [position]);
 
   useEffect(() => {
-    getBranches();
     getPosition();
     getUser();
-  }, [getBranches, getPosition, getUser]);
+  }, [ getPosition, getUser]);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -269,6 +305,23 @@ const UsersPageBranch = () => {
     };
     updatePositionOptions();
   }, [position]);
+
+
+
+
+
+  const togglePasswordFields = () => {
+    if(!editId){
+      setShowPasswordFields(true);
+    }
+    if(editId){
+    setShowPasswordFields(!showPasswordFields);
+    }
+  };
+
+  const handleChangeStatus = (value) => {
+    setSelectedStatus(value);
+  };
   return (
     <Fragment>
       <section id="search">
@@ -279,70 +332,69 @@ const UsersPageBranch = () => {
       <Table
         loading={loading}
         className="table"
-        style={{width:'1500px'}}
+        style={{ width: "1500px" }}
         title={() => (
           <>
             <Row
               justify="space-between"
               align="middle"
-              style={{ marginBottom: 20 }}
+              style={{ width: "100%", maxWidth: "1500px" }}
             >
               <Col>
-                <h1>Xodimlar ({total})</h1>
+                <h1 className="font-medium text-2xl mb-2">
+                  Xodimlar <span className="text-green-500">({total})</span>{" "}
+                </h1>
               </Col>
+
               <div
-                style={{ display: "flex", alignItems: "center", gap: "70px" }}
+                style={{ display: "flex", alignItems: "center", gap: "30px" }}
               >
                 <Col>
-                  <div className="search-box">
+                  <div className="relative flex items-center bg-blue-500 p-1 rounded-full px-2">
                     <Input
                       onChange={(e) => {
                         SearchSkills(e);
                         console.log(e.target.value);
                       }}
-                      className={
-                        isSearchOpen ? "searchInput open" : "searchInput"
-                      } // Apply different class based on isSearchOpen state
+                      className={`transition-width duration-300 ease-in-out ${
+                        isSearchOpen ? "w-64 px-4 py-1" : "w-0 px-0 py-1"
+                      } bg-white rounded-md shadow-md outline-none`}
                       placeholder="Search..."
+                      style={{ opacity: isSearchOpen ? 1 : 0 }}
                     />
-                    <a href="#" onClick={toggleSearch}>
-                      {isSearchOpen ? (
-                        <CloseOutlined style={{ color: "white" }} />
-                      ) : (
-                        <SearchOutlined />
-                      )}
+                    <a
+                      href="#"
+                      onClick={toggleSearch}
+                      className="ml-2 mr-2 text-white"
+                    >
+                      {isSearchOpen ? <CloseOutlined /> : <SearchOutlined />}
                     </a>
                   </div>
                 </Col>
+
                 <Col>
                   <Button
-                    className="Add"
+                    className="text-center"
                     type="primary"
                     onClick={() => showModal(form)}
                   >
-                    <div className="center">
-                      <button className="btn">
-                        <svg
-                          width="180px"
-                          height="60px"
-                          viewBox="0 0 180 60"
-                          className="border"
-                        >
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="bg-line"
-                          />
-                          <polyline
-                            points="179,1 179,59 1,59 1,1 179,1"
-                            className="hl-line"
-                          />
-                        </svg>
-                        <span>Xodim qo'shish</span>
-                      </button>
-                    </div>
+                    Xodim qo'shish
                   </Button>
                 </Col>
               </div>
+            </Row>
+            <Row>
+              <Select
+                size="middle"
+                defaultValue=""
+                style={{ width: "150px" }}
+                onChange={handleChangeStatus}
+                options={[
+                  { value: "", label: "Hammasi" },
+                  { value: "true", label: "Faoliyatda" },
+                  { value: "false", label: "Faoliyatda emas" },
+                ]}
+              />
             </Row>
           </>
         )}
@@ -365,6 +417,7 @@ const UsersPageBranch = () => {
         title={editId ? "Xodimni tahrirlash" : "Yangi xodim qo'shish"}
         onCancel={handleCancel}
         footer={null}
+        width={900}
       >
         <Form
           name="basic"
@@ -375,7 +428,7 @@ const UsersPageBranch = () => {
             span: 24,
           }}
           style={{
-            maxWidth: 600,
+            maxWidth: 850,
             margin: "0 auto",
           }}
           initialValues={{
@@ -386,10 +439,11 @@ const UsersPageBranch = () => {
           form={form}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Familiyasi"
                 name="last_name"
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
                     required: true,
@@ -400,10 +454,11 @@ const UsersPageBranch = () => {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Ismi"
                 name="first_name"
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
                     required: true,
@@ -414,25 +469,28 @@ const UsersPageBranch = () => {
                 <Input />
               </Form.Item>
             </Col>
+
+            <Col span={8}>
+              <Form.Item
+                label="Tug'ilgan kuni"
+                name="birthday"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Input type="date" />
+              </Form.Item>
+            </Col>
           </Row>
-          <Col span={12}>
-            <Form.Item
-              label="Tug'ilgan kuni"
-              name="birthday"
-              rules={[
-                {
-                  required: true,
-                  message: "Please fill!",
-                },
-              ]}
-            >
-              <Input type="date" />
-            </Form.Item>
-          </Col>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Telefon raqami"
+                style={{ marginBottom: 0 }}
                 // onChange={handlePhoneNumberChange}
 
                 name="phone_number"
@@ -446,13 +504,15 @@ const UsersPageBranch = () => {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+
+            <Col span={8}>
               <Form.Item
-                label="Username"
+                label="username"
                 name={["user", "username"]}
+                style={{ marginBottom: 0 }}
                 rules={[
                   {
-                    required: false,
+                    required: true,
                     message: "Please fill!",
                   },
                 ]}
@@ -460,35 +520,42 @@ const UsersPageBranch = () => {
                 <Input />
               </Form.Item>
             </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Rol"
+                name={["user", "roles"]}
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Select>
+                  <Select.Option value="teacher">Teacher</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
           </Row>
+          <Row gutter={16}>
+            <Col span={6}>
+              <Form.Item
+                label="Oylik"
+                name="salary"
+                style={{ marginBottom: 0 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Parol"
-            name={["user", "password"]}
-            rules={[
-              {
-                required: false,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Oylik"
-            name="salary"
-            rules={[
-              {
-                required: true,
-                message: "Please fill!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Lavozimi"
                 name="position"
@@ -502,29 +569,155 @@ const UsersPageBranch = () => {
               >
                 <Select
                   mode="multiple"
-                  size="large"
+                  size="middle"
                   style={{ marginBottom: 0 }}
                   placeholder="lavozimni tanlang"
                   onChange={handleChange}
                 >
-                  {positionOptions && positionOptions.map((student) => (
+                  {positionOption.map((student) => (
                     <Select.Option key={student.value} value={student.value}>
                       {student.label}
                     </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
-          </Col>
-          <Form.Item name="status" valuePropName="checked">
-            <Checkbox> Faoliyatda</Checkbox>
-          </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name="status"
+                valuePropName="checked"
+                label="status"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please fill!",
+                  },
+                ]}
+              >
+                <Checkbox>Faoliyatda</Checkbox>
+              </Form.Item>
+            </Col>
+            {editId ? (
+              <Col span={4}>
+                <Button
+                  className="mt-10"
+                  type="primary"
+                  onClick={togglePasswordFields}
+                >
+                  parolni o'zgartirish
+                </Button>
+              </Col>
+            ) : (
+              <Row gutter={16} style={{ marginTop: 16 }}>
+                <Col span={8}>
+                  <Form.Item
+                    label="Parol"
+                    name={["user", "password1"]}
+                    style={{ marginBottom: 0 }}
+                    rules={[
+                      {
+                        required: false,
+                        message: "Please fill!",
+                      },
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Parolni takrorlash"
+                    name={["user", "password2"]}
+                    style={{ marginBottom: 0 }}
+                    rules={[
+                      {
+                        required: false,
+                        message: "Please fill!",
+                      },
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+          </Row>
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            {editId ? (
+              <Col span={8}>
+                <Form.Item
+                  label="ent_at"
+                  name="end_at"
+                  rules={[
+                    { required: false, message: "Please select an end date!" },
+                  ]}
+                >
+                  <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+                </Form.Item>
+              </Col>
+            ) : (
+              <Col span={8}>
+                <Form.Item
+                  label="Yaratilgan vaqt"
+                  name="start_at"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a start date!",
+                    },
+                  ]}
+                >
+                  <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+                </Form.Item>
+              </Col>
+            )}
+            {showPasswordFields && (
+              <>
+                <Col span={8}>
+                  <Form.Item
+                    label="Parol"
+                    name={["user", "password1"]}
+                    style={{ marginBottom: 0 }}
+                    rules={[
+                      {
+                        required: false,
+                        message: "Please fill!",
+                      },
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Parolni takrorlash"
+                    name={["user", "password2"]}
+                    style={{ marginBottom: 0 }}
+                    rules={[
+                      {
+                        required: false,
+                        message: "Please fill!",
+                      },
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
+                </Col>
+              </>
+            )}
+          </Row>
+
           <Form.Item
             wrapperCol={{
               span: 24,
             }}
           >
             <Button
-              style={{ backgroundColor: "#264653", width: "100%" }}
+              style={{
+                backgroundColor: "#264653",
+                width: "100%",
+                marginTop: "15px",
+              }}
               type="primary"
               htmlType="submit"
             >
